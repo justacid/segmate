@@ -4,15 +4,13 @@ from PySide2.QtWidgets import *
 
 class LayerItem(QFrame):
 
-    opacity_changed = Signal(int, float)
+    opacity_changed = Signal(float)
 
-    def __init__(self, text, index=0, opacity=1.0, parent=None):
-        super().__init__(parent)
+    def __init__(self, text, opacity=1.0):
+        super().__init__()
 
         self.setFrameShape(QFrame.StyledPanel)
         self.setLineWidth(1)
-        self.index = index
-        self.opacity = opacity
 
         vbox = QVBoxLayout(self)
         vbox.setSpacing(1)
@@ -37,11 +35,9 @@ class LayerItem(QFrame):
         slider.setOrientation(Qt.Horizontal)
         slider.setTickPosition(QSlider.TicksAbove)
         slider.setTickInterval(20)
-        slider.valueChanged.connect(self._slider_changed)
+        slider.valueChanged.connect(
+            lambda x: self.opacity_changed.emit(x / 100))
 
         svbox.addWidget(slider)
         hbox.addLayout(svbox)
         vbox.addLayout(hbox)
-
-    def _slider_changed(self, value):
-        self.opacity_changed.emit(self.index, value / 100.0)

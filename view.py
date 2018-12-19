@@ -1,11 +1,13 @@
-from PySide2.QtCore import Qt, QPointF
-from PySide2.QtWidgets import QGraphicsView, QGraphicsScene
-from PySide2.QtGui import QImage, QPixmap
+from PySide2.QtCore import *
+from PySide2.QtWidgets import *
+from PySide2.QtGui import *
 
 
 class SegmentationView(QGraphicsView):
 
-    def __init__(self, scene):
+    zoom_changed = Signal(float)
+
+    def __init__(self, scene=None):
         super().__init__(scene)
         self.scene = scene
         self._scale = 1.0
@@ -23,6 +25,7 @@ class SegmentationView(QGraphicsView):
         self._scale += amount
         self.resetMatrix()
         self.scale(self._scale, self._scale)
+        self.zoom_changed.emit(self._scale)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:

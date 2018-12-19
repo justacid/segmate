@@ -12,36 +12,40 @@ import util
 
 class ImageScene(QGraphicsScene):
 
-    changed = Signal()
+    image_loaded = Signal(int)
+    opacity_changed = Signal(int, float)
+    scene_cleared = Signal()
 
-    def __init__(self, loader=None, opacities=None):
+    def __init__(self, data_loader):
         super().__init__()
         self.layers = []
-        self.loader = loader
+        self.loader = data_loader
+        self.opacities = [1.0] * len(data_loader)
 
-        if loader is None:
-            self.opacities = None
-        else:
-            self.opacities = opacities or np.linspace(1.0, 0.2, len(loader[0]), endpoint=False)
+    def numImages(self):
+        return 0 if not self.loader else len(self.loader)
 
-    def set_opacity(self, idx, value):
+    def numLayers(self):
+        return len(layers)
+
+    def getOpacity(self, idx):
+        return self.opacities[idx]
+
+    def setOpacity(self, idx, value):
         self.layers[idx].setOpacity(value)
+        self.opacities[idx] = value
+        self.opacity_changed.emit(idx, value)
 
-    def set_loader(self, loader):
-        self.loader = loader
-        self.opacities = np.linspace(1.0, 0.2, len(loader[0]), endpoint=False)
-
-    def set_image(self, idx):
+    def clear(self):
         for layer in self.layers:
             self.removeItem(layer)
         self.layers.clear()
+        self.scene_cleared.emit()
 
-        for image, opacity in zip(self.loader[idx], self.opacities):
-            item = self.addPixmap(image)
-            item.setOpacity(opacity)
-            self.layers.append(item)
-
-        self.changed.emit()
+    def load(self, idx):
+        self.clear()
+        self.layers = [self.addPixmap(i) for i in self.loader[idx]]
+        self.image_loaded.emit(idx)
 
 
 class DataLoader:

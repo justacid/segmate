@@ -1,6 +1,7 @@
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtWidgets import *
 
+from store import ImageScene
 from layeritem import LayerItem
 
 
@@ -17,58 +18,63 @@ class InspectorDock(QDockWidget):
 class Inspector(QWidget):
 
     image_changed = Signal(int)
+    scene_changed = Signal(ImageScene)
 
-    def __init__(self, scene=None):
+    def __init__(self):
         super().__init__()
+        self.scene = None
+        self.setupUi()
 
-        dock_layout = QVBoxLayout(self)
-        self._setup_images_slider(dock_layout)
-        self._add_layer_list(dock_layout)
-
-        if scene:
-            self.scene = scene
-            num_images = len(self.scene.loader)
-            self.slider.setMaximum(num_images)
-            self.scene.changed.connect(self._set_layers)
-
-    def set_scene(self, scene):
+    def setScene(self, scene):
         self.scene = scene
-        num_images = len(self.scene.loader)
-        self.slider.setMaximum(num_images)
-        self.scene.changed.connect(self._set_layers)
+        self.slider.setValue(0)
+        self.slider.setMaximum(self.scene.numImages()-1)
+        self.scene.image_loaded.connect(self.addLayers)
+        self.scene_changed.emit(scene)
 
-    def _setup_images_slider(self, dock_layout):
-        group = QGroupBox("Images")
-        vlayout = QVBoxLayout(group)
+    def changeImage(self, idx):
+        self.scene.load(idx)
+        self.image_changed.emit(idx)
+
+    def clearLayers(self):
+        while self.layers.count():
+            child = self.layers.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+    def addLayers(self):
+
+        def add(idx, layer):
+            opacity = self.scene.opacities[idx]
+            self.scene.setOpacity(idx, opacity)
+            item = LayerItem(f"Opacity: Layer #{idx}", opacity)
+            item.opacity_changed.connect(lambda x: self.scene.setOpacity(idx, x))
+            self.layers.addWidget(item)
+
+        self.clearLayers()
+        for i, layer in enumerate(self.scene.layers):
+            add(i, layer)
+        self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+    def setupUi(self):
+        dock_layout = QVBoxLayout(self)
+
+        slider_group = QGroupBox("Images")
+        vlayout = QVBoxLayout(slider_group)
 
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setTickPosition(QSlider.TicksBelow)
         self.slider.setTickInterval(10)
         self.slider.setValue(0)
-        self.slider.valueChanged.connect(lambda x: self.image_changed.emit(x))
+        self.slider.valueChanged.connect(self.changeImage)
 
         vlayout.addWidget(self.slider)
-        dock_layout.addWidget(group)
+        dock_layout.addWidget(slider_group)
 
-    def _add_layer_list(self, dock_layout):
-        group = QGroupBox(self)
-        group.setTitle("Layers")
-        self._layout = QVBoxLayout(group)
-        self._layout.setSpacing(2)
-        self._layout.setContentsMargins(2, 2, 2, 2)
-        self._layout.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        dock_layout.addWidget(group)
-
-    def _set_layers(self):
-        while self._layout.count():
-            child = self._layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-
-        for i, layer in enumerate(self.scene.layers):
-            opacity = self.scene.opacities[i]
-            item = LayerItem(f"Opacity: Layer #{i}", i, opacity=opacity)
-            item.opacity_changed.connect(self.scene.set_opacity)
-            self._layout.addWidget(item)
-        self._layout.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
-
+        layer_group = QGroupBox(self)
+        layer_group.setTitle("Layers")
+        self.layers = QVBoxLayout(layer_group)
+        self.layers.setSpacing(2)
+        self.layers.setContentsMargins(2, 2, 2, 2)
+        self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        dock_layout.addWidget(layer_group)
