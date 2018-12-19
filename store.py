@@ -54,6 +54,7 @@ class DataLoader:
             self.subfolders = [Path(s) for s in subfolders]
 
         self.files = [f for f in listdir(self.folder / self.subfolders[0])]
+        self.files = sorted(self.files, key=lambda f: int(f.split("-")[1].split(".")[0]))
 
     def __len__(self):
         return len(self.files)
