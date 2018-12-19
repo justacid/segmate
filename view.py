@@ -14,10 +14,15 @@ class SegmentationView(QGraphicsView):
 
     def wheelEvent(self, event):
         delta = event.angleDelta().y()
-        self._scale += 0.15 if delta > 0 else -0.15
+        self.zoom((delta / 8.0) / 100.0)
+        event.accept()
+
+    def zoom(self, amount):
+        if self._scale + amount <= 0:
+            return
+        self._scale += amount
         self.resetMatrix()
         self.scale(self._scale, self._scale)
-        event.accept()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
