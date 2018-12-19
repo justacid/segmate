@@ -20,8 +20,11 @@ class MainWindow(QMainWindow):
             self.openFolder()
 
     def setupUi(self):
+        self.statusBar().showMessage("Ready")
+
         self.viewarea = SegmentationView()
         self.viewarea.setAlignment(Qt.AlignCenter)
+        self.viewarea.zoom_changed.connect(self.zoomChanged)
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
@@ -64,3 +67,7 @@ class MainWindow(QMainWindow):
         loader = DataLoader(folder, subfolders=["images", "masks"])
         self.inspector.setScene(ImageScene(loader))
         self.inspector.changeImage(0)
+
+    def zoomChanged(self, zoom):
+        message = f"Zoom: {zoom * 100:.0f}%"
+        self.statusBar().showMessage(message, 2000)
