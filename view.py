@@ -22,6 +22,12 @@ class SegmentationView(QGraphicsView):
     def zoom(self, amount):
         if self._scale + amount <= 0:
             return
+
+        if self._scale + amount > 8.0:
+            self._scale = 8.0
+            self.zoom_changed.emit(self._scale)
+            return
+
         self._scale += amount
         self.resetMatrix()
         self.scale(self._scale, self._scale)
