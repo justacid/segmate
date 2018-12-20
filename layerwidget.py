@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt, Signal
 from PySide2.QtWidgets import *
 
 
-class LayerItem(QFrame):
+class LayerWidget(QFrame):
 
     opacity_changed = Signal(float)
 

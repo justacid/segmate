@@ -3,7 +3,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 
-class SegmentationView(QGraphicsView):
+class ViewWidget(QGraphicsView):
 
     zoom_changed = Signal(int)
     fitview_changed = Signal(bool)

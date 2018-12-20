@@ -4,10 +4,10 @@ from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from inspector import InspectorDock, Inspector
-from loader import DataLoader
-from store import ImageScene
-from view import SegmentationView
+from inspectorwidget import InspectorWidget
+from dataloader import DataLoader
+from scene import ImageScene
+from viewwidget import ViewWidget
 
 
 class MainWindow(QMainWindow):
@@ -26,16 +26,22 @@ class MainWindow(QMainWindow):
     def setupUi(self):
         self.statusBar().showMessage("Ready")
 
-        self.viewarea = SegmentationView()
-        self.viewarea.setAlignment(Qt.AlignCenter)
-        self.viewarea.zoom_changed.connect(self.zoomChanged)
-        self.viewarea.fitview_changed.connect(self.fitChanged)
-        self.setCentralWidget(self.viewarea)
+        self.view = ViewWidget()
+        self.view.setAlignment(Qt.AlignCenter)
+        self.view.zoom_changed.connect(self.zoomChanged)
+        self.view.fitview_changed.connect(self.fitChanged)
+        self.setCentralWidget(self.view)
 
-        self.inspector = Inspector()
-        self.inspector.scene_changed.connect(lambda x: self.viewarea.setScene(x))
-        self.inspector_dock = InspectorDock(self.inspector)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.inspector_dock)
+        self.inspector = InspectorWidget()
+        self.inspector.scene_changed.connect(lambda x: self.view.setScene(x))
+
+        self.dock = QDockWidget("Inspector")
+        self.dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        self.dock.setMinimumSize(250, 344)
+        self.dock.setWidget(self.inspector)
+
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
     def setPosition(self):
         screen = QDesktopWidget(self).availableGeometry()
@@ -60,7 +66,7 @@ class MainWindow(QMainWindow):
         self.fitview_action = QAction("Zoom to &Fit")
         self.fitview_action.setCheckable(True)
         self.fitview_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_F))
-        self.fitview_action.triggered.connect(lambda: self.viewarea.toggleZoomToFit())
+        self.fitview_action.triggered.connect(lambda: self.view.toggleZoomToFit())
 
         view_menu = self.menuBar().addMenu("&View")
         view_menu.addAction(self.fitview_action)
@@ -72,7 +78,7 @@ class MainWindow(QMainWindow):
 
         for zoom in self.zoom_levels:
             action = self.zoom_group.addAction(f"{zoom}%")
-            action.triggered.connect(partial(lambda z: self.viewarea.setZoom(z), zoom))
+            action.triggered.connect(partial(lambda z: self.view.setZoom(z), zoom))
             action.setCheckable(True)
             if zoom == 100:
                 action.setChecked(True)

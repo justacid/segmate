@@ -1,21 +1,11 @@
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtWidgets import *
 
-from store import ImageScene
-from layeritem import LayerItem
+from scene import ImageScene
+from layerwidget import LayerWidget
 
 
-class InspectorDock(QDockWidget):
-
-    def __init__(self, inspector):
-        super().__init__("Inspector")
-        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        self.setMinimumSize(250, 344)
-        self.setWidget(inspector)
-
-
-class Inspector(QWidget):
+class InspectorWidget(QWidget):
 
     image_changed = Signal(int)
     scene_changed = Signal(ImageScene)
@@ -49,7 +39,7 @@ class Inspector(QWidget):
         def add(idx, layer, name):
             opacity = self.scene.getOpacity(idx)
             text = f"Opacity: {name}".title()
-            item = LayerItem(text, opacity)
+            item = LayerWidget(text, opacity)
             item.opacity_changed.connect(lambda x: self.scene.setOpacity(idx, x))
             self.layers.addWidget(item)
 
