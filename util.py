@@ -25,7 +25,7 @@ def np_to_qimage(arr, copy=False):
     formats = {
         0: QImage.Format_Grayscale8,
         3: QImage.Format_RGB888,
-        4: QImage.Format_ARGB32
+        4: QImage.Format_RGBA8888
     }
 
     if cdim not in formats:
