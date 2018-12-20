@@ -63,15 +63,31 @@ class InspectorWidget(QWidget):
         dock_layout = QVBoxLayout(self)
 
         self.slider_box = QGroupBox("Images")
-        vlayout = QVBoxLayout(self.slider_box)
+        hlayout = QHBoxLayout(self.slider_box)
+
+        arrow_left = QToolButton(self)
+        arrow_left.setMaximumSize(25, 25)
+        arrow_left.setArrowType(Qt.LeftArrow)
+        left_action = QAction()
+        left_action.triggered.connect(self.showPreviousImage)
+        arrow_left.setDefaultAction(left_action)
+        hlayout.addWidget(arrow_left)
 
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setTickPosition(QSlider.TicksBelow)
         self.slider.setTickInterval(10)
         self.slider.setValue(0)
         self.slider.valueChanged.connect(self.changeImage)
+        hlayout.addWidget(self.slider)
 
-        vlayout.addWidget(self.slider)
+        arrow_right = QToolButton()
+        arrow_right.setMaximumSize(25, 25)
+        arrow_right.setArrowType(Qt.RightArrow)
+        right_action = QAction()
+        right_action.triggered.connect(self.showNextImage)
+        arrow_right.setDefaultAction(right_action)
+        hlayout.addWidget(arrow_right)
+
         dock_layout.addWidget(self.slider_box)
 
         layer_group = QGroupBox(self)
