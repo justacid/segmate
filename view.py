@@ -5,34 +5,42 @@ from PySide2.QtGui import *
 
 class SegmentationView(QGraphicsView):
 
-    zoom_changed = Signal(float)
+    zoom_changed = Signal(int)
     fitview_changed = Signal(bool)
 
     def __init__(self, scene=None):
         super().__init__(scene)
-        self._scale = 1.0
+        self._scale = 100
         self._fit = False
         self._pan = True
         self._pan_start = QPointF(0.0, 0.0)
 
     def wheelEvent(self, event):
-        delta = event.angleDelta().y()
-        self.zoom((delta / 12.0) / 100.0)
-        event.accept()
+        if event.modifiers() & Qt.ControlModifier:
+            delta = event.angleDelta().y()
+            self.zoom(int(delta / 12.0))
+            event.accept()
+        event.ignore()
 
     def zoom(self, amount):
         if self._fit:
             return
         if self._scale + amount <= 0:
             return
-        if self._scale + amount > 8.0:
-            self._scale = 8.0
+        if self._scale + amount > 800:
+            self._scale = 800
             self.zoom_changed.emit(self._scale)
             return
 
         self._scale += amount
         self.resetMatrix()
-        self.scale(self._scale, self._scale)
+        self.scale(self._scale / 100.0, self._scale / 100.0)
+        self.zoom_changed.emit(self._scale)
+
+    def setZoom(self, zoom):
+        self._scale = zoom
+        self.resetMatrix()
+        self.scale(self._scale / 100.0, self._scale / 100.0)
         self.zoom_changed.emit(self._scale)
 
     def toggleZoomToFit(self):
@@ -41,7 +49,7 @@ class SegmentationView(QGraphicsView):
             self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
         else:
             self.resetMatrix()
-            self.scale(self._scale, self._scale)
+            self.scale(self._scale / 100, self._scale / 100.0)
         self.fitview_changed.emit(self._fit)
 
     def resizeEvent(self, event):
@@ -51,7 +59,7 @@ class SegmentationView(QGraphicsView):
             return
 
         self.resetMatrix()
-        self.scale(self._scale, self._scale)
+        self.scale(self._scale / 100.0, self._scale / 100.0)
         event.ignore()
 
     def mousePressEvent(self, event):

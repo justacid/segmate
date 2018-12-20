@@ -1,3 +1,5 @@
+from functools import partial
+
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
@@ -55,6 +57,31 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(self.quit_action)
 
+        self.fitview_action = QAction("Zoom to &Fit")
+        self.fitview_action.setCheckable(True)
+        self.fitview_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_F))
+        self.fitview_action.triggered.connect(lambda: self.viewarea.toggleZoomToFit())
+
+        view_menu = self.menuBar().addMenu("&View")
+        view_menu.addAction(self.fitview_action)
+        zoom_submenu = view_menu.addMenu("Zoom")
+
+        self.zoom_group = QActionGroup(zoom_submenu)
+        self.zoom_group.setExclusive(True)
+        self.zoom_levels = list(range(20, 320, 20))
+
+        for zoom in self.zoom_levels:
+            action = self.zoom_group.addAction(f"{zoom}%")
+            action.triggered.connect(partial(lambda z: self.viewarea.setZoom(z), zoom))
+            action.setCheckable(True)
+            if zoom == 100:
+                action.setChecked(True)
+            zoom_submenu.addAction(action)
+
+        custom_zoom = self.zoom_group.addAction(f"Custom")
+        custom_zoom.setCheckable(True)
+        zoom_submenu.addAction(custom_zoom)
+
     def openFolder(self, folder=None):
         if folder is None:
             folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
@@ -62,7 +89,14 @@ class MainWindow(QMainWindow):
         self.inspector.changeImage(0)
 
     def zoomChanged(self, zoom):
-        message = f"Zoom: {zoom * 100:.0f}%"
+        try:
+            idx = self.zoom_levels.index(zoom)
+            self.zoom_group.actions()[idx].setChecked(True)
+        except ValueError:
+            self.zoom_group.actions()[-1].setChecked(True)
+            self.zoom_group.actions()[-1].setText(f"Custom {zoom}%")
+
+        message = f"Zoom: {zoom}%"
         self.statusBar().showMessage(message, 2000)
 
     def fitChanged(self, toggled_on):
@@ -70,7 +104,3 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("Zoom to fit: On")
         if not toggled_on:
             self.statusBar().showMessage("Zoom to fit: Off", 2000)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_F:
-            self.viewarea.toggleZoomToFit()
