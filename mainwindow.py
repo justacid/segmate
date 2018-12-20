@@ -27,10 +27,7 @@ class MainWindow(QMainWindow):
         self.viewarea = SegmentationView()
         self.viewarea.setAlignment(Qt.AlignCenter)
         self.viewarea.zoom_changed.connect(self.zoomChanged)
-
-        self.layout = QHBoxLayout()
-        self.setLayout(self.layout)
-        self.layout.addWidget(self.viewarea)
+        self.viewarea.fitview_changed.connect(self.fitChanged)
         self.setCentralWidget(self.viewarea)
 
         self.inspector = Inspector()
@@ -67,3 +64,13 @@ class MainWindow(QMainWindow):
     def zoomChanged(self, zoom):
         message = f"Zoom: {zoom * 100:.0f}%"
         self.statusBar().showMessage(message, 2000)
+
+    def fitChanged(self, toggled_on):
+        if toggled_on:
+            self.statusBar().showMessage("Zoom to fit: On")
+        if not toggled_on:
+            self.statusBar().showMessage("Zoom to fit: Off", 2000)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_F:
+            self.viewarea.toggleZoomToFit()
