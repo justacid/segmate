@@ -1,6 +1,6 @@
 import sys
 from PySide2.QtWidgets import QApplication
-from window import MainWindow
+from mainwindow import MainWindow
 
 
 MAJOR_VERSION = 0

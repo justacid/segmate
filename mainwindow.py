@@ -2,9 +2,10 @@ from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from view import SegmentationView
-from store import ImageScene, DataLoader
 from inspector import InspectorDock, Inspector
+from loader import DataLoader
+from store import ImageScene
+from view import SegmentationView
 
 
 class MainWindow(QMainWindow):
@@ -16,8 +17,9 @@ class MainWindow(QMainWindow):
         self.setPosition()
         self.addMenu()
 
-        if len(QApplication.arguments()) > 1:
-            self.openFolder()
+        args = QApplication.arguments()
+        if len(args) > 1:
+            self.openFolder(args[1])
 
     def setupUi(self):
         self.statusBar().showMessage("Ready")
@@ -37,8 +39,7 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.inspector_dock)
 
     def setPosition(self):
-        desktop = QDesktopWidget()
-        screen = desktop.availableGeometry(self)
+        screen = QDesktopWidget(self).availableGeometry()
         size = screen.width() * 0.75, screen.height() * 0.75
         self.resize(*size)
         self.move((screen.width() - size[0]) / 2, (screen.height() - size[1]) / 2)
@@ -57,15 +58,10 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(self.quit_action)
 
-    def openFolder(self):
-        args = QApplication.arguments()
-        if len(args) > 1:
-            folder = args[1]
-        else:
+    def openFolder(self, folder=None):
+        if folder is None:
             folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
-
-        loader = DataLoader(folder, subfolders=["images", "masks"])
-        self.inspector.setScene(ImageScene(loader))
+        self.inspector.setScene(ImageScene(DataLoader(folder)))
         self.inspector.changeImage(0)
 
     def zoomChanged(self, zoom):
