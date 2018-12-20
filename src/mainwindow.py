@@ -36,7 +36,6 @@ class MainWindow(QMainWindow):
 
         self.dock = QDockWidget("Inspector")
         self.dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         self.dock.setMinimumSize(250, 344)
         self.dock.setWidget(self.inspector)
 
@@ -68,6 +67,8 @@ class MainWindow(QMainWindow):
         self.fitview_action.triggered.connect(lambda: self.view.toggleZoomToFit())
 
         view_menu = self.menuBar().addMenu("&View")
+        view_menu.addAction(self.dock.toggleViewAction())
+        view_menu.addSeparator()
         view_menu.addAction(self.fitview_action)
         zoom_submenu = view_menu.addMenu("Zoom")
 
