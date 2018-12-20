@@ -1,8 +1,8 @@
-from PySide2.QtCore import Qt, Signal
+from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
 from scene import ImageScene
-from layerwidget import LayerWidget
+from .layerwidget import LayerWidget
 
 
 class InspectorWidget(QWidget):

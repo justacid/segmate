@@ -4,10 +4,9 @@ from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from inspectorwidget import InspectorWidget
+from widgets import InspectorWidget, ViewWidget
 from dataloader import DataLoader
 from scene import ImageScene
-from viewwidget import ViewWidget
 
 
 class MainWindow(QMainWindow):

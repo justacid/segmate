@@ -1,4 +1,4 @@
-from PySide2.QtCore import Qt, Signal
+from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
 

@@ -1,8 +1,8 @@
 import numpy as np
 from PySide2.QtGui import QImage
-    
 
-def np_to_qimage(arr, copy=False):
+
+def to_qimage(arr, copy=False):
     """Convert NumPy array to QImage object
 
     Args:
