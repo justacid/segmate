@@ -13,16 +13,27 @@ class InspectorWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.scene = None
+        self.current_image = 0
         self.setupUi()
 
     def setScene(self, scene):
         self.scene = scene
+        self.current_image = 0
         self.slider.setValue(0)
         self.slider.setMaximum(self.scene.numImages()-1)
         self.scene.image_loaded.connect(self.addLayers)
         self.scene_changed.emit(scene)
 
+    def showNextImage(self):
+        if self.current_image < self.scene.numImages()-1:
+            self.slider.setValue(self.current_image + 1)
+
+    def showPreviousImage(self):
+        if self.current_image > 0:
+            self.slider.setValue(self.current_image - 1)
+
     def changeImage(self, idx):
+        self.current_image = idx
         self.scene.load(idx)
         num_images = self.scene.numImages()
         self.slider_box.setTitle(f"Image {idx+1}/{num_images}")

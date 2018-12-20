@@ -109,3 +109,13 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("Zoom to fit: On")
         if not toggled_on:
             self.statusBar().showMessage("Zoom to fit: Off", 2000)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Right:
+            self.inspector.showNextImage()
+            return
+        elif event.key() == Qt.Key_Left:
+            self.inspector.showPreviousImage()
+            return
+
+        event.ignore()

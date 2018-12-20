@@ -90,3 +90,6 @@ class ViewWidget(QGraphicsView):
             event.accept()
             return
         event.ignore()
+
+    def keyPressEvent(self, event):
+        event.ignore()
