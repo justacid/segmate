@@ -1,8 +1,11 @@
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QGraphicsScene
+from PySide2.QtCore import *
+from PySide2.QtWidgets import *
+from PySide2.QtGui import *
+
+from editoritem import EditorItem
 
 
-class ImageScene(QGraphicsScene):
+class EditorScene(QGraphicsScene):
 
     image_loaded = Signal(int)
     opacity_changed = Signal(int, float)
@@ -20,13 +23,20 @@ class ImageScene(QGraphicsScene):
     def numLayers(self):
         return len(layers)
 
-    def getOpacity(self, idx):
-        return self.opacities[idx]
+    def getOpacity(self, layer_idx):
+        return self.opacities[layer_idx]
 
-    def setOpacity(self, idx, value):
-        self.layers[idx].setOpacity(value)
-        self.opacities[idx] = value
-        self.opacity_changed.emit(idx, value)
+    def setOpacity(self, layer_idx, value):
+        self.layers[layer_idx].setOpacity(value)
+        self.opacities[layer_idx] = value
+        self.opacity_changed.emit(layer_idx, value)
+
+    def setActive(self, layer_idx):
+        for i, layer in enumerate(self.layers):
+            if i == layer_idx:
+                layer.setActive(True)
+            else:
+                layer.setActive(False)
 
     def clear(self):
         for layer in self.layers:
@@ -34,9 +44,17 @@ class ImageScene(QGraphicsScene):
         self.layers.clear()
         self.scene_cleared.emit()
 
-    def load(self, idx):
+    def load(self, image_idx):
         self.clear()
-        self.layers = [self.addPixmap(i) for i in self.loader[idx]]
+
+        self.layers = []
+        pen_colors = self.loader.pen_colors()
+
+        for i, layer in enumerate(self.loader[image_idx]):
+            item = EditorItem(layer, QColor(*pen_colors[i]))
+            self.addItem(item)
+            self.layers.append(item)
+
         for layer, opacity in zip(self.layers, self.opacities):
             layer.setOpacity(opacity)
-        self.image_loaded.emit(idx)
+        self.image_loaded.emit(image_idx)

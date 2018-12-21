@@ -14,12 +14,13 @@ class ViewWidget(QGraphicsView):
         self._fit = False
         self._pan = True
         self._pan_start = QPointF(0.0, 0.0)
+        self.setMouseTracking(True)
 
     def wheelEvent(self, event):
         if event.modifiers() & Qt.ControlModifier:
             delta = event.angleDelta().y()
             self.zoom(int(delta / 12.0))
-            event.accept()
+            return
         event.ignore()
 
     def zoom(self, amount):
@@ -55,41 +56,36 @@ class ViewWidget(QGraphicsView):
     def resizeEvent(self, event):
         if self._fit:
             self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
-            event.accept()
             return
 
         self.resetMatrix()
         self.scale(self._scale / 100.0, self._scale / 100.0)
-        event.ignore()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
             self._pan = True
             self._pan_start = event.pos()
             self.setCursor(Qt.ClosedHandCursor)
-            event.accept()
             return
-        event.ignore()
+        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.RightButton:
             self._pan = False
             self.setCursor(Qt.ArrowCursor)
-            event.accept()
             return
-        event.ignore()
+        super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self._pan:
+        if self._pan and event.buttons() & Qt.RightButton:
             delta = QPointF(event.pos()) - self._pan_start
             hs = self.horizontalScrollBar().value()
             vs = self.verticalScrollBar().value()
             self.horizontalScrollBar().setValue(hs - delta.x())
             self.verticalScrollBar().setValue(vs - delta.y())
             self._pan_start = event.pos()
-            event.accept()
             return
-        event.ignore()
+        super().mouseMoveEvent(event)
 
     def keyPressEvent(self, event):
         event.ignore()

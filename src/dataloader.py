@@ -31,15 +31,18 @@ class DataLoader:
 
         return data
 
+    def pen_colors(self):
+        return [(255, 255, 255), (255, 255, 0), (0, 255, 255)]
+
     def load_image(self, idx):
         path = self.root / self.folders[0] / self.files[idx]
-        return QPixmap(util.to_qimage(io.imread(path)))
+        return util.to_qimage(io.imread(path))
 
     def load_mask(self, idx, folder, color=(255, 255, 255)):
         path = self.root / folder / self.files[idx]
         mask = io.imread(path, as_gray=True)
         image = self.make_alpha(mask, color=color)
-        return QPixmap(util.to_qimage(image))
+        return util.to_qimage(image)
 
     def make_alpha(self, image, color=(255, 255, 255)):
         alpha = np.zeros([*image.shape, 4], dtype=np.uint8)

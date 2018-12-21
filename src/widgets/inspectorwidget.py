@@ -1,14 +1,15 @@
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
-from scene import ImageScene
+from scene import EditorScene
+from editoritem import EditorItem
 from .layerwidget import LayerWidget
 
 
 class InspectorWidget(QWidget):
 
     image_changed = Signal(int)
-    scene_changed = Signal(ImageScene)
+    scene_changed = Signal(EditorScene)
 
     def __init__(self):
         super().__init__()
@@ -46,18 +47,29 @@ class InspectorWidget(QWidget):
                 child.widget().deleteLater()
 
     def addLayers(self):
-
-        def add(idx, layer, name):
-            opacity = self.scene.getOpacity(idx)
-            text = f"Opacity: {name}".title()
-            item = LayerWidget(text, opacity)
-            item.opacity_changed.connect(lambda x: self.scene.setOpacity(idx, x))
-            self.layers.addWidget(item)
-
         self.clearLayers()
         for i, (layer, name) in enumerate(zip(self.scene.layers, self.scene.loader.folders)):
-            add(i, layer, name)
+            item = self.addLayerWidget(i, layer, name)
+        item.setHighlight(True)
         self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+    def addLayerWidget(self, idx, layer, name=""):
+        opacity = self.scene.getOpacity(idx)
+        text = f"Opacity: {name}".title()
+        item = LayerWidget(text, opacity)
+        item.opacity_changed.connect(lambda x: self.scene.setOpacity(idx, x))
+        item.layer_clicked.connect(lambda: self.highlightLayer(idx))
+        self.layers.addWidget(item)
+        return item
+
+    def highlightLayer(self, idx):
+        self.scene.setActive(idx)
+        for i in range(self.layers.count()-1):
+            child = self.layers.itemAt(i).widget()
+            if i == idx:
+                child.setHighlight(True)
+                continue
+            child.setHighlight(False)
 
     def setupUi(self):
         dock_layout = QVBoxLayout(self)

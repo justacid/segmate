@@ -6,15 +6,15 @@ from PySide2.QtGui import *
 class LayerWidget(QFrame):
 
     opacity_changed = Signal(float)
+    layer_clicked = Signal()
 
     def __init__(self, text, opacity=1.0):
         super().__init__()
 
         self.opacity = opacity
         self.is_visible = True
-
-        self.setFrameShape(QFrame.StyledPanel)
-        self.setLineWidth(1)
+        self.is_active = False
+        self.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
 
         vbox = QVBoxLayout(self)
         vbox.setSpacing(1)
@@ -45,6 +45,18 @@ class LayerWidget(QFrame):
         svbox.addWidget(self.slider)
         hbox.addLayout(svbox)
         vbox.addLayout(hbox)
+
+    def mousePressEvent(self, event):
+        self.is_active = not self.is_active
+        self.setHighlight(self.is_active)
+        self.layer_clicked.emit()
+        event.ignore()
+
+    def setHighlight(self, active):
+        if active:
+            self.setStyleSheet("QFrame { background-color: rgba(128, 0, 0, 255) }")
+            return
+        self.setStyleSheet("")
 
     def changeOpacity(self, value):
         self.is_visible = True

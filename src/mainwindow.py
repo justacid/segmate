@@ -6,7 +6,7 @@ from PySide2.QtGui import *
 
 from widgets import InspectorWidget, ViewWidget
 from dataloader import DataLoader
-from scene import ImageScene
+from scene import EditorScene
 
 
 class MainWindow(QMainWindow):
@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
     def openFolder(self, folder=None):
         if folder is None:
             folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
-        self.inspector.setScene(ImageScene(DataLoader(folder)))
+        self.inspector.setScene(EditorScene(DataLoader(folder)))
         self.inspector.changeImage(0)
 
     def zoomChanged(self, zoom):
