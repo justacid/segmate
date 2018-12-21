@@ -1,8 +1,9 @@
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
-from scene import EditorScene
-from editoritem import EditorItem
+# from scene import EditorScene
+# from editoritem import EditorItem
+from editor import EditorScene, EditorItem
 from .layerwidget import LayerWidget
 
 

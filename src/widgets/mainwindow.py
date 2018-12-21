@@ -4,9 +4,10 @@ from PySide2.QtCore import Qt
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from widgets import InspectorWidget, ViewWidget
+from .inspectorwidget import InspectorWidget
+from .viewwidget import ViewWidget
 from dataloader import DataLoader
-from scene import EditorScene
+from editor import EditorScene
 
 
 class MainWindow(QMainWindow):

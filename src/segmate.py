@@ -2,7 +2,7 @@ import os
 import sys
 
 from PySide2.QtWidgets import QApplication
-from mainwindow import MainWindow
+from widgets import MainWindow
 
 
 MAJOR_VERSION = 0

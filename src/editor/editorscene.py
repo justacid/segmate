@@ -2,7 +2,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from editoritem import EditorItem
+from .editoritem import EditorItem
 
 
 class EditorScene(QGraphicsScene):
