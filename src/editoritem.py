@@ -30,18 +30,18 @@ class EditorItem(QGraphicsItem):
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton and self.draw:
-            self.draw_line(event.pos())
+            self.drawLine(event.pos())
             self.draw = False
             return
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.LeftButton and self.draw:
-            self.draw_line(event.pos())
+            self.drawLine(event.pos())
             return
         super().mouseMoveEvent(event)
 
-    def draw_line(self, end_point):
+    def drawLine(self, end_point):
         painter = QPainter(self.image)
 
         pen = QPen()
