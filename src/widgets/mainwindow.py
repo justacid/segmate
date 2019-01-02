@@ -18,6 +18,7 @@ class MainWindow(QMainWindow):
         self.setupUi()
         self.setPosition()
         self.addMenu()
+        self.addToolBar()
 
         args = QApplication.arguments()
         if len(args) > 1:
@@ -25,6 +26,7 @@ class MainWindow(QMainWindow):
 
     def setupUi(self):
         self.statusBar().showMessage("Ready")
+        self.setWindowIcon(QIcon("icons/app-icon.png"))
 
         self.view = ViewWidget()
         self.view.setAlignment(Qt.AlignCenter)
@@ -54,11 +56,18 @@ class MainWindow(QMainWindow):
         self.quit_action.triggered.connect(QApplication.quit)
 
         self.open_action = QAction("&Open Folder")
+        self.open_action.setIcon(QIcon("icons/open-folder.png"))
         self.open_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_O))
-        self.open_action.triggered.connect(self.openFolder)
+        self.open_action.triggered.connect(self.openFolderDialog)
+
+        self.save_action = QAction("&Save Current")
+        self.save_action.setIcon(QIcon("icons/save-current.png"))
+        self.save_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
+        self.save_action.triggered.connect(lambda: print("SAVE!"))
 
         file_menu = self.menuBar().addMenu("&File")
         file_menu.addAction(self.open_action)
+        file_menu.addAction(self.save_action)
         file_menu.addSeparator()
         file_menu.addAction(self.quit_action)
 
@@ -89,11 +98,55 @@ class MainWindow(QMainWindow):
         custom_zoom.setCheckable(True)
         zoom_submenu.addAction(custom_zoom)
 
-    def openFolder(self, folder=None):
-        if folder is None:
-            folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
+    def addToolBar(self):
+        toolbar = super().addToolBar("Tools")
+        toolbar.setMovable(False)
+
+        toolbar.addAction(self.open_action)
+        toolbar.addAction(self.save_action)
+        toolbar.addSeparator()
+
+        self.zoom_fit = toolbar.addAction("Zoom to Fit")
+        self.zoom_fit.setIcon(QIcon("icons/zoom-fit.png"))
+        self.zoom_fit.triggered.connect(self.view.toggleZoomToFit)
+        self.zoom_fit.setCheckable(True)
+        zoom_in = toolbar.addAction("Zoom In")
+        zoom_in.setIcon(QIcon("icons/zoom-in.png"))
+        zoom_in.triggered.connect(partial(self.view.zoom, 10))
+        zoom_in.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Equal))
+        zoom_out = toolbar.addAction("Zoom Out")
+        zoom_out.setIcon(QIcon("icons/zoom-out.png"))
+        zoom_out.triggered.connect(partial(self.view.zoom, -10))
+        zoom_out.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Minus))
+
+        toolbar.addSeparator()
+        self.toolbox = QActionGroup(self)
+        cursor_tool = toolbar.addAction("Cursor Tool")
+        cursor_tool.setIcon(QIcon("icons/cursor.png"))
+        cursor_tool.setCheckable(True)
+        self.toolbox.addAction(cursor_tool)
+        move_tool = toolbar.addAction("Contour Tool")
+        move_tool.setIcon(QIcon("icons/move-control-point.png"))
+        move_tool.setCheckable(True)
+        self.toolbox.addAction(move_tool)
+        draw_tool = toolbar.addAction("Drawing Tool")
+        draw_tool.setIcon(QIcon("icons/draw.png"))
+        draw_tool.setCheckable(True)
+        self.toolbox.addAction(draw_tool)
+        magic_wand = toolbar.addAction("Magic Wand Tool")
+        magic_wand.setIcon(QIcon("icons/magic-wand.png"))
+        magic_wand.setCheckable(True)
+        self.toolbox.addAction(magic_wand)
+        toolbar.addSeparator()
+
+    def openFolder(self, folder):
         self.inspector.setScene(EditorScene(DataLoader(folder)))
         self.inspector.changeImage(0)
+
+    def openFolderDialog(self):
+        folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
+        if folder:
+            self.openFolder(folder)
 
     def zoomChanged(self, zoom):
         try:
@@ -109,8 +162,10 @@ class MainWindow(QMainWindow):
     def fitChanged(self, toggled_on):
         if toggled_on:
             self.statusBar().showMessage("Zoom to fit: On")
+            self.zoom_fit.setChecked(True)
         if not toggled_on:
             self.statusBar().showMessage("Zoom to fit: Off", 2000)
+            self.zoom_fit.setChecked(False)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Right:

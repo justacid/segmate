@@ -26,7 +26,7 @@ class LayerWidget(QFrame):
 
         self.button = QToolButton(self)
         self.action = QAction()
-        self.action.setIcon(QIcon("icons/visible.png"))
+        self.setIcon(True)
         self.action.triggered.connect(self.toggleVisibility)
         self.button.setDefaultAction(self.action)
         hbox.addWidget(self.button)
@@ -46,6 +46,12 @@ class LayerWidget(QFrame):
         hbox.addLayout(svbox)
         vbox.addLayout(hbox)
 
+    def setIcon(self, visible):
+        if visible:
+            self.action.setIcon(QIcon("icons/layer-visible.png"))
+        else:
+            self.action.setIcon(QIcon("icons/layer-invisible.png"))
+
     def mousePressEvent(self, event):
         self.is_active = not self.is_active
         self.setHighlight(self.is_active)
@@ -64,10 +70,8 @@ class LayerWidget(QFrame):
 
         if self.opacity == 0:
             self.is_visible = False
-            self.action.setIcon(QIcon("icons/invisible.png"))
-        else:
-            self.action.setIcon(QIcon("icons/visible.png"))
 
+        self.setIcon(self.is_visible)
         self.opacity_changed.emit(self.opacity)
 
     def toggleVisibility(self):
@@ -77,9 +81,7 @@ class LayerWidget(QFrame):
         value = 0
         if self.is_visible:
             value = 100 if self.opacity == 0 else int(self.opacity * 100)
-            self.action.setIcon(QIcon("icons/visible.png"))
-        else:
-            self.action.setIcon(QIcon("icons/invisible.png"))
+        self.setIcon(self.is_visible)
 
         self.slider.setValue(value)
         self.opacity_changed.emit(value / 100)
