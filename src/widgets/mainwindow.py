@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.view)
 
         self.inspector = InspectorWidget()
-        self.inspector.scene_changed.connect(lambda x: self.view.setScene(x))
+        self.inspector.scene_changed.connect(self.sceneChanged)
 
         self.dock = QDockWidget("Inspector")
         self.dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
@@ -49,6 +49,17 @@ class MainWindow(QMainWindow):
         size = screen.width() * 0.75, screen.height() * 0.75
         self.resize(*size)
         self.move((screen.width() - size[0]) / 2, (screen.height() - size[1]) / 2)
+
+    def sceneChanged(self, scene):
+        self.view.setScene(scene)
+        self.edit_menu.removeAction(self.undo_action)
+        self.edit_menu.removeAction(self.redo_action)
+        self.undo_action = scene.createUndoAction()
+        self.undo_action.setShortcuts(QKeySequence.Undo)
+        self.redo_action = scene.createRedoAction()
+        self.redo_action.setShortcuts(QKeySequence.Redo)
+        self.edit_menu.addAction(self.undo_action)
+        self.edit_menu.addAction(self.redo_action)
 
     def addMenu(self):
         self.quit_action = QAction("&Quit")
@@ -70,6 +81,14 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self.save_action)
         file_menu.addSeparator()
         file_menu.addAction(self.quit_action)
+
+        self.edit_menu = self.menuBar().addMenu("&Edit")
+        self.undo_action = QAction("Undo")
+        self.undo_action.setEnabled(False)
+        self.redo_action = QAction("Redo")
+        self.redo_action.setEnabled(False)
+        self.edit_menu.addAction(self.undo_action)
+        self.edit_menu.addAction(self.redo_action)
 
         self.fitview_action = QAction("Zoom to &Fit")
         self.fitview_action.setCheckable(True)
@@ -184,9 +203,13 @@ class MainWindow(QMainWindow):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Right:
+            self.undo_action.setEnabled(False)
+            self.redo_action.setEnabled(False)
             self.inspector.showNextImage()
             return
         elif event.key() == Qt.Key_Left:
+            self.undo_action.setEnabled(False)
+            self.redo_action.setEnabled(False)
             self.inspector.showPreviousImage()
             return
 

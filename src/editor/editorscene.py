@@ -15,6 +15,7 @@ class EditorScene(QGraphicsScene):
         super().__init__()
         self.layers = []
         self.loader = data_loader
+        self.undo_stack = QUndoStack()
         self.opacities = [1.0] * len(data_loader)
 
     def numImages(self):
@@ -31,6 +32,12 @@ class EditorScene(QGraphicsScene):
         self.opacities[layer_idx] = value
         self.opacity_changed.emit(layer_idx, value)
 
+    def createUndoAction(self):
+        return self.undo_stack.createUndoAction(self)
+
+    def createRedoAction(self):
+        return self.undo_stack.createRedoAction(self)
+
     def setActive(self, layer_idx):
         for i, layer in enumerate(self.layers):
             if i == layer_idx:
@@ -46,11 +53,12 @@ class EditorScene(QGraphicsScene):
 
     def load(self, image_idx):
         self.clear()
+        self.undo_stack.clear()
 
         self.layers = []
         for i, layer in enumerate(self.loader[image_idx]):
             pen_colors = self.loader.pen_colors
-            item = EditorItem(layer, QColor(*pen_colors[i]))
+            item = EditorItem(layer, self.undo_stack, QColor(*pen_colors[i]))
             self.addItem(item)
             self.layers.append(item)
 

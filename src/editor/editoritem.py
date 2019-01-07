@@ -7,10 +7,12 @@ from editor.tools import NoneTool, DrawTool
 
 class EditorItem(QGraphicsItem):
 
-    def __init__(self, image, pen_color=None):
+    def __init__(self, image, undo_stack, pen_color=None):
         super().__init__()
         self.image = image
         self.pen_color = pen_color
+        self.undo_stack = undo_stack
+        self.undo_stack.indexChanged.connect(lambda _: self.update())
         self.tool = NoneTool(self.image)
 
     def paint(self, painter, option, widget):
@@ -29,6 +31,7 @@ class EditorItem(QGraphicsItem):
         elif tool == "draw_tool":
             self.tool = DrawTool(self.image)
             self.tool.penColor = self.pen_color
+            self.tool.setUndoStack(self.undo_stack)
             self.tool.setStatusCallback(status_callback)
 
         self.setCursor(self.tool.cursor())
@@ -40,6 +43,7 @@ class EditorItem(QGraphicsItem):
                 super().mousePressEvent(event)
         else:
             super().mousePressEvent(event)
+        self.update()
 
     def mouseReleaseEvent(self, event):
         if self.tool:

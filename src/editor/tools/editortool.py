@@ -9,6 +9,7 @@ class EditorTool(ABC):
         self.image = image
         self.canvas = util.to_qimage(self.image)
         self._pen_color = None
+        self._undo_stack = None
         self.status_callback = None
 
     @abstractmethod
@@ -26,6 +27,13 @@ class EditorTool(ABC):
     @penColor.setter
     def penColor(self, color):
         self._pen_color = color
+
+    def addUndoCommand(self, command):
+        if self._undo_stack:
+            self._undo_stack.push(command)
+
+    def setUndoStack(self, undo_stack):
+        self._undo_stack = undo_stack
 
     def setStatusCallback(self, func):
         self.status_callback = func
