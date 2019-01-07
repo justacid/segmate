@@ -52,14 +52,7 @@ class MainWindow(QMainWindow):
 
     def sceneChanged(self, scene):
         self.view.setScene(scene)
-        self.edit_menu.removeAction(self.undo_action)
-        self.edit_menu.removeAction(self.redo_action)
-        self.undo_action = scene.createUndoAction()
-        self.undo_action.setShortcuts(QKeySequence.Undo)
-        self.redo_action = scene.createRedoAction()
-        self.redo_action.setShortcuts(QKeySequence.Redo)
-        self.edit_menu.addAction(self.undo_action)
-        self.edit_menu.addAction(self.redo_action)
+        self.addEditMenu(scene)
 
     def addMenu(self):
         self.quit_action = QAction("&Quit")
@@ -89,6 +82,7 @@ class MainWindow(QMainWindow):
         self.redo_action.setEnabled(False)
         self.edit_menu.addAction(self.undo_action)
         self.edit_menu.addAction(self.redo_action)
+        self.edit_menu.addSeparator()
 
         self.fitview_action = QAction("Zoom to &Fit")
         self.fitview_action.setCheckable(True)
@@ -117,6 +111,15 @@ class MainWindow(QMainWindow):
         custom_zoom.setCheckable(True)
         zoom_submenu.addAction(custom_zoom)
 
+    def addEditMenu(self, scene):
+        self.edit_menu.clear()
+        self.undo_action = scene.createUndoAction()
+        self.undo_action.setShortcuts(QKeySequence.Undo)
+        self.redo_action = scene.createRedoAction()
+        self.redo_action.setShortcuts(QKeySequence.Redo)
+        self.edit_menu.addAction(self.undo_action)
+        self.edit_menu.addAction(self.redo_action)
+
     def addToolBar(self):
         toolbar = super().addToolBar("Tools")
         toolbar.setMovable(False)
@@ -139,33 +142,42 @@ class MainWindow(QMainWindow):
         zoom_out.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Minus))
 
         toolbar.addSeparator()
-        self.toolbox = QActionGroup(self)
+        tools_menu = self.menuBar().addMenu("&Tools")
+        toolbox = QActionGroup(self)
+
         cursor_tool = toolbar.addAction("Cursor Tool")
         cursor_tool.setIcon(QIcon("icons/cursor.png"))
         cursor_tool.setCheckable(True)
         cursor_tool.setChecked(True)
         cursor_tool.triggered.connect(partial(self.setTool, "cursor_tool"))
         cursor_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_1))
-        self.toolbox.addAction(cursor_tool)
+        toolbox.addAction(cursor_tool)
+        tools_menu.addAction(cursor_tool)
+
         move_tool = toolbar.addAction("Contour Tool")
         move_tool.setIcon(QIcon("icons/move-control-point.png"))
         move_tool.setCheckable(True)
         move_tool.triggered.connect(partial(self.setTool, "move_tool"))
         move_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_2))
-        self.toolbox.addAction(cursor_tool)
-        self.toolbox.addAction(move_tool)
+        toolbox.addAction(move_tool)
+        tools_menu.addAction(move_tool)
+
         draw_tool = toolbar.addAction("Drawing Tool")
         draw_tool.setIcon(QIcon("icons/draw.png"))
         draw_tool.setCheckable(True)
         draw_tool.triggered.connect(partial(self.setTool, "draw_tool"))
         draw_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_3))
-        self.toolbox.addAction(draw_tool)
+        toolbox.addAction(draw_tool)
+        tools_menu.addAction(draw_tool)
+
         magic_wand = toolbar.addAction("Magic Wand Tool")
         magic_wand.setIcon(QIcon("icons/magic-wand.png"))
         magic_wand.setCheckable(True)
         magic_wand.triggered.connect(partial(self.setTool, "magicwand_tool"))
         magic_wand.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_4))
-        self.toolbox.addAction(magic_wand)
+        toolbox.addAction(magic_wand)
+        tools_menu.addAction(magic_wand)
+
         toolbar.addSeparator()
 
     def setTool(self, tool):
