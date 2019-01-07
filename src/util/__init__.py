@@ -1,1 +1,1 @@
-from .toqimage import to_qimage
+from .qimage import to_qimage, from_qimage

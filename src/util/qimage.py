@@ -33,3 +33,27 @@ def to_qimage(arr, copy=False):
 
     qimage = QImage(arr.data, *shape, stride, formats[cdim])
     return qimage.copy() if copy else qimage
+
+
+def from_qimage(image):
+    """Convert QImage object to a numpy array
+
+    The QImage is first converted to a color image with alpha channel,
+    therefore the result will always be a numpy array of shape [height, width, 4].
+
+    Args:
+        image: A valid QImage
+
+    Returns:
+        Numpy array with RGBA image data.
+    """
+    if image is None:
+        raise ValueError("The argument 'image' can not be 'None'.")
+
+    image = image.convertToFormat(QImage.Format_RGBA8888)
+    width, height = image.width(), image.height()
+
+    image_ptr = image.bits()
+    image_ptr.setsize(height * width * 4)
+
+    return np.frombuffer(ptr, np.uint8).reshape((height, width, 4))
