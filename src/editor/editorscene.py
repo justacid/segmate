@@ -49,7 +49,7 @@ class EditorScene(QGraphicsScene):
 
         self.layers = []
         for i, layer in enumerate(self.loader[image_idx]):
-            pen_colors = self.loader.penColors()
+            pen_colors = self.loader.pen_colors
             item = EditorItem(layer, QColor(*pen_colors[i]))
             self.addItem(item)
             self.layers.append(item)
