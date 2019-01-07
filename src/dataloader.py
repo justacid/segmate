@@ -36,13 +36,13 @@ class DataLoader:
 
     def loadImage(self, idx):
         path = self.root / self.folders[0] / self.files[idx]
-        return util.to_qimage(io.imread(path))
+        return io.imread(path)
 
     def loadMask(self, idx, folder, color=(255, 255, 255)):
         path = self.root / folder / self.files[idx]
         mask = io.imread(path, as_gray=True)
         image = self.makeAlpha(mask, color=color)
-        return util.to_qimage(image)
+        return image
 
     def makeAlpha(self, image, color=(255, 255, 255)):
         alpha = np.zeros([*image.shape, 4], dtype=np.uint8)

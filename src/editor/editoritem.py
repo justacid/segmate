@@ -2,55 +2,59 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
+from editor.tools import NoneTool, DrawTool
+
 
 class EditorItem(QGraphicsItem):
 
-    def __init__(self, data, pen_color=None):
+    def __init__(self, image, pen_color=None):
         super().__init__()
+        self.image = image
         self.pen_color = pen_color
-        self.image = data
-        self.last_point = None
-        self.draw = False
+        self.tool = NoneTool(self.image)
 
     def paint(self, painter, option, widget):
-        painter.drawImage(0, 0, self.image)
+        canvas = self.tool.paint()
+        painter.drawImage(0, 0, canvas)
 
     def boundingRect(self):
-        return self.image.rect()
+        return self.tool.canvas.rect()
 
     def setActive(self, active):
         self.setAcceptedMouseButtons(Qt.LeftButton if active else 0)
 
+    def setTool(self, tool, status_callback=None):
+        if tool == "cursor_tool":
+            self.tool = NoneTool(self.image, self.pen_color)
+        elif tool == "draw_tool":
+            self.tool = DrawTool(self.image)
+            self.tool.penColor = self.pen_color
+            self.tool.setStatusCallback(status_callback)
+
+        self.setCursor(self.tool.cursor())
+
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.last_point = event.pos()
-            self.draw = True
-            return
-        super().mousePressEvent(event)
+        if self.tool:
+            handled = self.tool.mousePressEvent(event)
+            if not handled:
+                super().mousePressEvent(event)
+        else:
+            super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton and self.draw:
-            self.drawLine(event.pos())
-            self.draw = False
-            return
-        super().mouseReleaseEvent(event)
+        if self.tool:
+            handled = self.tool.mouseReleaseEvent(event)
+            if not handled:
+                super().mouseReleaseEvent(event)
+        else:
+            super().mouseReleaseEvent(event)
+        self.update()
 
     def mouseMoveEvent(self, event):
-        if event.buttons() & Qt.LeftButton and self.draw:
-            self.drawLine(event.pos())
-            return
-        super().mouseMoveEvent(event)
-
-    def drawLine(self, end_point):
-        painter = QPainter(self.image)
-
-        pen = QPen()
-        pen.setCapStyle(Qt.RoundCap)
-        if self.pen_color:
-            pen.setColor(self.pen_color)
-        pen.setWidth(2)
-        painter.setPen(pen)
-
-        painter.drawLine(self.last_point, end_point)
+        if self.tool:
+            handled = self.tool.mouseMoveEvent(event)
+            if not handled:
+                super().mouseMoveEvent(event)
+        else:
+            super().mouseMoveEvent(event)
         self.update()
-        self.last_point = end_point

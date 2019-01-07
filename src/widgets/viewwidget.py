@@ -65,14 +65,14 @@ class ViewWidget(QGraphicsView):
         if event.button() == Qt.RightButton:
             self._pan = True
             self._pan_start = event.pos()
-            self.setCursor(Qt.ClosedHandCursor)
+            QApplication.setOverrideCursor(Qt.ClosedHandCursor)
             return
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.RightButton:
             self._pan = False
-            self.setCursor(Qt.ArrowCursor)
+            QApplication.restoreOverrideCursor()
             return
         super().mouseReleaseEvent(event)
 
