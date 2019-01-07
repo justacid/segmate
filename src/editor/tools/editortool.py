@@ -7,7 +7,7 @@ class EditorTool(ABC):
 
     def __init__(self, image):
         self.image = image
-        self.canvas = util.to_qimage(self.raw_image)
+        self.canvas = util.to_qimage(self.image)
         self._pen_color = None
         self.status_callback = None
 
