@@ -25,7 +25,7 @@ class EditorItem(QGraphicsItem):
 
     def setTool(self, tool, status_callback=None):
         if tool == "cursor_tool":
-            self.tool = NoneTool(self.image, self.pen_color)
+            self.tool = NoneTool(self.image)
         elif tool == "draw_tool":
             self.tool = DrawTool(self.image)
             self.tool.penColor = self.pen_color
