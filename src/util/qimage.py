@@ -13,7 +13,7 @@ def to_qimage(arr, copy=False):
         An QImage object.
     """
     if arr is None:
-        return QImage()
+        raise ValueError("The argument 'arr' can not be 'None'.")
 
     if len(arr.shape) not in (2, 3):
         raise TypeError(f"Unsupported image format.")
@@ -36,10 +36,7 @@ def to_qimage(arr, copy=False):
 
 
 def from_qimage(image):
-    """Convert QImage object to a numpy array
-
-    The QImage is first converted to a color image with alpha channel,
-    therefore the result will always be a numpy array of shape [height, width, 4].
+    """Convert QImage object to a numpy array. Always copies.
 
     Args:
         image: A valid QImage
@@ -50,10 +47,15 @@ def from_qimage(image):
     if image is None:
         raise ValueError("The argument 'image' can not be 'None'.")
 
-    image = image.convertToFormat(QImage.Format_RGBA8888)
     width, height = image.width(), image.height()
 
-    image_ptr = image.bits()
-    image_ptr.setsize(height * width * 4)
+    dims = {
+        QImage.Format_Grayscale8: [height, width],
+        QImage.Format_RGB888: [height, width, 3],
+        QImage.Format_RGBA8888: [height, width, 4]
+    }
 
-    return np.frombuffer(ptr, np.uint8).reshape((height, width, 4))
+    if image.format() not in dims:
+        raise TypeError("Unsupported image format.")
+
+    return np.array(image.constBits()).reshape(dims[image.format()])
