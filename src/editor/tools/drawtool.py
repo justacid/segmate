@@ -2,6 +2,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
+from util import from_qimage
 from .editortool import EditorTool
 
 
@@ -25,75 +26,71 @@ class DrawUndoCommand(QUndoCommand):
 
 class DrawTool(EditorTool):
 
-    def __init__(self, image):
-        super().__init__(image)
+    def __init__(self, canvas):
+        super().__init__(canvas)
+        self._last_point = None
+        self._draw = False
+        self._have_undo_copy = False
+        self._undo_copy = None
 
-        self.last_point = None
-        self.draw = False
-        self.erase = False
-        self.have_undo_copy = False
-        self.undo_copy = None
-
-    def paint(self):
+    def paint_canvas(self):
         return self.canvas
 
+    def paint_result(self):
+        return self.canvas
+
+    @property
     def cursor(self):
         return QCursor(QPixmap("icons/dot-cursor.png"))
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            if not self.have_undo_copy:
-                self.undo_copy = QImage(self.canvas)
-                self.have_undo_copy = True
-            self.last_point = event.pos()
-            self.draw = True
-            if event.modifiers() & Qt.ControlModifier:
-                self.erase = True
-                self.sendStatusMessage("Eraser: On")
+    def mouse_pressed(self, event):
+        if event.buttons() & (Qt.LeftButton | Qt.RightButton):
+            if not self._have_undo_copy:
+                self._undo_copy = QImage(self.canvas)
+                self._have_undo_copy = True
+            self._last_point = event.pos()
+            self._draw = True
             return True
         return False
 
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton and self.draw:
-            self.drawLine(event.pos())
-            self.draw = False
-            if self.erase:
-                self.sendStatusMessage("Eraser: Off")
-                self.erase = False
-            if self.have_undo_copy:
-                draw_command = DrawUndoCommand(self.undo_copy, self.canvas)
-                draw_command.triggered_undo = self.undo
-                draw_command.triggered_redo = self.redo
-                self.addUndoCommand(draw_command)
-                self.have_undo_copy = False
+    def mouse_released(self, event):
+        if (event.button() == Qt.LeftButton or event.button() == Qt.RightButton) and self._draw:
+            self.draw_line(event.pos(), event.button() == Qt.RightButton)
+            self._draw = False
+            if self._have_undo_copy:
+                draw_command = DrawUndoCommand(self._undo_copy, self.canvas)
+                draw_command.triggered_undo = self.undo_command
+                draw_command.triggered_redo = self.redo_command
+                self.push_undo_command(draw_command)
+                self._have_undo_copy = False
             return True
         return False
 
-    def mouseMoveEvent(self, event):
-        if event.buttons() & Qt.LeftButton and self.draw:
-            self.drawLine(event.pos())
+    def mouse_moved(self, event):
+        if event.buttons() & (Qt.LeftButton | Qt.RightButton) and self._draw:
+            self.draw_line(event.pos(), event.buttons() & Qt.RightButton)
             return True
         return False
 
-    def drawLine(self, end_point):
+    def draw_line(self, end_point, erase):
         painter = QPainter(self.canvas)
 
         pen = QPen()
         pen.setCapStyle(Qt.RoundCap)
-        if self.erase:
+        if erase:
             painter.setCompositionMode(QPainter.CompositionMode_Clear)
         else:
             painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-        pen.setColor(self.penColor)
+        pen.setColor(self.pen_color)
         pen.setWidth(2)
         painter.setPen(pen)
 
-        painter.drawLine(self.last_point, end_point)
-        self.last_point = end_point
+        painter.drawLine(self._last_point, end_point)
+        self._last_point = end_point
 
-    def undo(self, image):
-        self.sendStatusMessage("Undo...")
+    def undo_command(self, image):
+        self.send_status_message("Undo...")
         self.canvas = image
 
-    def redo(self, image):
+    def redo_command(self, image):
         self.canvas = image

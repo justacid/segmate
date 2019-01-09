@@ -2,43 +2,50 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from editor.tools import NoneTool, DrawTool
+from util import from_qimage, to_qimage
+from editor.tools import NoneTool, DrawTool, ContourTool
 
 
 class EditorItem(QGraphicsItem):
 
     def __init__(self, image, undo_stack, pen_color=None):
         super().__init__()
-        self.image = image
-        self.pen_color = pen_color
-        self.undo_stack = undo_stack
-        self.undo_stack.indexChanged.connect(lambda _: self.update())
-        self.tool = NoneTool(self.image)
+
+        self.tool_box = {
+            "cursor_tool": NoneTool,
+            "draw_tool": DrawTool,
+            "contour_tool": ContourTool,
+        }
+
+        self._image = image
+        self._pen_color = pen_color
+        self._undo_stack = undo_stack
+        self._undo_stack.indexChanged.connect(lambda _: self.update())
+        self._tool = self.tool_box["cursor_tool"](self._image)
 
     def paint(self, painter, option, widget):
-        canvas = self.tool.paint()
-        painter.drawImage(0, 0, canvas)
+        painter.drawImage(0, 0, self._tool.paint_canvas())
 
     def boundingRect(self):
-        return self.tool.canvas.rect()
+        return self._image.rect()
 
     def setActive(self, active):
-        self.setAcceptedMouseButtons(Qt.LeftButton if active else 0)
+        buttons = Qt.LeftButton | Qt.RightButton | Qt.MidButton
+        self.setAcceptedMouseButtons(buttons if active else 0)
 
     def setTool(self, tool, status_callback=None):
-        if tool == "cursor_tool":
-            self.tool = NoneTool(self.image)
-        elif tool == "draw_tool":
-            self.tool = DrawTool(self.image)
-            self.tool.penColor = self.pen_color
-            self.tool.setUndoStack(self.undo_stack)
-            self.tool.setStatusCallback(status_callback)
+        if tool not in self.tool_box:
+            raise IndexError(f"'{tool}'' is not a valid tool.")
 
-        self.setCursor(self.tool.cursor())
+        self._tool = self.tool_box[tool](QImage(self._tool.paint_result()))
+        self._tool.pen_color = self._pen_color
+        self._tool.undo_stack = self._undo_stack
+        self._tool.status_callback = status_callback
+        self.setCursor(self._tool.cursor)
 
     def mousePressEvent(self, event):
-        if self.tool:
-            handled = self.tool.mousePressEvent(event)
+        if self._tool:
+            handled = self._tool.mouse_pressed(event)
             if not handled:
                 super().mousePressEvent(event)
         else:
@@ -46,8 +53,8 @@ class EditorItem(QGraphicsItem):
         self.update()
 
     def mouseReleaseEvent(self, event):
-        if self.tool:
-            handled = self.tool.mouseReleaseEvent(event)
+        if self._tool:
+            handled = self._tool.mouse_released(event)
             if not handled:
                 super().mouseReleaseEvent(event)
         else:
@@ -55,8 +62,8 @@ class EditorItem(QGraphicsItem):
         self.update()
 
     def mouseMoveEvent(self, event):
-        if self.tool:
-            handled = self.tool.mouseMoveEvent(event)
+        if self._tool:
+            handled = self._tool.mouse_moved(event)
             if not handled:
                 super().mouseMoveEvent(event)
         else:

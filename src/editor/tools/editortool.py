@@ -1,52 +1,78 @@
 from abc import ABC, abstractmethod
 
-import util
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QUndoStack
+from PySide2.QtGui import QImage
+from util import to_qimage
 
 
 class EditorTool(ABC):
 
     def __init__(self, image):
-        self.image = image
-        self.canvas = util.to_qimage(self.image)
+        self._canvas = QImage(image)
         self._pen_color = None
         self._undo_stack = None
-        self.status_callback = None
+        self._status_callback = None
 
     @abstractmethod
-    def paint(self):
+    def paint_canvas(self):
         pass
 
     @abstractmethod
-    def cursor(self):
+    def paint_result(self):
         pass
 
-    @property
-    def penColor(self):
-        return self._pen_color
-
-    @penColor.setter
-    def penColor(self, color):
-        self._pen_color = color
-
-    def addUndoCommand(self, command):
+    def push_undo_command(self, command):
         if self._undo_stack:
             self._undo_stack.push(command)
 
-    def setUndoStack(self, undo_stack):
-        self._undo_stack = undo_stack
+    def send_status_message(self, message):
+        if self._status_callback:
+            self._status_callback(message)
 
-    def setStatusCallback(self, func):
-        self.status_callback = func
-
-    def sendStatusMessage(self, message):
-        if self.status_callback:
-            self.status_callback(message)
-
-    def mousePressEvent(self, event):
+    def mouse_pressed(self, event):
         return False
 
-    def mouseReleaseEvent(self, event):
+    def mouse_released(self, event):
         return False
 
-    def mouseMoveEvent(self, event):
+    def mouse_moved(self, event):
         return False
+
+    @property
+    def canvas(self):
+        return self._canvas
+
+    @canvas.setter
+    def canvas(self, canvas_):
+        self._canvas = canvas_
+
+    @property
+    def cursor(self):
+        return Qt.ArrowCursor
+
+    @property
+    def pen_color(self):
+        return self._pen_color
+
+    @pen_color.setter
+    def pen_color(self, color):
+        self._pen_color = color
+
+    @property
+    def undo_stack(self):
+        return self._undo_stack
+
+    @undo_stack.setter
+    def undo_stack(self, stack):
+        if not isinstance(stack, QUndoStack):
+            raise TypeError("Stack argument must be 'QUndoStack'.")
+        self._undo_stack = stack
+
+    @property
+    def status_callback(self):
+        return self._status_callback
+
+    @status_callback.setter
+    def status_callback(self, func):
+        self._status_callback = func

@@ -16,7 +16,8 @@ class EditorScene(QGraphicsScene):
         self.layers = []
         self.loader = data_loader
         self.undo_stack = QUndoStack()
-        self.opacities = [1.0] * len(data_loader)
+        self.opacities = [1.0] * len(data_loader.folders)
+        self.active_layer = len(data_loader.folders) - 1
 
     def numImages(self):
         return 0 if not self.loader else len(self.loader)
@@ -39,6 +40,7 @@ class EditorScene(QGraphicsScene):
         return self.undo_stack.createRedoAction(self)
 
     def setActive(self, layer_idx):
+        self.active_layer = layer_idx
         for i, layer in enumerate(self.layers):
             if i == layer_idx:
                 layer.setActive(True)
