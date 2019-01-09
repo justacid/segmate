@@ -63,28 +63,31 @@ class ViewWidget(QGraphicsView):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
-            self._pan = True
-            self._pan_start = event.pos()
-            QApplication.setOverrideCursor(Qt.ClosedHandCursor)
-            return
+            if event.modifiers() & Qt.ControlModifier:
+                self._pan = True
+                self._pan_start = event.pos()
+                QApplication.setOverrideCursor(Qt.ClosedHandCursor)
+                return
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
+        QApplication.restoreOverrideCursor()
         if event.button() == Qt.RightButton:
-            self._pan = False
-            QApplication.restoreOverrideCursor()
-            return
+            if event.modifiers() & Qt.ControlModifier:
+                self._pan = False
+                return
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
         if self._pan and event.buttons() & Qt.RightButton:
-            delta = QPointF(event.pos()) - self._pan_start
-            hs = self.horizontalScrollBar().value()
-            vs = self.verticalScrollBar().value()
-            self.horizontalScrollBar().setValue(hs - delta.x())
-            self.verticalScrollBar().setValue(vs - delta.y())
-            self._pan_start = event.pos()
-            return
+            if event.modifiers() & Qt.ControlModifier:
+                delta = QPointF(event.pos()) - self._pan_start
+                hs = self.horizontalScrollBar().value()
+                vs = self.verticalScrollBar().value()
+                self.horizontalScrollBar().setValue(hs - delta.x())
+                self.verticalScrollBar().setValue(vs - delta.y())
+                self._pan_start = event.pos()
+                return
         super().mouseMoveEvent(event)
 
     def keyPressEvent(self, event):
