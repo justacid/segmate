@@ -34,6 +34,7 @@ class LayerWidget(QFrame):
         svbox = QVBoxLayout()
         self.label = QLabel(self)
         self.label.setText(text)
+        self.label.setStyleSheet("border: 0;")
         svbox.addWidget(self.label)
 
         self.slider = QSlider(self)

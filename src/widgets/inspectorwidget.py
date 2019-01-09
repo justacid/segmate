@@ -7,7 +7,7 @@ from .layerwidget import LayerWidget
 
 class InspectorWidget(QWidget):
 
-    image_changed = Signal(int)
+    image_changed = Signal()
     scene_changed = Signal(EditorScene)
 
     def __init__(self):
@@ -34,10 +34,12 @@ class InspectorWidget(QWidget):
 
     def changeImage(self, idx):
         self.current_image = idx
+        active_layer = self.scene.active_layer
         self.scene.load(idx)
         num_images = self.scene.numImages()
         self.slider_box.setTitle(f"Image {idx+1}/{num_images}")
-        self.image_changed.emit(idx)
+        self.highlightLayer(active_layer)
+        self.image_changed.emit()
 
     def clearLayers(self):
         while self.layers.count():
@@ -49,7 +51,6 @@ class InspectorWidget(QWidget):
         self.clearLayers()
         for i, (layer, name) in enumerate(zip(self.scene.layers, self.scene.loader.folders)):
             item = self.addLayerWidget(i, layer, name)
-        item.setHighlight(True)
         self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
     def addLayerWidget(self, idx, layer, name=""):
@@ -74,6 +75,7 @@ class InspectorWidget(QWidget):
         dock_layout = QVBoxLayout(self)
 
         self.slider_box = QGroupBox("Images")
+        self.slider_box.setStyleSheet("border-radius: 0px;")
         hlayout = QHBoxLayout(self.slider_box)
 
         arrow_left = QToolButton(self)
@@ -102,9 +104,11 @@ class InspectorWidget(QWidget):
         dock_layout.addWidget(self.slider_box)
 
         layer_group = QGroupBox(self)
-        layer_group.setTitle("Layers")
+        layer_group.setTitle("Layer")
+        layer_group.setStyleSheet("border-radius: 0px;")
+
         self.layers = QVBoxLayout(layer_group)
         self.layers.setSpacing(2)
-        self.layers.setContentsMargins(2, 2, 2, 2)
+        self.layers.setContentsMargins(2, 6, 2, 2)
         self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
         dock_layout.addWidget(layer_group)

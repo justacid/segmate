@@ -1,6 +1,6 @@
 from functools import partial
 
-from PySide2.QtCore import Qt
+from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
@@ -14,6 +14,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.active_tool = "cursor_tool"
 
         self.setupUi()
         self.setPosition()
@@ -36,10 +37,11 @@ class MainWindow(QMainWindow):
 
         self.inspector = InspectorWidget()
         self.inspector.scene_changed.connect(self.sceneChanged)
+        self.inspector.image_changed.connect(self.retainActiveTool)
 
         self.dock = QDockWidget("Inspector")
         self.dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.dock.setMinimumSize(250, 344)
+        self.dock.setMinimumWidth(275)
         self.dock.setWidget(self.inspector)
 
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
@@ -53,6 +55,9 @@ class MainWindow(QMainWindow):
     def sceneChanged(self, scene):
         self.view.setScene(scene)
         self.addEditMenu(scene)
+
+    def retainActiveTool(self):
+        self.setTool(self.active_tool)
 
     def addMenu(self):
         self.quit_action = QAction("&Quit")
@@ -69,6 +74,7 @@ class MainWindow(QMainWindow):
         self.save_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
         self.save_action.triggered.connect(lambda: print("SAVE!"))
 
+        self.menuBar().setStyleSheet("QMenu::icon { padding: 5px; }")
         file_menu = self.menuBar().addMenu("&File")
         file_menu.addAction(self.open_action)
         file_menu.addAction(self.save_action)
@@ -122,7 +128,7 @@ class MainWindow(QMainWindow):
 
     def addToolBar(self):
         toolbar = super().addToolBar("Tools")
-        toolbar.setMovable(False)
+        toolbar.setIconSize(QSize(18, 18))
 
         toolbar.addAction(self.open_action)
         toolbar.addAction(self.save_action)
@@ -154,21 +160,21 @@ class MainWindow(QMainWindow):
         toolbox.addAction(cursor_tool)
         tools_menu.addAction(cursor_tool)
 
-        move_tool = toolbar.addAction("Contour Tool")
-        move_tool.setIcon(QIcon("icons/move-control-point.png"))
-        move_tool.setCheckable(True)
-        move_tool.triggered.connect(partial(self.setTool, "move_tool"))
-        move_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_2))
-        toolbox.addAction(move_tool)
-        tools_menu.addAction(move_tool)
-
         draw_tool = toolbar.addAction("Drawing Tool")
         draw_tool.setIcon(QIcon("icons/draw.png"))
         draw_tool.setCheckable(True)
         draw_tool.triggered.connect(partial(self.setTool, "draw_tool"))
-        draw_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_3))
+        draw_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_2))
         toolbox.addAction(draw_tool)
         tools_menu.addAction(draw_tool)
+
+        move_tool = toolbar.addAction("Contour Tool")
+        move_tool.setIcon(QIcon("icons/move-control-point.png"))
+        move_tool.setCheckable(True)
+        move_tool.triggered.connect(partial(self.setTool, "contour_tool"))
+        move_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_3))
+        toolbox.addAction(move_tool)
+        tools_menu.addAction(move_tool)
 
         magic_wand = toolbar.addAction("Magic Wand Tool")
         magic_wand.setIcon(QIcon("icons/magic-wand.png"))
@@ -181,9 +187,11 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
 
     def setTool(self, tool):
+        self.active_tool = tool
         for layer in self.view.scene().layers:
             callback = lambda msg: self.statusBar().showMessage(msg, 2000)
             layer.setTool(tool, status_callback=callback)
+        self.view.scene().update()
 
     def openFolder(self, folder):
         self.inspector.setScene(EditorScene(DataLoader(folder)))
