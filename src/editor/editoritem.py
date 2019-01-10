@@ -71,6 +71,11 @@ class EditorItem(QGraphicsItem):
             super().mouseMoveEvent(event)
         self.update()
 
+    def tabletEvent(self, event, pos):
+        if self._tool:
+            self._tool.tablet_event(event, pos)
+        self.update()
+
     def undoToolCommand(self, image):
         if self._tool:
             self._tool.canvas = image

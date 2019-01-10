@@ -66,6 +66,9 @@ class EditorTool(ABC):
     def mouse_moved(self, event):
         return False
 
+    def tablet_event(self, event, pos):
+        pass
+
     @property
     def parent(self):
         return self._parent
@@ -84,7 +87,7 @@ class EditorTool(ABC):
 
     @property
     def cursor(self):
-        return Qt.ArrowCursor
+        return QCursor(Qt.ArrowCursor)
 
     @property
     def pen_color(self):

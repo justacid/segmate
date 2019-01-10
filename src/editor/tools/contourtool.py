@@ -12,8 +12,8 @@ import util
 
 class ContourTool(EditorTool):
 
-    def __init__(self, image):
-        super().__init__(image)
+    def __init__(self, image, parent):
+        super().__init__(image, parent)
         self._snapshot = QImage(image)
 
     def paint_canvas(self):

@@ -21,12 +21,18 @@ class BucketFillTool(EditorTool):
 
     def mouse_pressed(self, event):
         if event.button() == Qt.LeftButton:
-            mouse_pos = event.pos()
-            data = from_qimage(self.canvas)
-            seed = [mouse_pos.y(), mouse_pos.x()]
-            filled = to_qimage(self.flood_fill(data, seed))
-            self.push_undo_snapshot(self.canvas, filled, undo_text="Bucket Fill")
-            self.canvas = filled
+            self.fill_image(event.pos())
+
+    def tablet_event(self, event, pos):
+        if event.type() == QEvent.TabletPress and event.button() == Qt.LeftButton:
+            self.fill_image(pos)
+
+    def fill_image(self, pos):
+        data = from_qimage(self.canvas)
+        seed = [pos.y(), pos.x()]
+        filled = to_qimage(self.flood_fill(data, seed))
+        self.push_undo_snapshot(self.canvas, filled, undo_text="Bucket Fill")
+        self.canvas = filled
 
     def flood_fill(self, image, seed):
         if len(image.shape) == 2:
