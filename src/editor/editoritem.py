@@ -22,7 +22,7 @@ class EditorItem(QGraphicsItem):
         self._pen_color = pen_color
         self._undo_stack = undo_stack
         self._undo_stack.indexChanged.connect(lambda _: self.update())
-        self._tool = self.tool_box["cursor_tool"](self._image)
+        self._tool = self.tool_box["cursor_tool"](self._image, self)
 
     def paint(self, painter, option, widget):
         painter.drawImage(0, 0, self._tool.paint_canvas())
@@ -38,7 +38,7 @@ class EditorItem(QGraphicsItem):
         if tool not in self.tool_box:
             raise IndexError(f"'{tool}'' is not a valid tool.")
 
-        self._tool = self.tool_box[tool](QImage(self._tool.paint_result()))
+        self._tool = self.tool_box[tool](QImage(self._tool.paint_result()), self)
         self._tool.pen_color = self._pen_color
         self._tool.undo_stack = self._undo_stack
         self._tool.status_callback = status_callback
@@ -70,3 +70,23 @@ class EditorItem(QGraphicsItem):
         else:
             super().mouseMoveEvent(event)
         self.update()
+
+    def undoToolCommand(self, image):
+        if self._tool:
+            self._tool.canvas = image
+            if self._tool.status_callback:
+                if self._tool.undo_stack:
+                    undo_text = f"'{self._tool.undo_stack.undoText()}'"
+                else:
+                    undo_text = ""
+                self._tool.send_status_message(f"Undo {undo_text}")
+
+    def redoToolCommand(self, image):
+        if self._tool:
+            self._tool.canvas = image
+            if self._tool.status_callback:
+                if self._tool.undo_stack:
+                    redo_text = f"'{self._tool.undo_stack.redoText()}'"
+                else:
+                    redo_text = ""
+                self._tool.send_status_message(f"Redo {redo_text}")

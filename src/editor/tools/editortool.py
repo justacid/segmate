@@ -1,15 +1,36 @@
 from abc import ABC, abstractmethod
 
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QUndoStack
-from PySide2.QtGui import QImage
+from PySide2.QtCore import *
+from PySide2.QtWidgets import *
+from PySide2.QtGui import *
 from util import to_qimage
+
+
+class EditorUndoCommand(QUndoCommand):
+
+    def __init__(self, snapshot, modified):
+        super().__init__()
+
+        self._snapshot = QImage(snapshot)
+        self._modified = QImage(modified)
+
+        self.undo_triggered = None
+        self.redo_triggered = None
+
+    def undo(self):
+        if self.undo_triggered:
+            self.undo_triggered(QImage(self._snapshot))
+
+    def redo(self):
+        if self.redo_triggered:
+            self.redo_triggered(QImage(self._modified))
 
 
 class EditorTool(ABC):
 
-    def __init__(self, image):
+    def __init__(self, image, parent):
         self._canvas = QImage(image)
+        self._parent = parent
         self._pen_color = None
         self._undo_stack = None
         self._status_callback = None
@@ -22,9 +43,15 @@ class EditorTool(ABC):
     def paint_result(self):
         pass
 
-    def push_undo_command(self, command):
+    def push_undo_snapshot(self, snapshot, modified, *, undo_text=""):
         if self._undo_stack:
+            command = EditorUndoCommand(snapshot, modified)
+            command.setText(undo_text)
+            # a undo-command push triggers a redo - so push first, then
+            # register callbacks; this suppresses the signal on initial redo
             self._undo_stack.push(command)
+            command.undo_triggered = self._parent.undoToolCommand
+            command.redo_triggered = self._parent.redoToolCommand
 
     def send_status_message(self, message):
         if self._status_callback:
@@ -38,6 +65,14 @@ class EditorTool(ABC):
 
     def mouse_moved(self, event):
         return False
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent_):
+        self._parent = parent_
 
     @property
     def canvas(self):
