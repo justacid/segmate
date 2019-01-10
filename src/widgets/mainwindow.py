@@ -17,9 +17,9 @@ class MainWindow(QMainWindow):
         self.active_tool = "cursor_tool"
 
         self.setupUi()
-        self.setPosition()
         self.addMenu()
         self.addToolBar()
+        self.restoreWindowPosition()
 
         args = QApplication.arguments()
         if len(args) > 1:
@@ -242,3 +242,34 @@ class MainWindow(QMainWindow):
             return
 
         event.ignore()
+
+    def restoreWindowPosition(self):
+        screen = QDesktopWidget(self).availableGeometry()
+        default_size = screen.width() * 0.75, screen.height() * 0.75
+        default_pos = (screen.width() - default_size[0]) / 2, \
+            (screen.height() - default_size[1]) / 2
+
+        settings = QSettings("justacid", "Segmate")
+        settings.beginGroup("MainWindow")
+        size = settings.value("size", QSize(*default_size))
+        pos = settings.value("position", QPoint(*default_pos))
+        is_maximized = settings.value("maximized", "false")
+        settings.endGroup()
+
+        if is_maximized == "true":
+            self.setWindowState(self.windowState() | Qt.WindowMaximized)
+            return
+
+        self.resize(size)
+        self.move(pos)
+
+    def closeEvent(self, event):
+        is_maximized = self.windowState() == Qt.WindowMaximized
+        settings = QSettings("justacid", "Segmate")
+        settings.beginGroup("MainWindow")
+        if not is_maximized:
+            settings.setValue("size", self.size())
+            settings.setValue("position", self.pos())
+        settings.setValue("maximized", is_maximized)
+        settings.endGroup()
+        super().closeEvent(event)

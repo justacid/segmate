@@ -125,6 +125,10 @@ class ViewWidget(QGraphicsView):
             scene_pos = self.mapToScene(pos)
             layer.tabletEvent(event, scene_pos)
 
+    def resizeEvent(self, event):
+        self.setAlignment(Qt.AlignCenter)
+        super().resizeEvent(event)
+
     def keyPressEvent(self, event):
         event.ignore()
 
