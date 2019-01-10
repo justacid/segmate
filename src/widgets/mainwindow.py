@@ -168,11 +168,19 @@ class MainWindow(QMainWindow):
         toolbox.addAction(draw_tool)
         tools_menu.addAction(draw_tool)
 
+        bucket_tool = toolbar.addAction("Bucket Tool")
+        bucket_tool.setIcon(QIcon("icons/paint-bucket.png"))
+        bucket_tool.setCheckable(True)
+        bucket_tool.triggered.connect(partial(self.setTool, "bucket_tool"))
+        bucket_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_3))
+        toolbox.addAction(bucket_tool)
+        tools_menu.addAction(bucket_tool)
+
         move_tool = toolbar.addAction("Contour Tool")
         move_tool.setIcon(QIcon("icons/move-control-point.png"))
         move_tool.setCheckable(True)
         move_tool.triggered.connect(partial(self.setTool, "contour_tool"))
-        move_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_3))
+        move_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_4))
         toolbox.addAction(move_tool)
         tools_menu.addAction(move_tool)
 
@@ -180,7 +188,7 @@ class MainWindow(QMainWindow):
         magic_wand.setIcon(QIcon("icons/magic-wand.png"))
         magic_wand.setCheckable(True)
         magic_wand.triggered.connect(partial(self.setTool, "magicwand_tool"))
-        magic_wand.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_4))
+        magic_wand.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_5))
         toolbox.addAction(magic_wand)
         tools_menu.addAction(magic_wand)
 

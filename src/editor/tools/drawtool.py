@@ -81,7 +81,7 @@ class DrawTool(EditorTool):
             painter.setCompositionMode(QPainter.CompositionMode_Clear)
         else:
             painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-        pen.setColor(self.pen_color)
+        pen.setColor(QColor(*self.pen_color))
         pen.setWidth(2)
         painter.setPen(pen)
 

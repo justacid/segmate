@@ -3,7 +3,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 from util import from_qimage, to_qimage
-from editor.tools import NoneTool, DrawTool, ContourTool
+import editor.tools as tools
 
 
 class EditorItem(QGraphicsItem):
@@ -12,9 +12,10 @@ class EditorItem(QGraphicsItem):
         super().__init__()
 
         self.tool_box = {
-            "cursor_tool": NoneTool,
-            "draw_tool": DrawTool,
-            "contour_tool": ContourTool,
+            "bucket_tool": tools.BucketFillTool,
+            "cursor_tool": tools.NoneTool,
+            "contour_tool": tools.ContourTool,
+            "draw_tool": tools.DrawTool,
         }
 
         self._image = image
