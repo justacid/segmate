@@ -3,7 +3,8 @@ from pathlib import Path
 
 import imageio as io
 import numpy as np
-import util
+
+from segmate.util import to_qimage
 
 
 class DataLoader:
@@ -35,12 +36,12 @@ class DataLoader:
 
     def load_image(self, idx):
         path = self.root / self.folders[0] / self.files[idx]
-        return util.to_qimage(io.imread(path))
+        return to_qimage(io.imread(path))
 
     def load_mask(self, idx, folder, color):
         path = self.root / folder / self.files[idx]
         mask = io.imread(path, as_gray=True)
-        return util.to_qimage(self.make_alpha(mask, color=color))
+        return to_qimage(self.make_alpha(mask, color=color))
 
     def make_alpha(self, image, color):
         alpha = np.zeros([*image.shape, 4], dtype=np.uint8)

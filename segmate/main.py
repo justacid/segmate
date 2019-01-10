@@ -4,15 +4,10 @@ import warnings
 
 from PySide2.QtWidgets import QApplication
 from qdarkstyle import load_stylesheet
-from widgets import MainWindow
+from segmate.widgets import MainWindow
+import segmate
 
-
-MAJOR_VERSION = 0
-MINOR_VERSION = 0
-PATCH_VERSION = 1
-
-
-if __name__ == "__main__":
+def main():
     real_path = os.path.dirname(os.path.realpath(__file__))
     os.chdir(real_path)
 
@@ -23,7 +18,10 @@ if __name__ == "__main__":
         warnings.simplefilter("ignore")
         app.setStyleSheet(load_stylesheet(pyside=True))
 
-    version = f"{MAJOR_VERSION}.{MINOR_VERSION}.{PATCH_VERSION}"
-    window.setWindowTitle(f"Segmate {version}")
+    window.setWindowTitle(f"Segmate {segmate.__version__}")
     window.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()

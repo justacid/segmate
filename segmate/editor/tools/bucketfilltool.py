@@ -4,8 +4,8 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from .editortool import EditorTool
-from util import to_qimage, from_qimage
+from segmate.editor.tools.editortool import EditorTool
+from segmate.util import to_qimage, from_qimage
 
 
 class BucketFillTool(EditorTool):

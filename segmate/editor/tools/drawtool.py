@@ -2,8 +2,8 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from util import from_qimage
-from .editortool import EditorTool
+from segmate.util import from_qimage
+from segmate.editor.tools.editortool import EditorTool
 
 
 class DrawTool(EditorTool):

@@ -4,10 +4,10 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from .inspectorwidget import InspectorWidget
-from .viewwidget import ViewWidget
-from dataloader import DataLoader
-from editor import EditorScene
+from segmate.widgets.inspectorwidget import InspectorWidget
+from segmate.widgets.viewwidget import ViewWidget
+from segmate.dataloader import DataLoader
+from segmate.editor import EditorScene
 
 
 class MainWindow(QMainWindow):

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
-from util import to_qimage
+from segmate.util import to_qimage
 
 
 class EditorUndoCommand(QUndoCommand):

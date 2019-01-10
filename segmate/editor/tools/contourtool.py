@@ -6,8 +6,8 @@ import numpy as np
 from skimage.measure import find_contours
 from skimage.color import rgb2gray
 
-from .editortool import EditorTool
-import util
+from segmate.editor.tools.editortool import EditorTool
+from segmate.util import to_qimage, from_qimage
 
 
 class ContourTool(EditorTool):
@@ -17,8 +17,8 @@ class ContourTool(EditorTool):
         self._snapshot = QImage(image)
 
     def paint_canvas(self):
-        image = util.from_qimage(self.canvas)
-        image = util.to_qimage(self.draw_contours(image))
+        image = from_qimage(self.canvas)
+        image = to_qimage(self.draw_contours(image))
         return image
 
     def paint_result(self):

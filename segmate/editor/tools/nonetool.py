@@ -1,7 +1,7 @@
 from PySide2.QtCore import Qt
 
-from util import to_qimage
-from .editortool import EditorTool
+from segmate.editor.tools.editortool import EditorTool
+from segmate.util import to_qimage
 
 
 class NoneTool(EditorTool):

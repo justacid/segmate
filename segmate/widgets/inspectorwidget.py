@@ -1,8 +1,8 @@
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
-from editor import EditorScene, EditorItem
-from .layerwidget import LayerWidget
+from segmate.editor import EditorScene, EditorItem
+from segmate.widgets.layerwidget import LayerWidget
 
 
 class InspectorWidget(QWidget):

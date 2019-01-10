@@ -2,8 +2,8 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from util import from_qimage, to_qimage
-import editor.tools as tools
+from segmate.util import from_qimage, to_qimage
+import segmate.editor.tools as tools
 
 
 class EditorItem(QGraphicsItem):
