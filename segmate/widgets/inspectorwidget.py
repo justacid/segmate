@@ -1,3 +1,5 @@
+from functools import partial
+
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
@@ -14,6 +16,7 @@ class InspectorWidget(QWidget):
         super().__init__()
         self.scene = None
         self.current_image = 0
+        self._slider_active = False
         self.setupUi()
 
     def setScene(self, scene):
@@ -48,6 +51,8 @@ class InspectorWidget(QWidget):
                 child.widget().deleteLater()
 
     def addLayers(self):
+        if self._slider_active:
+            return
         self.clearLayers()
         for i, (layer, name) in enumerate(zip(self.scene.layers, self.scene.loader.folders)):
             item = self.addLayerWidget(i, layer, name)
@@ -71,6 +76,9 @@ class InspectorWidget(QWidget):
                 continue
             child.setHighlight(False)
 
+    def _enable_repaint(self, enabled):
+        self._slider_active = not enabled
+
     def setupUi(self):
         dock_layout = QVBoxLayout(self)
 
@@ -91,6 +99,8 @@ class InspectorWidget(QWidget):
         self.slider.setTickInterval(10)
         self.slider.setValue(0)
         self.slider.valueChanged.connect(self.changeImage)
+        self.slider.sliderPressed.connect(partial(self._enable_repaint, False))
+        self.slider.sliderReleased.connect(partial(self._enable_repaint, True))
         hlayout.addWidget(self.slider)
 
         arrow_right = QToolButton()
