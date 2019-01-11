@@ -223,13 +223,13 @@ class MainWindowWidget(QMainWindow):
         toolbox.addAction(move_tool)
         tools_menu.addAction(move_tool)
 
-        magic_wand = toolbar.addAction("Magic Wand Tool")
-        magic_wand.setIcon(QIcon("icons/magic-wand.png"))
-        magic_wand.setCheckable(True)
-        magic_wand.triggered.connect(partial(self._set_tool, "magicwand_tool"))
-        magic_wand.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_5))
-        toolbox.addAction(magic_wand)
-        tools_menu.addAction(magic_wand)
+        # magic_wand = toolbar.addAction("Magic Wand Tool")
+        # magic_wand.setIcon(QIcon("icons/magic-wand.png"))
+        # magic_wand.setCheckable(True)
+        # magic_wand.triggered.connect(partial(self._set_tool, "magicwand_tool"))
+        # magic_wand.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_5))
+        # toolbox.addAction(magic_wand)
+        # tools_menu.addAction(magic_wand)
 
         toolbar.addSeparator()
 
