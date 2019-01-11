@@ -3,7 +3,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 
-class ViewWidget(QGraphicsView):
+class SceneViewWidget(QGraphicsView):
 
     zoom_changed = Signal(int)
     fitview_changed = Signal(bool)
@@ -17,13 +17,6 @@ class ViewWidget(QGraphicsView):
         self._tablet_zoom = False
         self._tablet_zoom_start = QPointF(0.0, 0.0)
         self.setMouseTracking(True)
-
-    def wheelEvent(self, event):
-        if event.modifiers() & Qt.ControlModifier:
-            delta = event.angleDelta().y()
-            self.zoom(int(delta / 12.0))
-            return
-        event.ignore()
 
     def zoom(self, amount):
         if self._fit:
@@ -40,13 +33,13 @@ class ViewWidget(QGraphicsView):
         self.scale(self._scale / 100.0, self._scale / 100.0)
         self.zoom_changed.emit(self._scale)
 
-    def setZoom(self, zoom):
+    def set_zoom(self, zoom):
         self._scale = zoom
         self.resetMatrix()
         self.scale(self._scale / 100.0, self._scale / 100.0)
         self.zoom_changed.emit(self._scale)
 
-    def toggleZoomToFit(self):
+    def toggle_zoom_to_fit(self):
         self._fit = not self._fit
         if self._fit:
             self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
@@ -54,6 +47,39 @@ class ViewWidget(QGraphicsView):
             self.resetMatrix()
             self.scale(self._scale / 100, self._scale / 100.0)
         self.fitview_changed.emit(self._fit)
+
+    def _start_tablet_zoom(self, event):
+        self._tablet_zoom = True
+        self._tablet_zoom_start = event.pos()
+
+    def _move_tablet_zoom(self, event):
+        delta = QPointF(event.pos()) - self._tablet_zoom_start
+        self.zoom(-delta.y() / 50)
+
+    def _release_tablet_zoom(self, event):
+        self._tablet_zoom = False
+
+    def _start_pan(self, event):
+        self._pan = True
+        self._pan_start = event.pos()
+
+    def _release_pan(self):
+        self._pan = False
+
+    def _move_pan(self, event):
+        delta = QPointF(event.pos()) - self._pan_start
+        hs = self.horizontalScrollBar().value()
+        vs = self.verticalScrollBar().value()
+        self.horizontalScrollBar().setValue(hs - delta.x())
+        self.verticalScrollBar().setValue(vs - delta.y())
+        self._pan_start = event.pos()
+
+    def wheelEvent(self, event):
+        if event.modifiers() & Qt.ControlModifier:
+            delta = event.angleDelta().y()
+            self.zoom(int(delta / 12.0))
+            return
+        event.ignore()
 
     def resizeEvent(self, event):
         if self._fit:
@@ -131,29 +157,3 @@ class ViewWidget(QGraphicsView):
 
     def keyPressEvent(self, event):
         event.ignore()
-
-    def _start_tablet_zoom(self, event):
-        self._tablet_zoom = True
-        self._tablet_zoom_start = event.pos()
-
-    def _move_tablet_zoom(self, event):
-        delta = QPointF(event.pos()) - self._tablet_zoom_start
-        self.zoom(-delta.y() / 50)
-
-    def _release_tablet_zoom(self, event):
-        self._tablet_zoom = False
-
-    def _start_pan(self, event):
-        self._pan = True
-        self._pan_start = event.pos()
-
-    def _release_pan(self):
-        self._pan = False
-
-    def _move_pan(self, event):
-        delta = QPointF(event.pos()) - self._pan_start
-        hs = self.horizontalScrollBar().value()
-        vs = self.verticalScrollBar().value()
-        self.horizontalScrollBar().setValue(hs - delta.x())
-        self.verticalScrollBar().setValue(vs - delta.y())
-        self._pan_start = event.pos()

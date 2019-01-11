@@ -4,7 +4,7 @@ import warnings
 
 from PySide2.QtWidgets import QApplication
 from qdarkstyle import load_stylesheet
-from segmate.widgets import MainWindow
+from segmate.widgets import MainWindowWidget
 import segmate
 
 def main():
@@ -12,7 +12,7 @@ def main():
     os.chdir(real_path)
 
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = MainWindowWidget()
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

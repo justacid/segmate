@@ -50,8 +50,8 @@ class EditorTool(ABC):
             # a undo-command push triggers a redo - so push first, then
             # register callbacks; this suppresses the signal on initial redo
             self._undo_stack.push(command)
-            command.undo_triggered = self._parent.undoToolCommand
-            command.redo_triggered = self._parent.redoToolCommand
+            command.undo_triggered = self._parent.undo_tool_command
+            command.redo_triggered = self._parent.redo_tool_command
 
     def send_status_message(self, message):
         if self._status_callback:

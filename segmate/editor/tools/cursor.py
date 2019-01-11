@@ -4,7 +4,7 @@ from segmate.editor.tools.editortool import EditorTool
 from segmate.util import to_qimage
 
 
-class NoneTool(EditorTool):
+class CursorTool(EditorTool):
 
     def paint_canvas(self):
         return self.canvas

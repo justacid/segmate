@@ -4,40 +4,101 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from segmate.widgets.inspectorwidget import InspectorWidget
-from segmate.widgets.viewwidget import ViewWidget
+from segmate.widgets.inspector import InspectorWidget
+from segmate.widgets.sceneview import SceneViewWidget
 from segmate.dataloader import DataLoader
 from segmate.editor import EditorScene
 
 
-class MainWindow(QMainWindow):
+class MainWindowWidget(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.active_tool = "cursor_tool"
-
-        self.setupUi()
-        self.addMenu()
-        self.addToolBar()
-        self.restoreWindowPosition()
+        self._active_tool = "cursor_tool"
+        self._setup_ui()
+        self._add_menu()
+        self._add_tool_bar()
+        self._restore_window_position()
 
         args = QApplication.arguments()
         if len(args) > 1:
-            self.openFolder(args[1])
+            self._open_folder(args[1])
 
-    def setupUi(self):
+    def _restore_window_position(self):
+        screen = QDesktopWidget(self).availableGeometry()
+        default_size = screen.width() * 0.75, screen.height() * 0.75
+        default_pos = (screen.width() - default_size[0]) / 2, \
+            (screen.height() - default_size[1]) / 2
+
+        settings = QSettings("justacid", "Segmate")
+        settings.beginGroup("MainWindow")
+        size = settings.value("size", QSize(*default_size))
+        pos = settings.value("position", QPoint(*default_pos))
+        is_maximized = settings.value("maximized", "false")
+        settings.endGroup()
+
+        if is_maximized == "true":
+            self.setWindowState(self.windowState() | Qt.WindowMaximized)
+            return
+
+        self.resize(size)
+        self.move(pos)
+
+    def _scene_changed(self, scene):
+        self.view.setScene(scene)
+        self._add_edit_menu(scene)
+
+    def _retain_active_tool(self):
+        self._set_tool(self._active_tool)
+
+    def _set_tool(self, tool):
+        self._active_tool = tool
+        for layer in self.view.scene().layers:
+            callback = lambda msg: self.statusBar().showMessage(msg, 2000)
+            layer.change_tool(tool, status_callback=callback)
+        self.view.scene().update()
+
+    def _open_folder(self, folder):
+        self.inspector.set_scene(EditorScene(DataLoader(folder)))
+        self.inspector.change_image(0)
+
+    def _open_folder_dialog(self):
+        folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
+        if folder:
+            self._open_folder(folder)
+
+    def _zoom_changed(self, zoom):
+        try:
+            idx = self.zoom_levels.index(zoom)
+            self.zoom_group.actions()[idx].setChecked(True)
+        except ValueError:
+            self.zoom_group.actions()[-1].setChecked(True)
+            self.zoom_group.actions()[-1].setText(f"Custom {zoom}%")
+
+        message = f"Zoom: {zoom}%"
+        self.statusBar().showMessage(message, 2000)
+
+    def _zoom_to_fit_changed(self, toggled_on):
+        if toggled_on:
+            self.statusBar().showMessage("Zoom to fit: On")
+            self.zoom_fit.setChecked(True)
+        if not toggled_on:
+            self.statusBar().showMessage("Zoom to fit: Off", 2000)
+            self.zoom_fit.setChecked(False)
+
+    def _setup_ui(self):
         self.statusBar().showMessage("Ready")
         self.setWindowIcon(QIcon("icons/app-icon.png"))
 
-        self.view = ViewWidget()
+        self.view = SceneViewWidget()
         self.view.setAlignment(Qt.AlignCenter)
-        self.view.zoom_changed.connect(self.zoomChanged)
-        self.view.fitview_changed.connect(self.fitChanged)
+        self.view.zoom_changed.connect(self._zoom_changed)
+        self.view.fitview_changed.connect(self._zoom_to_fit_changed)
         self.setCentralWidget(self.view)
 
         self.inspector = InspectorWidget()
-        self.inspector.scene_changed.connect(self.sceneChanged)
-        self.inspector.image_changed.connect(self.retainActiveTool)
+        self.inspector.scene_changed.connect(self._scene_changed)
+        self.inspector.image_changed.connect(self._retain_active_tool)
 
         self.dock = QDockWidget("Inspector")
         self.dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
@@ -46,20 +107,7 @@ class MainWindow(QMainWindow):
 
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
-    def setPosition(self):
-        screen = QDesktopWidget(self).availableGeometry()
-        size = screen.width() * 0.75, screen.height() * 0.75
-        self.resize(*size)
-        self.move((screen.width() - size[0]) / 2, (screen.height() - size[1]) / 2)
-
-    def sceneChanged(self, scene):
-        self.view.setScene(scene)
-        self.addEditMenu(scene)
-
-    def retainActiveTool(self):
-        self.setTool(self.active_tool)
-
-    def addMenu(self):
+    def _add_menu(self):
         self.quit_action = QAction("&Quit")
         self.quit_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Q))
         self.quit_action.triggered.connect(QApplication.quit)
@@ -67,7 +115,7 @@ class MainWindow(QMainWindow):
         self.open_action = QAction("&Open Folder")
         self.open_action.setIcon(QIcon("icons/open-folder.png"))
         self.open_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_O))
-        self.open_action.triggered.connect(self.openFolderDialog)
+        self.open_action.triggered.connect(self._open_folder_dialog)
 
         self.save_action = QAction("&Save Current")
         self.save_action.setIcon(QIcon("icons/save-current.png"))
@@ -93,7 +141,7 @@ class MainWindow(QMainWindow):
         self.fitview_action = QAction("Zoom to &Fit")
         self.fitview_action.setCheckable(True)
         self.fitview_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_F))
-        self.fitview_action.triggered.connect(lambda: self.view.toggleZoomToFit())
+        self.fitview_action.triggered.connect(lambda: self.view.toggle_zoom_to_fit())
 
         view_menu = self.menuBar().addMenu("&View")
         view_menu.addAction(self.dock.toggleViewAction())
@@ -107,7 +155,7 @@ class MainWindow(QMainWindow):
 
         for zoom in self.zoom_levels:
             action = self.zoom_group.addAction(f"{zoom}%")
-            action.triggered.connect(partial(lambda z: self.view.setZoom(z), zoom))
+            action.triggered.connect(partial(lambda z: self.view.set_zoom(z), zoom))
             action.setCheckable(True)
             if zoom == 100:
                 action.setChecked(True)
@@ -117,16 +165,7 @@ class MainWindow(QMainWindow):
         custom_zoom.setCheckable(True)
         zoom_submenu.addAction(custom_zoom)
 
-    def addEditMenu(self, scene):
-        self.edit_menu.clear()
-        self.undo_action = scene.createUndoAction()
-        self.undo_action.setShortcuts(QKeySequence.Undo)
-        self.redo_action = scene.createRedoAction()
-        self.redo_action.setShortcuts(QKeySequence.Redo)
-        self.edit_menu.addAction(self.undo_action)
-        self.edit_menu.addAction(self.redo_action)
-
-    def addToolBar(self):
+    def _add_tool_bar(self):
         toolbar = super().addToolBar("Tools")
         toolbar.setIconSize(QSize(18, 18))
 
@@ -136,7 +175,7 @@ class MainWindow(QMainWindow):
 
         self.zoom_fit = toolbar.addAction("Zoom to Fit")
         self.zoom_fit.setIcon(QIcon("icons/zoom-fit.png"))
-        self.zoom_fit.triggered.connect(self.view.toggleZoomToFit)
+        self.zoom_fit.triggered.connect(self.view.toggle_zoom_to_fit)
         self.zoom_fit.setCheckable(True)
         zoom_in = toolbar.addAction("Zoom In")
         zoom_in.setIcon(QIcon("icons/zoom-in.png"))
@@ -155,7 +194,7 @@ class MainWindow(QMainWindow):
         cursor_tool.setIcon(QIcon("icons/cursor.png"))
         cursor_tool.setCheckable(True)
         cursor_tool.setChecked(True)
-        cursor_tool.triggered.connect(partial(self.setTool, "cursor_tool"))
+        cursor_tool.triggered.connect(partial(self._set_tool, "cursor_tool"))
         cursor_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_1))
         toolbox.addAction(cursor_tool)
         tools_menu.addAction(cursor_tool)
@@ -163,7 +202,7 @@ class MainWindow(QMainWindow):
         draw_tool = toolbar.addAction("Drawing Tool")
         draw_tool.setIcon(QIcon("icons/draw.png"))
         draw_tool.setCheckable(True)
-        draw_tool.triggered.connect(partial(self.setTool, "draw_tool"))
+        draw_tool.triggered.connect(partial(self._set_tool, "draw_tool"))
         draw_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_2))
         toolbox.addAction(draw_tool)
         tools_menu.addAction(draw_tool)
@@ -171,7 +210,7 @@ class MainWindow(QMainWindow):
         bucket_tool = toolbar.addAction("Bucket Tool")
         bucket_tool.setIcon(QIcon("icons/paint-bucket.png"))
         bucket_tool.setCheckable(True)
-        bucket_tool.triggered.connect(partial(self.setTool, "bucket_tool"))
+        bucket_tool.triggered.connect(partial(self._set_tool, "bucket_tool"))
         bucket_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_3))
         toolbox.addAction(bucket_tool)
         tools_menu.addAction(bucket_tool)
@@ -179,7 +218,7 @@ class MainWindow(QMainWindow):
         move_tool = toolbar.addAction("Contour Tool")
         move_tool.setIcon(QIcon("icons/move-control-point.png"))
         move_tool.setCheckable(True)
-        move_tool.triggered.connect(partial(self.setTool, "contour_tool"))
+        move_tool.triggered.connect(partial(self._set_tool, "contour_tool"))
         move_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_4))
         toolbox.addAction(move_tool)
         tools_menu.addAction(move_tool)
@@ -187,81 +226,21 @@ class MainWindow(QMainWindow):
         magic_wand = toolbar.addAction("Magic Wand Tool")
         magic_wand.setIcon(QIcon("icons/magic-wand.png"))
         magic_wand.setCheckable(True)
-        magic_wand.triggered.connect(partial(self.setTool, "magicwand_tool"))
+        magic_wand.triggered.connect(partial(self._set_tool, "magicwand_tool"))
         magic_wand.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_5))
         toolbox.addAction(magic_wand)
         tools_menu.addAction(magic_wand)
 
         toolbar.addSeparator()
 
-    def setTool(self, tool):
-        self.active_tool = tool
-        for layer in self.view.scene().layers:
-            callback = lambda msg: self.statusBar().showMessage(msg, 2000)
-            layer.setTool(tool, status_callback=callback)
-        self.view.scene().update()
-
-    def openFolder(self, folder):
-        self.inspector.setScene(EditorScene(DataLoader(folder)))
-        self.inspector.changeImage(0)
-
-    def openFolderDialog(self):
-        folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
-        if folder:
-            self.openFolder(folder)
-
-    def zoomChanged(self, zoom):
-        try:
-            idx = self.zoom_levels.index(zoom)
-            self.zoom_group.actions()[idx].setChecked(True)
-        except ValueError:
-            self.zoom_group.actions()[-1].setChecked(True)
-            self.zoom_group.actions()[-1].setText(f"Custom {zoom}%")
-
-        message = f"Zoom: {zoom}%"
-        self.statusBar().showMessage(message, 2000)
-
-    def fitChanged(self, toggled_on):
-        if toggled_on:
-            self.statusBar().showMessage("Zoom to fit: On")
-            self.zoom_fit.setChecked(True)
-        if not toggled_on:
-            self.statusBar().showMessage("Zoom to fit: Off", 2000)
-            self.zoom_fit.setChecked(False)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Right:
-            self.undo_action.setEnabled(False)
-            self.redo_action.setEnabled(False)
-            self.inspector.showNextImage()
-            return
-        elif event.key() == Qt.Key_Left:
-            self.undo_action.setEnabled(False)
-            self.redo_action.setEnabled(False)
-            self.inspector.showPreviousImage()
-            return
-
-        event.ignore()
-
-    def restoreWindowPosition(self):
-        screen = QDesktopWidget(self).availableGeometry()
-        default_size = screen.width() * 0.75, screen.height() * 0.75
-        default_pos = (screen.width() - default_size[0]) / 2, \
-            (screen.height() - default_size[1]) / 2
-
-        settings = QSettings("justacid", "Segmate")
-        settings.beginGroup("MainWindow")
-        size = settings.value("size", QSize(*default_size))
-        pos = settings.value("position", QPoint(*default_pos))
-        is_maximized = settings.value("maximized", "false")
-        settings.endGroup()
-
-        if is_maximized == "true":
-            self.setWindowState(self.windowState() | Qt.WindowMaximized)
-            return
-
-        self.resize(size)
-        self.move(pos)
+    def _add_edit_menu(self, scene):
+        self.edit_menu.clear()
+        self.undo_action = scene.create_undo_action()
+        self.undo_action.setShortcuts(QKeySequence.Undo)
+        self.redo_action = scene.create_redo_action()
+        self.redo_action.setShortcuts(QKeySequence.Redo)
+        self.edit_menu.addAction(self.undo_action)
+        self.edit_menu.addAction(self.redo_action)
 
     def closeEvent(self, event):
         is_maximized = self.windowState() == Qt.WindowMaximized
@@ -273,3 +252,17 @@ class MainWindow(QMainWindow):
         settings.setValue("maximized", is_maximized)
         settings.endGroup()
         super().closeEvent(event)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Right:
+            self.undo_action.setEnabled(False)
+            self.redo_action.setEnabled(False)
+            self.inspector.show_next()
+            return
+        elif event.key() == Qt.Key_Left:
+            self.undo_action.setEnabled(False)
+            self.redo_action.setEnabled(False)
+            self.inspector.show_previous()
+            return
+
+        event.ignore()

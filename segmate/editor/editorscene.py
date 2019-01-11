@@ -15,37 +15,23 @@ class EditorScene(QGraphicsScene):
         super().__init__()
         self.layers = []
         self.loader = data_loader
-        self.undo_stack = QUndoStack()
         self.opacities = [1.0] * len(data_loader.folders)
-        self.active_layer = len(data_loader.folders) - 1
+        self._undo_stack = QUndoStack()
+        self._active_layer = len(data_loader.folders) - 1
 
-    def numImages(self):
+    @property
+    def image_count(self):
         return 0 if not self.loader else len(self.loader)
 
-    def numLayers(self):
-        return len(layers)
+    @property
+    def active_layer(self):
+        return self._active_layer
 
-    def getOpacity(self, layer_idx):
-        return self.opacities[layer_idx]
-
-    def setOpacity(self, layer_idx, value):
-        self.layers[layer_idx].setOpacity(value)
-        self.opacities[layer_idx] = value
-        self.opacity_changed.emit(layer_idx, value)
-
-    def createUndoAction(self):
-        return self.undo_stack.createUndoAction(self)
-
-    def createRedoAction(self):
-        return self.undo_stack.createRedoAction(self)
-
-    def setActive(self, layer_idx):
-        self.active_layer = layer_idx
-        for i, layer in enumerate(self.layers):
-            if i == layer_idx:
-                layer.setActive(True)
-            else:
-                layer.setActive(False)
+    @active_layer.setter
+    def active_layer(self, idx):
+        self.layers[self._active_layer].is_active = False
+        self.layers[idx].is_active = True
+        self._active_layer = idx
 
     def clear(self):
         for layer in self.layers:
@@ -55,15 +41,26 @@ class EditorScene(QGraphicsScene):
 
     def load(self, image_idx):
         self.clear()
-        self.undo_stack.clear()
+        self._undo_stack.clear()
 
         self.layers = []
         for i, layer in enumerate(self.loader[image_idx]):
             pen_colors = self.loader.pen_colors
-            item = EditorItem(layer, self.undo_stack, pen_colors[i])
+            item = EditorItem(layer, self._undo_stack, pen_colors[i])
             self.addItem(item)
             self.layers.append(item)
 
         for layer, opacity in zip(self.layers, self.opacities):
             layer.setOpacity(opacity)
         self.image_loaded.emit(image_idx)
+
+    def change_layer_opacity(self, layer_idx, value):
+        self.layers[layer_idx].setOpacity(value)
+        self.opacities[layer_idx] = value
+        self.opacity_changed.emit(layer_idx, value)
+
+    def create_undo_action(self):
+        return self._undo_stack.createUndoAction(self)
+
+    def create_redo_action(self):
+        return self._undo_stack.createRedoAction(self)
