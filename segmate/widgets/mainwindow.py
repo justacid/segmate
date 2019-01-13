@@ -60,8 +60,10 @@ class MainWindowWidget(QMainWindow):
         settings = QSettings("justacid", "Segmate")
         settings.beginGroup("Project")
         self._active_project = settings.value("last_opened", "")
+        last_image_shown = settings.value("last_image", 0)
         if self._active_project:
             self._open_folder(self._active_project)
+            self.inspector.slider.setValue(int(last_image_shown))
         settings.endGroup()
         self._set_window_title()
 
@@ -88,6 +90,7 @@ class MainWindowWidget(QMainWindow):
         settings = QSettings("justacid", "Segmate")
         settings.beginGroup("Project")
         settings.setValue("last_opened", folder)
+        settings.setValue("last_image", 0)
         settings.endGroup()
 
     def _close_folder(self):
@@ -97,6 +100,7 @@ class MainWindowWidget(QMainWindow):
         settings = QSettings("justacid", "Segmate")
         settings.beginGroup("Project")
         settings.setValue("last_opened", "")
+        settings.setValue("last_image", 0)
         settings.endGroup()
         self._active_project = ""
         self._set_window_title()
@@ -292,6 +296,9 @@ class MainWindowWidget(QMainWindow):
             settings.setValue("size", self.size())
             settings.setValue("position", self.pos())
         settings.setValue("maximized", is_maximized)
+        settings.endGroup()
+        settings.beginGroup("Project")
+        settings.setValue("last_image", self.inspector.current_image)
         settings.endGroup()
         super().closeEvent(event)
 
