@@ -25,7 +25,7 @@ class ContourTool(EditorTool):
         return self._snapshot
 
     def draw_contours(self, image):
-        if len(image.shape) == 2:
+        if not self.is_editable:
             return image
 
         segmentation = rgb2gray(image[:,:,:3])
@@ -41,6 +41,6 @@ class ContourTool(EditorTool):
 
         for contour in contours:
             for r, c in contour:
-                output[int(r), int(c)] = (255, 0, 0, 255)
+                output[int(r), int(c)] = (*self.pen_color, 255)
 
         return output

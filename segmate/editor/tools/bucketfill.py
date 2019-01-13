@@ -28,6 +28,9 @@ class BucketFillTool(EditorTool):
             self.fill_image(pos)
 
     def fill_image(self, pos):
+        if not self.is_editable:
+            self.send_status_message("This layer is not editable...")
+            return
         self.is_dirty = True
         data = from_qimage(self.canvas)
         seed = [pos.y(), pos.x()]
@@ -36,9 +39,6 @@ class BucketFillTool(EditorTool):
         self.canvas = filled
 
     def flood_fill(self, image, seed):
-        if len(image.shape) == 2:
-            return image
-
         h, w = image.shape[:2]
         coords = [[int(c) for c in seed]]
 
