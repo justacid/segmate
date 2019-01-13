@@ -35,6 +35,7 @@ class EditorTool(ABC):
         self._undo_stack = None
         self._status_callback = None
         self._is_dirty = False
+        self._is_editable = True
 
     @abstractmethod
     def paint_canvas(self):
@@ -73,6 +74,14 @@ class EditorTool(ABC):
     @property
     def is_dirty(self):
         return self._is_dirty
+
+    @property
+    def is_editable(self):
+        return self._editable
+
+    @is_editable.setter
+    def is_editable(self, value):
+        self._editable = value
 
     @is_dirty.setter
     def is_dirty(self, value):

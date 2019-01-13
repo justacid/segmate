@@ -14,9 +14,8 @@ class DataLoader:
     def __init__(self, folder):
         self.root = Path(folder)
         self.folders = ["images", "masks", "spores"]
-
+        self.editable = [False, True, True]
         self.cache = {}
-
         self.files = [f for f in listdir(self.root / self.folders[0])]
         self.files = sorted(self.files, key=lambda f: int(f.split("-")[1].split(".")[0]))
 

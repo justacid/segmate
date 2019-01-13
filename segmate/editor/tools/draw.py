@@ -52,6 +52,9 @@ class DrawTool(EditorTool):
             self._released(pos, event.buttons() & Qt.MidButton)
 
     def _pressed(self, pos):
+        if not self.is_editable:
+            self.send_status_message("This layer is not editable...")
+            return
         if not self._have_undo_copy:
             self._undo_copy = QImage(self.canvas)
             self._have_undo_copy = True
@@ -59,6 +62,8 @@ class DrawTool(EditorTool):
         self._draw = True
 
     def _released(self, pos, erase):
+        if not self.is_editable:
+            return
         self.draw_line(pos, erase)
         self._draw = False
         if self._have_undo_copy:
@@ -66,6 +71,8 @@ class DrawTool(EditorTool):
             self._have_undo_copy = False
 
     def _moved(self, pos, erase):
+        if not self.is_editable:
+            return
         self.draw_line(pos, erase)
 
     def draw_line(self, end_point, erase):

@@ -10,7 +10,7 @@ class EditorItem(QGraphicsObject):
 
     image_modified = Signal()
 
-    def __init__(self, image, undo_stack, pen_color=None):
+    def __init__(self, image, undo_stack, pen_color=None, editable=True):
         super().__init__()
 
         self.tool_box = {
@@ -22,6 +22,7 @@ class EditorItem(QGraphicsObject):
 
         self._image = image
         self._pen_color = pen_color
+        self._editable = editable
         self._undo_stack = undo_stack
         self._undo_stack.indexChanged.connect(lambda _: self.update())
         self._tool = self.tool_box["cursor_tool"](self._image, self)
@@ -57,6 +58,7 @@ class EditorItem(QGraphicsObject):
         self._tool.pen_color = self._pen_color
         self._tool.undo_stack = self._undo_stack
         self._tool.status_callback = status_callback
+        self._tool.is_editable = self._editable
         self.setCursor(self._tool.cursor)
 
     def undo_tool_command(self, image):

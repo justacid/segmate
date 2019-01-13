@@ -72,7 +72,8 @@ class EditorScene(QGraphicsScene):
         self.layers = []
         for i, layer in enumerate(self.loader[image_idx]):
             pen_colors = self.loader.pen_colors
-            item = EditorItem(layer, self._undo_stack, pen_colors[i])
+            is_editable = self.loader.editable[i]
+            item = EditorItem(layer, self._undo_stack, pen_colors[i], is_editable)
             item.image_modified.connect(self._cache_dirty_items)
             self.addItem(item)
             self.layers.append(item)
