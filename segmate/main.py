@@ -5,7 +5,6 @@ import warnings
 from PySide2.QtWidgets import QApplication
 from qdarkstyle import load_stylesheet
 from segmate.widgets import MainWindowWidget
-import segmate
 
 def main():
     real_path = os.path.dirname(os.path.realpath(__file__))
@@ -18,7 +17,6 @@ def main():
         warnings.simplefilter("ignore")
         app.setStyleSheet(load_stylesheet(pyside=True))
 
-    window.setWindowTitle(f"Segmate {segmate.__version__}")
     window.show()
     sys.exit(app.exec_())
 

@@ -18,14 +18,25 @@ class InspectorWidget(QWidget):
         self.current_image = 0
         self._slider_active = False
         self._setup_ui()
+        self.slider_box.hide()
+        self.layer_box.hide()
 
     def set_scene(self, scene):
         self.scene = scene
         self.current_image = 0
+
+        if not scene:
+            self.slider_box.hide()
+            self.layer_box.hide()
+            return
+
         self.slider.setValue(0)
         self.slider.setMaximum(self.scene.image_count-1)
         self.scene.image_loaded.connect(self._add_layers)
         self.scene_changed.emit(scene)
+
+        self.slider_box.show()
+        self.layer_box.show()
 
     def show_next(self):
         if self.current_image < self.scene.image_count-1:
@@ -112,12 +123,12 @@ class InspectorWidget(QWidget):
 
         dock_layout.addWidget(self.slider_box)
 
-        layer_group = QGroupBox(self)
-        layer_group.setTitle("Layer")
-        layer_group.setStyleSheet("border-radius: 0px;")
+        self.layer_box = QGroupBox(self)
+        self.layer_box.setTitle("Layer")
+        self.layer_box.setStyleSheet("border-radius: 0px;")
 
-        self.layers = QVBoxLayout(layer_group)
+        self.layers = QVBoxLayout(self.layer_box)
         self.layers.setSpacing(2)
         self.layers.setContentsMargins(2, 6, 2, 2)
         self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        dock_layout.addWidget(layer_group)
+        dock_layout.addWidget(self.layer_box)

@@ -4,6 +4,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
+import segmate
 from segmate.widgets.inspector import InspectorWidget
 from segmate.widgets.sceneview import SceneViewWidget
 from segmate.dataloader import DataLoader
@@ -15,14 +16,25 @@ class MainWindowWidget(QMainWindow):
     def __init__(self):
         super().__init__()
         self._active_tool = "cursor_tool"
+        self._active_project = ""
+
         self._setup_ui()
         self._add_menu()
         self._add_tool_bar()
         self._restore_window_position()
+        self._load_last_opened()
 
         args = QApplication.arguments()
         if len(args) > 1:
             self._open_folder(args[1])
+
+        self._set_window_title()
+
+    def _set_window_title(self):
+        if not self._active_project:
+            self.setWindowTitle(f"Segmate {segmate.__version__}")
+            return
+        self.setWindowTitle(f"Segmate {segmate.__version__} - {self._active_project}")
 
     def _restore_window_position(self):
         screen = QDesktopWidget(self).availableGeometry()
@@ -44,6 +56,15 @@ class MainWindowWidget(QMainWindow):
         self.resize(size)
         self.move(pos)
 
+    def _load_last_opened(self):
+        settings = QSettings("justacid", "Segmate")
+        settings.beginGroup("Project")
+        self._active_project = settings.value("last_opened", "")
+        if self._active_project:
+            self._open_folder(self._active_project)
+        settings.endGroup()
+        self._set_window_title()
+
     def _scene_changed(self, scene):
         self.view.setScene(scene)
         self._add_edit_menu(scene)
@@ -61,11 +82,30 @@ class MainWindowWidget(QMainWindow):
     def _open_folder(self, folder):
         self.inspector.set_scene(EditorScene(DataLoader(folder)))
         self.inspector.change_image(0)
+        self.close_action.setEnabled(True)
+        self._active_project = folder
+        self._set_window_title()
+        settings = QSettings("justacid", "Segmate")
+        settings.beginGroup("Project")
+        settings.setValue("last_opened", folder)
+        settings.endGroup()
+
+    def _close_folder(self):
+        self.view.setScene(None)
+        self.inspector.set_scene(None)
+        self.close_action.setEnabled(False)
+        settings = QSettings("justacid", "Segmate")
+        settings.beginGroup("Project")
+        settings.setValue("last_opened", "")
+        settings.endGroup()
+        self._active_project = ""
+        self._set_window_title()
 
     def _open_folder_dialog(self):
         folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
         if folder:
             self._open_folder(folder)
+            self.close_action.setEnabled(True)
 
     def _zoom_changed(self, zoom):
         try:
@@ -108,23 +148,25 @@ class MainWindowWidget(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
     def _add_menu(self):
+        self.open_action = QAction("&Open Project")
+        self.open_action.setIcon(QIcon("icons/open-folder.png"))
+        self.open_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_O))
+        self.open_action.triggered.connect(self._open_folder_dialog)
+        self.close_action = QAction("&Close Project")
+        self.close_action.triggered.connect(self._close_folder)
+        self.close_action.setEnabled(False)
+        self.save_action = QAction("&Save Project")
+        self.save_action.setIcon(QIcon("icons/save-current.png"))
+        self.save_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
+        self.save_action.triggered.connect(lambda: print("SAVE!"))
         self.quit_action = QAction("&Quit")
         self.quit_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Q))
         self.quit_action.triggered.connect(QApplication.quit)
 
-        self.open_action = QAction("&Open Folder")
-        self.open_action.setIcon(QIcon("icons/open-folder.png"))
-        self.open_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_O))
-        self.open_action.triggered.connect(self._open_folder_dialog)
-
-        self.save_action = QAction("&Save Current")
-        self.save_action.setIcon(QIcon("icons/save-current.png"))
-        self.save_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
-        self.save_action.triggered.connect(lambda: print("SAVE!"))
-
         self.menuBar().setStyleSheet("QMenu::icon { padding: 5px; }")
         file_menu = self.menuBar().addMenu("&File")
         file_menu.addAction(self.open_action)
+        file_menu.addAction(self.close_action)
         file_menu.addAction(self.save_action)
         file_menu.addSeparator()
         file_menu.addAction(self.quit_action)
