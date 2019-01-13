@@ -25,6 +25,7 @@ class MainWindowWidget(QMainWindow):
         self._add_tool_bar()
         self._restore_window_position()
         self._load_last_opened()
+        self._first_load()
 
         args = QApplication.arguments()
         if len(args) > 1:
@@ -57,6 +58,26 @@ class MainWindowWidget(QMainWindow):
 
         self.resize(size)
         self.move(pos)
+
+    def _first_load(self):
+        settings = QSettings("justacid", "Segmate")
+        settings.beginGroup("Warning")
+        show_warning = settings.value("was_shown", "false")
+        if show_warning == "false":
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("Information")
+            msgbox.setText("Editing is destructive!")
+            p1 = "Editing images is a destructive operation."
+            p2 = "Please make sure to have a safety copy ready before using Segmate!"
+            msgbox.setInformativeText(f"{p1} {p2}")
+            msgbox.setIcon(QMessageBox.Information)
+            msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            msgbox.setDefaultButton(QMessageBox.Cancel)
+
+            value = msgbox.exec()
+            if value == QMessageBox.Ok:
+                settings.setValue("was_shown", True)
+        settings.endGroup()
 
     def _load_last_opened(self):
         settings = QSettings("justacid", "Segmate")
@@ -311,6 +332,7 @@ class MainWindowWidget(QMainWindow):
     def closeEvent(self, event):
         if self._ask_before_quitting:
             msgbox = QMessageBox()
+            msgbox.setWindowTitle("Warning!")
             msgbox.setText("You have unsaved changes.")
             msgbox.setInformativeText("Do you want to save or discard your changes?")
             msgbox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
