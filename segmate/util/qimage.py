@@ -58,4 +58,4 @@ def from_qimage(image):
     if image.format() not in dims:
         raise TypeError("Unsupported image format.")
 
-    return np.array(image.constBits()).reshape(dims[image.format()])
+    return np.array(image.constBits(), dtype=np.uint8).reshape(dims[image.format()])

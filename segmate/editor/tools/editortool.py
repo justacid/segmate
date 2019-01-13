@@ -34,6 +34,7 @@ class EditorTool(ABC):
         self._pen_color = None
         self._undo_stack = None
         self._status_callback = None
+        self._is_dirty = False
 
     @abstractmethod
     def paint_canvas(self):
@@ -68,6 +69,16 @@ class EditorTool(ABC):
 
     def tablet_event(self, event, pos):
         pass
+
+    @property
+    def is_dirty(self):
+        return self._is_dirty
+
+    @is_dirty.setter
+    def is_dirty(self, value):
+        self._is_dirty = value
+        if value:
+            self.parent.image_modified.emit()
 
     @property
     def parent(self):

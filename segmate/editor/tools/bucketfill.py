@@ -28,6 +28,7 @@ class BucketFillTool(EditorTool):
             self.fill_image(pos)
 
     def fill_image(self, pos):
+        self.is_dirty = True
         data = from_qimage(self.canvas)
         seed = [pos.y(), pos.x()]
         filled = to_qimage(self.flood_fill(data, seed))

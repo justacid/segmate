@@ -6,7 +6,9 @@ from segmate.util import from_qimage, to_qimage
 import segmate.editor.tools as tools
 
 
-class EditorItem(QGraphicsItem):
+class EditorItem(QGraphicsObject):
+
+    image_modified = Signal()
 
     def __init__(self, image, undo_stack, pen_color=None):
         super().__init__()
@@ -24,6 +26,18 @@ class EditorItem(QGraphicsItem):
         self._undo_stack.indexChanged.connect(lambda _: self.update())
         self._tool = self.tool_box["cursor_tool"](self._image, self)
         self.is_active = False
+
+    @property
+    def data(self):
+        return self._tool.paint_result()
+
+    @property
+    def is_dirty(self):
+        return self._tool.is_dirty
+
+    @is_dirty.setter
+    def is_dirty(self, value):
+        self._tool.is_dirty = value
 
     @property
     def is_active(self):

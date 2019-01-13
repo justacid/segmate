@@ -1,4 +1,5 @@
 from functools import partial
+from os.path import isdir
 
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
@@ -17,6 +18,7 @@ class MainWindowWidget(QMainWindow):
         super().__init__()
         self._active_tool = "cursor_tool"
         self._active_project = ""
+        self._ask_before_quitting = False
 
         self._setup_ui()
         self._add_menu()
@@ -30,11 +32,11 @@ class MainWindowWidget(QMainWindow):
 
         self._set_window_title()
 
-    def _set_window_title(self):
-        if not self._active_project:
-            self.setWindowTitle(f"Segmate {segmate.__version__}")
-            return
-        self.setWindowTitle(f"Segmate {segmate.__version__} - {self._active_project}")
+    def _set_window_title(self, modified=False):
+        title = f"Segmate {segmate.__version__} "
+        project = "" if not self._active_project else f"- {self._active_project}"
+        modified = f" {'(*)' if modified else ''}"
+        self.setWindowTitle(f"{title}{project}{modified}")
 
     def _restore_window_position(self):
         screen = QDesktopWidget(self).availableGeometry()
@@ -82,14 +84,19 @@ class MainWindowWidget(QMainWindow):
         self.view.scene().update()
 
     def _open_folder(self, folder):
-        self.inspector.set_scene(EditorScene(DataLoader(folder)))
-        self.inspector.change_image(0)
-        self.close_action.setEnabled(True)
-        self._active_project = folder
+        if isdir(folder):
+            self.inspector.set_scene(EditorScene(DataLoader(folder)))
+            self.inspector.scene.image_modified.connect(self._mark_dirty)
+            self.inspector.change_image(0)
+
+            self.close_action.setEnabled(True)
+            self._active_project = folder
+        else:
+            self._active_project = ""
         self._set_window_title()
         settings = QSettings("justacid", "Segmate")
         settings.beginGroup("Project")
-        settings.setValue("last_opened", folder)
+        settings.setValue("last_opened", self._active_project)
         settings.setValue("last_image", 0)
         settings.endGroup()
 
@@ -110,6 +117,18 @@ class MainWindowWidget(QMainWindow):
         if folder:
             self._open_folder(folder)
             self.close_action.setEnabled(True)
+
+    def _save_to_disk(self):
+        if self.inspector.scene:
+            self.inspector.scene.save_to_disk()
+            self._set_window_title()
+            self.save_action.setEnabled(False)
+            self._ask_before_quitting = False
+
+    def _mark_dirty(self):
+        self._set_window_title(modified=True)
+        self._ask_before_quitting = True
+        self.save_action.setEnabled(True)
 
     def _zoom_changed(self, zoom):
         try:
@@ -162,10 +181,11 @@ class MainWindowWidget(QMainWindow):
         self.save_action = QAction("&Save Project")
         self.save_action.setIcon(QIcon("icons/save-current.png"))
         self.save_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
-        self.save_action.triggered.connect(lambda: print("SAVE!"))
+        self.save_action.triggered.connect(self._save_to_disk)
+        self.save_action.setEnabled(False)
         self.quit_action = QAction("&Quit")
         self.quit_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Q))
-        self.quit_action.triggered.connect(QApplication.quit)
+        self.quit_action.triggered.connect(self.close)
 
         self.menuBar().setStyleSheet("QMenu::icon { padding: 5px; }")
         file_menu = self.menuBar().addMenu("&File")
@@ -289,6 +309,21 @@ class MainWindowWidget(QMainWindow):
         self.edit_menu.addAction(self.redo_action)
 
     def closeEvent(self, event):
+        if self._ask_before_quitting:
+            msgbox = QMessageBox()
+            msgbox.setText("You have unsaved changes.")
+            msgbox.setInformativeText("Do you want to save or discard your changes?")
+            msgbox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            msgbox.setDefaultButton(QMessageBox.Cancel)
+            msgbox.setIcon(QMessageBox.Warning)
+            value = msgbox.exec()
+
+            if value == QMessageBox.Cancel:
+                event.ignore()
+                return
+            elif value == QMessageBox.Save:
+                self._save_to_disk()
+
         is_maximized = self.windowState() == Qt.WindowMaximized
         settings = QSettings("justacid", "Segmate")
         settings.beginGroup("MainWindow")
