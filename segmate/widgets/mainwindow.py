@@ -205,7 +205,6 @@ class MainWindowWidget(QMainWindow):
         self.save_action.triggered.connect(self._save_to_disk)
         self.save_action.setEnabled(False)
         self.quit_action = QAction("&Quit")
-        self.quit_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Q))
         self.quit_action.triggered.connect(self.close)
 
         self.menuBar().setStyleSheet("QMenu::icon { padding: 5px; }")
@@ -370,5 +369,23 @@ class MainWindowWidget(QMainWindow):
             self.redo_action.setEnabled(False)
             self.inspector.show_previous()
             return
+        elif event.key() == Qt.Key_Q:
+            if not self.inspector:
+                event.ignore()
+                return
+            if event.modifiers() & Qt.ControlModifier:
+                self.inspector.activate_layer(0)
+        elif event.key() == Qt.Key_W:
+            if not self.inspector:
+                event.ignore()
+                return
+            if event.modifiers() & Qt.ControlModifier:
+                self.inspector.activate_layer(1)
+        elif event.key() == Qt.Key_E:
+            if not self.inspector:
+                event.ignore()
+                return
+            if event.modifiers() & Qt.ControlModifier:
+                self.inspector.activate_layer(2)
 
         event.ignore()

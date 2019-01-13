@@ -51,8 +51,17 @@ class InspectorWidget(QWidget):
         active_layer = self.scene.active_layer
         self.scene.load(idx)
         self.slider_box.setTitle(f"Image {idx+1}/{self.scene.image_count}")
-        self._highlight_layer(active_layer)
+        self.activate_layer(active_layer)
         self.image_changed.emit()
+
+    def activate_layer(self, idx):
+        self.scene.active_layer = idx
+        for i in range(self.layers.count()-1):
+            child = self.layers.itemAt(i).widget()
+            if i == idx:
+                child.is_active = True
+                continue
+            child.is_active = False
 
     def _clear_layers(self):
         while self.layers.count():
@@ -73,18 +82,9 @@ class InspectorWidget(QWidget):
         text = f"Opacity: {name}".title()
         item = LayerItemWidget(text, opacity)
         item.opacity_changed.connect(lambda x: self.scene.change_layer_opacity(idx, x))
-        item.layer_clicked.connect(lambda: self._highlight_layer(idx))
+        item.layer_clicked.connect(lambda: self.activate_layer(idx))
         self.layers.addWidget(item)
         return item
-
-    def _highlight_layer(self, idx):
-        self.scene.active_layer = idx
-        for i in range(self.layers.count()-1):
-            child = self.layers.itemAt(i).widget()
-            if i == idx:
-                child.is_active = True
-                continue
-            child.is_active = False
 
     def _enable_repaint(self, enabled):
         self._slider_active = not enabled
