@@ -31,8 +31,8 @@ class DataLoader:
 
         data = [
             self._load_image(idx),
-            self._load_mask(idx, self.folders[1], color=(255, 255, 0)),
-            self._load_mask(idx, self.folders[2], color=(0, 255, 255)),
+            self._load_mask(idx, self.folders[1], color=self.pen_colors[1]),
+            self._load_mask(idx, self.folders[2], color=self.pen_colors[2]),
         ]
 
         self.cache[idx] = data
@@ -51,7 +51,7 @@ class DataLoader:
 
     @property
     def pen_colors(self):
-        return [(255, 255, 255), (255, 255, 0), (0, 255, 255)]
+        return [(255, 255, 255), (38, 190, 33), (239, 56, 176)]
 
     def _binarize(self, image):
         image = rgb2gray(from_qimage(image)[:, :, :3])
