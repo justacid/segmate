@@ -16,6 +16,7 @@ class SceneViewWidget(QGraphicsView):
         self._pan_start = QPointF(0.0, 0.0)
         self._tablet_zoom = False
         self._tablet_zoom_start = QPointF(0.0, 0.0)
+        self._tablet_active = False
         self.setMouseTracking(True)
 
     def zoom(self, amount):
@@ -95,7 +96,8 @@ class SceneViewWidget(QGraphicsView):
                 self._start_pan(event)
                 QApplication.setOverrideCursor(Qt.ClosedHandCursor)
                 return
-        super().mousePressEvent(event)
+        if not self._tablet_active:
+            super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         QApplication.restoreOverrideCursor()
@@ -103,14 +105,16 @@ class SceneViewWidget(QGraphicsView):
             if event.modifiers() & Qt.ControlModifier:
                 self._release_pan()
                 return
-        super().mouseReleaseEvent(event)
+        if not self._tablet_active:
+            super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
         if self._pan and event.buttons() & Qt.RightButton:
             if event.modifiers() & Qt.ControlModifier:
                 self._move_pan(event)
                 return
-        super().mouseMoveEvent(event)
+        if not self._tablet_active:
+            super().mouseMoveEvent(event)
 
     def tabletEvent(self, event):
         if event.type() == QEvent.TabletPress and event.button() == Qt.LeftButton:
@@ -150,6 +154,11 @@ class SceneViewWidget(QGraphicsView):
 
             scene_pos = self.mapToScene(pos)
             layer.tabletEvent(event, scene_pos)
+
+        super().tabletEvent(event)
+
+    def tabletActive(self, active):
+        self._tablet_active = active
 
     def resizeEvent(self, event):
         self.setAlignment(Qt.AlignCenter)
