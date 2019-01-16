@@ -56,12 +56,31 @@ class InspectorWidget(QWidget):
 
     def activate_layer(self, idx):
         self.scene.active_layer = idx
+        self.show_tool_inspector()
+
         for i in range(self.layers.count()-1):
             child = self.layers.itemAt(i).widget()
             if i == idx:
                 child.is_active = True
                 continue
             child.is_active = False
+
+    def show_tool_inspector(self):
+        self._remove_tool_inspector()
+        self._add_tool_inspector()
+
+    def _add_tool_inspector(self):
+        idx = self.scene.active_layer
+        widget = self.scene.layers[idx]._tool.inspector_widget
+        if widget:
+            self.dock_layout.insertWidget(1, widget)
+
+    def _remove_tool_inspector(self):
+        if self.dock_layout.count() <= 2:
+            return
+        widget = self.dock_layout.itemAt(1).widget()
+        if widget:
+            widget.deleteLater()
 
     def _clear_layers(self):
         while self.layers.count():
@@ -90,7 +109,7 @@ class InspectorWidget(QWidget):
         self._slider_active = not enabled
 
     def _setup_ui(self):
-        dock_layout = QVBoxLayout(self)
+        self.dock_layout = QVBoxLayout(self)
 
         self.slider_box = QGroupBox("Images")
         self.slider_box.setStyleSheet("border-radius: 0px;")
@@ -121,7 +140,7 @@ class InspectorWidget(QWidget):
         arrow_right.setDefaultAction(right_action)
         hlayout.addWidget(arrow_right)
 
-        dock_layout.addWidget(self.slider_box)
+        self.dock_layout.addWidget(self.slider_box)
 
         self.layer_box = QGroupBox(self)
         self.layer_box.setTitle("Layer")
@@ -131,4 +150,4 @@ class InspectorWidget(QWidget):
         self.layers.setSpacing(2)
         self.layers.setContentsMargins(2, 6, 2, 2)
         self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        dock_layout.addWidget(self.layer_box)
+        self.dock_layout.addWidget(self.layer_box)

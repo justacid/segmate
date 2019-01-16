@@ -102,6 +102,7 @@ class MainWindowWidget(QMainWindow):
         for layer in self.view.scene().layers:
             callback = lambda msg: self.statusBar().showMessage(msg, 2000)
             layer.change_tool(tool, status_callback=callback)
+        self.inspector.show_tool_inspector()
         self.view.scene().update()
 
     def _open_folder(self, folder):

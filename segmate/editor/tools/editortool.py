@@ -45,6 +45,10 @@ class EditorTool(ABC):
     def paint_result(self):
         pass
 
+    @property
+    def inspector_widget(self):
+        return None
+
     def push_undo_snapshot(self, snapshot, modified, *, undo_text=""):
         if self._undo_stack:
             command = EditorUndoCommand(snapshot, modified)
