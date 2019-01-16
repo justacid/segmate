@@ -28,9 +28,9 @@ class EditorUndoCommand(QUndoCommand):
 
 class EditorTool(ABC):
 
-    def __init__(self, image, parent):
+    def __init__(self, image, item):
         self._canvas = QImage(image)
-        self._parent = parent
+        self._item = item
         self._pen_color = None
         self._undo_stack = None
         self._status_callback = None
@@ -56,8 +56,8 @@ class EditorTool(ABC):
             # a undo-command push triggers a redo - so push first, then
             # register callbacks; this suppresses the signal on initial redo
             self._undo_stack.push(command)
-            command.undo_triggered = self._parent.undo_tool_command
-            command.redo_triggered = self._parent.redo_tool_command
+            command.undo_triggered = self._item.undo_tool_command
+            command.redo_triggered = self._item.redo_tool_command
 
     def send_status_message(self, message):
         if self._status_callback:
@@ -91,15 +91,15 @@ class EditorTool(ABC):
     def is_dirty(self, value):
         self._is_dirty = value
         if value:
-            self.parent.image_modified.emit()
+            self.item.image_modified.emit()
 
     @property
-    def parent(self):
-        return self._parent
+    def item(self):
+        return self._item
 
-    @parent.setter
-    def parent(self, parent_):
-        self._parent = parent_
+    @item.setter
+    def item(self, item_):
+        self._item = item_
 
     @property
     def canvas(self):

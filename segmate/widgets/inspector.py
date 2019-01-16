@@ -92,7 +92,7 @@ class InspectorWidget(QWidget):
         if self._slider_active:
             return
         self._clear_layers()
-        for i, (layer, name) in enumerate(zip(self.scene.layers, self.scene.loader.folders)):
+        for i, (layer, name) in enumerate(zip(self.scene.layers, self.scene.data_loader.folders)):
             item = self._add_layer_widget(i, layer, name)
         self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
 

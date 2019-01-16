@@ -303,22 +303,30 @@ class MainWindowWidget(QMainWindow):
         tools_menu.addAction(bucket_tool)
 
         move_tool = toolbar.addAction("Contour Tool")
-        move_tool.setIcon(QIcon("icons/move-control-point.png"))
+        move_tool.setIcon(QIcon("icons/contour-tool.png"))
         move_tool.setCheckable(True)
         move_tool.triggered.connect(partial(self._set_tool, "contour_tool"))
         move_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_4))
         toolbox.addAction(move_tool)
         tools_menu.addAction(move_tool)
+        toolbar.addSeparator()
 
-        # magic_wand = toolbar.addAction("Magic Wand Tool")
-        # magic_wand.setIcon(QIcon("icons/magic-wand.png"))
-        # magic_wand.setCheckable(True)
-        # magic_wand.triggered.connect(partial(self._set_tool, "magicwand_tool"))
-        # magic_wand.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_5))
-        # toolbox.addAction(magic_wand)
-        # tools_menu.addAction(magic_wand)
+        copy_mask = toolbar.addAction("Copy Tool")
+        copy_mask.setIcon(QIcon("icons/copy-content.png"))
+        copy_mask.setCheckable(True)
+        copy_mask.triggered.connect(partial(self._set_tool, "copy_mask_tool"))
+        toolbox.addAction(copy_mask)
+        tools_menu.addAction(copy_mask)
+
+        fill_holes = toolbar.addAction("Fill Holes Tool")
+        fill_holes.setIcon(QIcon("icons/fill-holes.png"))
+        fill_holes.setCheckable(True)
+        fill_holes.triggered.connect(partial(self._set_tool, "fill_holes_tool"))
+        toolbox.addAction(fill_holes)
+        tools_menu.addAction(fill_holes)
 
         toolbar.addSeparator()
+
 
     def _add_edit_menu(self, scene):
         self.edit_menu.clear()

@@ -10,7 +10,8 @@ class EditorItem(QGraphicsObject):
 
     image_modified = Signal()
 
-    def __init__(self, image, undo_stack, pen_color=None, editable=True):
+    # def __init__(self, image, undo_stack, pen_color=None, editable=True):
+    def __init__(self, image_idx, layer_idx, scene):
         super().__init__()
 
         self.tool_box = {
@@ -18,12 +19,18 @@ class EditorItem(QGraphicsObject):
             "cursor_tool": tools.CursorTool,
             "contour_tool": tools.ContourTool,
             "draw_tool": tools.DrawTool,
+            "copy_mask_tool": tools.CopyMaskTool,
+            "fill_holes_tool": tools.FillHolesTool
         }
 
-        self._image = image
-        self._pen_color = pen_color
-        self._editable = editable
-        self._undo_stack = undo_stack
+        self.scene = scene
+        self.image_idx = image_idx
+        self.layer_idx = layer_idx
+
+        self._image = scene.data_loader[image_idx][layer_idx]
+        self._pen_color = scene.data_loader.pen_colors[layer_idx]
+        self._editable = scene.data_loader.editable[layer_idx]
+        self._undo_stack = scene._undo_stack
         self._undo_stack.indexChanged.connect(lambda _: self.update())
         self._tool = self.tool_box["cursor_tool"](self._image, self)
         self.is_active = False

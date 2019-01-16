@@ -15,7 +15,7 @@ class EditorScene(QGraphicsScene):
     def __init__(self, data_loader):
         super().__init__()
         self.layers = []
-        self.loader = data_loader
+        self.data_loader = data_loader
         self.opacities = [1.0] * len(data_loader.folders)
         self._undo_stack = QUndoStack()
         self._active_layer = len(data_loader.folders) - 1
@@ -23,7 +23,7 @@ class EditorScene(QGraphicsScene):
 
     @property
     def image_count(self):
-        return 0 if not self.loader else len(self.loader)
+        return 0 if not self.data_loader else len(self.data_loader)
 
     @property
     def active_layer(self):
@@ -40,7 +40,7 @@ class EditorScene(QGraphicsScene):
             self._cache_if_dirty()
             for layer in self.layers:
                 layer.is_dirty = False
-        self.loader.save_to_disk()
+        self.data_loader.save_to_disk()
 
     def clear(self):
         for layer in self.layers:
@@ -55,7 +55,7 @@ class EditorScene(QGraphicsScene):
         if not dirty:
             return
 
-        self.loader[self._loaded_idx] = data
+        self.data_loader[self._loaded_idx] = data
         self.image_modified.emit()
 
     def load(self, image_idx):
@@ -67,10 +67,8 @@ class EditorScene(QGraphicsScene):
         self._undo_stack.clear()
 
         self.layers = []
-        for i, layer in enumerate(self.loader[image_idx]):
-            pen_colors = self.loader.pen_colors
-            is_editable = self.loader.editable[i]
-            item = EditorItem(layer, self._undo_stack, pen_colors[i], is_editable)
+        for layer_idx in range(self.data_loader.num_layers):
+            item = EditorItem(image_idx, layer_idx, self)
             item.image_modified.connect(self._cache_if_dirty)
             self.addItem(item)
             self.layers.append(item)

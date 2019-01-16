@@ -54,6 +54,10 @@ class DataLoader:
     def pen_colors(self):
         return [(255, 255, 255), (38, 190, 33), (239, 56, 176)]
 
+    @property
+    def num_layers(self):
+        return len(self.folders)
+
     def _binarize(self, image):
         image = rgb2gray(from_qimage(image)[:, :, :3])
         buffer = np.zeros(image.shape, dtype=np.uint8)
