@@ -4,35 +4,23 @@ from PySide2.QtGui import *
 
 from segmate.util import from_qimage
 from segmate.editor.tools.editortool import EditorTool
+from segmate.editor.toolwidget import EditorToolWidget
 from segmate.widgets.labeledslider import LabeledSlider
 
 
-class DrawToolInspector(QWidget):
+class DrawToolInspector(EditorToolWidget):
 
     brush_size_changed = Signal(int)
     eraser_size_changed = Signal(int)
 
     def __init__(self, brush_size, eraser_size):
-        super().__init__()
-        self.setup_ui(brush_size, eraser_size)
-
-    def setup_ui(self, brush_size, eraser_size):
-        inspector_layout = QVBoxLayout(self)
-        inspector_layout.setContentsMargins(0, 0, 0, 0)
-
-        box = QGroupBox("Draw Tool", self)
-        box.setStyleSheet("border-radius: 0px;")
-        box_layout = QVBoxLayout(box)
-        box_layout.setContentsMargins(2, 6, 2, 2)
-
+        super().__init__("Draw Tool")
         brush = LabeledSlider("Brush Size", value=brush_size, maximum=50)
         brush.value_changed.connect(self._change_brush_size)
         eraser = LabeledSlider("Eraser Size", value=eraser_size, maximum=50)
         eraser.value_changed.connect(self._change_eraser_size)
-        box_layout.addWidget(brush)
-        box_layout.addWidget(eraser)
-
-        inspector_layout.addWidget(box)
+        self.add_widget(brush)
+        self.add_widget(eraser)
 
     def _change_brush_size(self, value):
         self.brush_size_changed.emit(value)

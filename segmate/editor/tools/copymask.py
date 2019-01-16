@@ -3,28 +3,16 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 from segmate.editor.tools.editortool import EditorTool
+from segmate.editor.toolwidget import EditorToolWidget
 
 
-class CopyMaskToolInspector(QWidget):
+class CopyMaskToolInspector(EditorToolWidget):
 
     def __init__(self, callback):
-        super().__init__()
-        self.setup_ui(callback)
-
-    def setup_ui(self, callback):
-        inspector_layout = QVBoxLayout(self)
-        inspector_layout.setContentsMargins(0, 0, 0, 0)
-
-        box = QGroupBox("Copy Mask Tool", self)
-        box.setStyleSheet("border-radius: 0px;")
-        box_layout = QVBoxLayout(box)
-        box_layout.setContentsMargins(2, 6, 2, 2)
-
+        super().__init__("Copy Mask Tool")
         button = QPushButton("Copy layer from previous frame")
         button.pressed.connect(callback)
-        box_layout.addWidget(button)
-
-        inspector_layout.addWidget(box)
+        self.add_widget(button)
 
 
 class CopyMaskTool(EditorTool):

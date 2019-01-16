@@ -6,29 +6,17 @@ from skimage.color import rgb2gray
 from scipy import ndimage as ndi
 
 from segmate.editor.tools.editortool import EditorTool
+from segmate.editor.toolwidget import EditorToolWidget
 import segmate.util as util
 
 
-class FillHolesToolInspector(QWidget):
+class FillHolesToolInspector(EditorToolWidget):
 
     def __init__(self, callback):
-        super().__init__()
-        self.setup_ui(callback)
-
-    def setup_ui(self, callback):
-        inspector_layout = QVBoxLayout(self)
-        inspector_layout.setContentsMargins(0, 0, 0, 0)
-
-        box = QGroupBox("Copy Mask Tool", self)
-        box.setStyleSheet("border-radius: 0px;")
-        box_layout = QVBoxLayout(box)
-        box_layout.setContentsMargins(2, 6, 2, 2)
-
+        super().__init__("Fill Holes Tool")
         button = QPushButton("Fill holes in layer")
         button.pressed.connect(callback)
-        box_layout.addWidget(button)
-
-        inspector_layout.addWidget(box)
+        self.add_widget(button)
 
 
 class FillHolesTool(EditorTool):
