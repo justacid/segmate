@@ -16,6 +16,7 @@ class DataLoader:
         self.folders = ["images", "masks", "spores"]
         self.editable = [False, True, True]
         self.cache = {}
+        self.modified = set()
         self.files = [f for f in listdir(self.root / self.folders[0])]
         self.files = sorted(self.files, key=lambda f: int(f.split("-")[1].split(".")[0]))
 
@@ -39,10 +40,11 @@ class DataLoader:
 
     def __setitem__(self, idx, value):
         self.cache[idx] = value
+        self.modified.add(idx)
 
     def save_to_disk(self):
-        for idx, data in self.cache.items():
-            _, mask1, mask2 = data
+        for idx in self.modified:
+            _, mask1, mask2 = self.cache[idx]
             mask1 = self._binarize(mask1)
             mask2 = self._binarize(mask2)
             io.imsave(self.root / self.folders[1] / self.files[idx], mask1)
