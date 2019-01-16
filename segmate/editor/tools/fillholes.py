@@ -6,7 +6,7 @@ from skimage.color import rgb2gray
 from scipy import ndimage as ndi
 
 from segmate.editor.tools.editortool import EditorTool
-from segmate.util import to_qimage, from_qimage
+import segmate.util as util
 
 
 class FillHolesToolInspector(QWidget):
@@ -41,14 +41,9 @@ class FillHolesTool(EditorTool):
 
     def _binary_fill_holes(self):
         self.is_dirty = True
-        image = from_qimage(self.canvas)
-        segmentation = rgb2gray(image[:,:,:3])
-        mask = np.zeros(segmentation.shape, dtype=np.uint8)
-        mask[segmentation != 0.0] = 1
+        mask = util.extract_binary_mask(self.canvas)
         filled = ndi.binary_fill_holes(mask)
-        output = np.zeros((*mask.shape, 4), dtype=np.uint8)
-        output[filled == 1] = (*self.pen_color, 255)
-        output = to_qimage(output)
+        output = util.color_binary_mask(filled, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Fill Holes")
         self.canvas = output
 

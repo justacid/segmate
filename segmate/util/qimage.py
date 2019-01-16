@@ -1,5 +1,6 @@
 import numpy as np
 from PySide2.QtGui import QImage
+from skimage.color import rgb2gray
 
 
 def to_qimage(arr, copy=True):
@@ -59,3 +60,54 @@ def from_qimage(image):
         raise TypeError("Unsupported image format.")
 
     return np.array(image.constBits(), dtype=np.uint8).reshape(dims[image.format()])
+
+
+def extract_binary_mask(image):
+    """Retrieve the binary mask from a QImage object with alpha channel.
+
+    Args:
+        image: A QImage in the RGBA888 or RGBA8888format
+
+    Returns:
+        Binary mask, where everything not equal to zero is set to 1
+    """
+    if image is None:
+        raise ValueError("The argument 'image' can not be 'None'.")
+
+    image = from_qimage(image)
+    noalpha = rgb2gray(image[:,:,:3])
+    mask = np.zeros(noalpha.shape, dtype=np.uint8)
+    mask[noalpha != 0.0] = 1
+    return mask
+
+
+def color_binary_mask(arr, color=(255, 255, 255)):
+    """Returns a colored QImage from a binary mask with given color.
+
+    Args:
+        image: A binary numpy array
+
+    Returns:
+        A QImage from the corresponding binary image.
+    """
+    if arr is None:
+        raise ValueError("The argument 'arr' can not be 'None'.")
+    if len(arr.shape) != 2:
+        raise TypeError(f"Only binary masks are supported.")
+
+    output = np.zeros((*arr.shape, 4), dtype=np.uint8)
+    output[arr == 1] = (*color, 255)
+    return to_qimage(output, copy=True)
+
+def invert_binary_mask(arr):
+    """Inverts a binary numpy array.
+
+    Args:
+        image: A binary numpy array
+
+    Returns:
+        A numpy array where 1 and 0 are switched.
+    """
+    output = np.ones(arr.shape, dtype=np.uint8)
+    output[arr == 1] = 0
+    return output
