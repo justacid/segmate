@@ -17,6 +17,8 @@ class ContourTool(EditorTool):
         self._snapshot = QImage(image)
 
     def paint_canvas(self):
+        if not self.is_editable:
+            return self.canvas
         image = from_qimage(self.canvas)
         image = to_qimage(self.draw_contours(image))
         return image
@@ -25,13 +27,9 @@ class ContourTool(EditorTool):
         return self._snapshot
 
     def draw_contours(self, image):
-        if not self.is_editable:
-            return image
-
         segmentation = rgb2gray(image[:,:,:3])
         if np.max(segmentation) == 0.0:
             return image
-
 
         mask = np.ones(segmentation.shape, dtype=np.uint8)
         mask[segmentation != 0.0] = 0
