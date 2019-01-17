@@ -30,9 +30,6 @@ class ContourTool(EditorTool):
         if np.max(mask) == 0:
             return image
 
-        if self.item.layer_idx == 2:
-            return image
-
         mask = util.invert_binary_mask(mask)
         contours = find_contours(mask, 0.25)
         output = np.zeros(mask.shape, dtype=np.uint8)
