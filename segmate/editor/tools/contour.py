@@ -4,9 +4,11 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from skimage.measure import find_contours
 from skimage.color import rgb2gray
+from scipy.interpolate import CubicSpline
 
 from segmate.editor.tools.editortool import EditorTool
 import segmate.util as util
+import segmate.util.spline as spline
 
 
 class ContourTool(EditorTool):
@@ -28,12 +30,15 @@ class ContourTool(EditorTool):
         if np.max(mask) == 0:
             return image
 
+        if self.item.layer_idx == 2:
+            return image
+
         mask = util.invert_binary_mask(mask)
         contours = find_contours(mask, 0.25)
         output = np.zeros(mask.shape, dtype=np.uint8)
 
         for contour in contours:
-            contour = contour.astype(np.int32)
+            contour = np.round(contour).astype(np.int32)
             output[contour[:, 0], contour[:, 1]] = 1
 
         return util.color_binary_mask(output, self.pen_color)
