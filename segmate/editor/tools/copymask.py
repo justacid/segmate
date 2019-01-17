@@ -1,18 +1,23 @@
+import numpy as np
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 from segmate.editor.tools.editortool import EditorTool
 from segmate.editor.toolwidget import EditorToolWidget
+import segmate.util as util
 
 
 class CopyMaskToolInspector(EditorToolWidget):
 
-    def __init__(self, callback):
+    def __init__(self, copy_cb, merge_cb):
         super().__init__("Copy Mask Tool")
-        button = QPushButton("Copy layer from previous frame")
-        button.pressed.connect(callback)
-        self.add_widget(button)
+        copy_button = QPushButton("Copy layer from previous frame")
+        copy_button.pressed.connect(copy_cb)
+        merge_button = QPushButton("Merge all masks")
+        merge_button.pressed.connect(merge_cb)
+        self.add_widget(copy_button)
+        self.add_widget(merge_button)
 
 
 class CopyMaskTool(EditorTool):
@@ -31,8 +36,22 @@ class CopyMaskTool(EditorTool):
         self.push_undo_snapshot(self.canvas, mask, undo_text="Copy Mask")
         self.canvas = QImage(mask)
 
+    def _merge_masks(self):
+        self.is_dirty = True
+
+        idx = self.item.image_idx
+        layer = self.item.layer_idx
+
+        output = np.zeros((self.canvas.height(), self.canvas.width()), dtype=np.uint8)
+        for i in range(1, len(self.item.scene.layers)):
+            mask = util.extract_binary_mask(self.item.scene.data_loader[idx][i])
+            output[mask == 1] = 1
+        output = util.color_binary_mask(output, self.pen_color)
+        self.push_undo_snapshot(self.canvas, output, undo_text="Merge Mask")
+        self.canvas = output
+
     @property
     def inspector_widget(self):
         if not self.is_editable:
             return None
-        return CopyMaskToolInspector(self._copy_previous_mask)
+        return CopyMaskToolInspector(self._copy_previous_mask, self._merge_masks)
