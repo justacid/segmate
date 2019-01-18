@@ -8,7 +8,6 @@ from scipy.interpolate import CubicSpline
 
 from segmate.editor.tools.editortool import EditorTool
 import segmate.util as util
-import segmate.util.spline as spline
 
 
 class ContourTool(EditorTool):
