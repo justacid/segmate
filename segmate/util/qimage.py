@@ -1,6 +1,9 @@
+import warnings
+
 import numpy as np
 from PySide2.QtGui import QImage
 from skimage.color import rgb2gray
+from skimage import img_as_ubyte
 
 
 def to_qimage(arr, copy=True):
@@ -33,6 +36,13 @@ def to_qimage(arr, copy=True):
         raise TypeError("Unsupported image format.")
 
     qimage = QImage(arr.data, *shape, stride, formats[cdim])
+    # This is a massive hack - for some reason copying a grayscale image
+    # changes the "bytesPerLine", but if we then convert it to RGBA
+    # it's correct again... this is probably a bug somewhere in Qt...
+    # todo: Remove conversion, if/when fixed
+    if qimage.format() == QImage.Format_Grayscale8:
+        return qimage.copy().convertToFormat(QImage.Format_RGBA8888)
+
     return qimage.copy() if copy else qimage
 
 
@@ -60,6 +70,24 @@ def from_qimage(image):
         raise TypeError("Unsupported image format.")
 
     return np.array(image.constBits(), dtype=np.uint8).reshape(dims[image.format()])
+
+
+def to_grayscale(image):
+    """ Convert a QImage to numpy array in grayscale.
+
+    Args:
+        image: A QImage in the RGBA888 or RGBA8888format
+
+    Returns:
+        Grayscale numpy array of QImage.
+    """
+    if image is None:
+        raise ValueError("The argument 'image' can not be 'None'.")
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        image = from_qimage(image)
+        return img_as_ubyte(rgb2gray(image[:,:,:3]))
 
 
 def extract_binary_mask(image):

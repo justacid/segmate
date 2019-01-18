@@ -318,10 +318,10 @@ class MainWindowWidget(QMainWindow):
         toolbox.addAction(copy_mask)
         tools_menu.addAction(copy_mask)
 
-        fill_holes = toolbar.addAction("Fill Holes Tool")
+        fill_holes = toolbar.addAction("Morphology Tool")
         fill_holes.setIcon(QIcon("icons/fill-holes.png"))
         fill_holes.setCheckable(True)
-        fill_holes.triggered.connect(partial(self._set_tool, "fill_holes_tool"))
+        fill_holes.triggered.connect(partial(self._set_tool, "morphology_tool"))
         toolbox.addAction(fill_holes)
         tools_menu.addAction(fill_holes)
 

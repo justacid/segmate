@@ -10,7 +10,6 @@ class EditorItem(QGraphicsObject):
 
     image_modified = Signal()
 
-    # def __init__(self, image, undo_stack, pen_color=None, editable=True):
     def __init__(self, image_idx, layer_idx, scene):
         super().__init__()
 
@@ -20,7 +19,7 @@ class EditorItem(QGraphicsObject):
             "contour_tool": tools.ContourTool,
             "draw_tool": tools.DrawTool,
             "copy_mask_tool": tools.CopyMaskTool,
-            "fill_holes_tool": tools.FillHolesTool
+            "morphology_tool": tools.MorphologyTool
         }
 
         self.scene = scene
