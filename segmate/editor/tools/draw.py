@@ -14,7 +14,7 @@ class DrawToolInspector(EditorToolWidget):
     eraser_size_changed = Signal(int)
 
     def __init__(self, brush_size, eraser_size):
-        super().__init__("Draw Tool")
+        super().__init__("Brush Settings")
         brush = LabeledSlider("Brush Size", value=brush_size, maximum=50)
         brush.value_changed.connect(self._change_brush_size)
         eraser = LabeledSlider("Eraser Size", value=eraser_size, maximum=50)

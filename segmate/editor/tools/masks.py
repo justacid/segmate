@@ -8,10 +8,10 @@ from segmate.editor.toolwidget import EditorToolWidget
 import segmate.util as util
 
 
-class CopyMaskToolInspector(EditorToolWidget):
+class MasksToolInspector(EditorToolWidget):
 
     def __init__(self, copy_cb, clear_cb, merge_cb):
-        super().__init__("Copy Mask Tool")
+        super().__init__("Masks")
         copy_button = QPushButton("Copy Previous Mask")
         copy_button.pressed.connect(copy_cb)
         clear_button = QPushButton("Clear Mask")
@@ -23,7 +23,7 @@ class CopyMaskToolInspector(EditorToolWidget):
         self.add_widget(merge_button)
 
 
-class CopyMaskTool(EditorTool):
+class MasksTool(EditorTool):
 
     def paint_canvas(self):
         return self.canvas
@@ -63,5 +63,5 @@ class CopyMaskTool(EditorTool):
     def inspector_widget(self):
         if not self.is_editable:
             return None
-        return CopyMaskToolInspector(
+        return MasksToolInspector(
             self._copy_previous_mask, self._clear_mask, self._merge_masks)

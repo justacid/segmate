@@ -319,10 +319,10 @@ class MainWindowWidget(QMainWindow):
         toolbox.addAction(morph_tool)
         tools_menu.addAction(morph_tool)
 
-        copy_mask = toolbar.addAction("Copy Tool")
+        copy_mask = toolbar.addAction("Masks Tool")
         copy_mask.setIcon(QIcon("icons/copy-content.png"))
         copy_mask.setCheckable(True)
-        copy_mask.triggered.connect(partial(self._set_tool, "copy_mask_tool"))
+        copy_mask.triggered.connect(partial(self._set_tool, "masks_tool"))
         copy_mask.setShortcut(QKeySequence(Qt.Key_6))
         toolbox.addAction(copy_mask)
         tools_menu.addAction(copy_mask)

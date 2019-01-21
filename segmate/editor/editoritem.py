@@ -18,7 +18,7 @@ class EditorItem(QGraphicsObject):
             "cursor_tool": tools.CursorTool,
             "contour_tool": tools.ContourTool,
             "draw_tool": tools.DrawTool,
-            "copy_mask_tool": tools.CopyMaskTool,
+            "masks_tool": tools.MasksTool,
             "morphology_tool": tools.MorphologyTool
         }
 

@@ -15,7 +15,7 @@ import segmate.util as util
 class MorphologyToolInspector(EditorToolWidget):
 
     def __init__(self, cb_fill, cb_dilate, cb_erode, cb_skel, cb_wshed):
-        super().__init__("Morphology Tool")
+        super().__init__("Morphology")
         btn_fill = QPushButton("Fill Holes")
         btn_fill.pressed.connect(cb_fill)
         btn_dilate = QPushButton("Dilate")
