@@ -94,7 +94,7 @@ class MorphologyTool(EditorTool):
 
         markers = util.extract_binary_mask(self.canvas)
         markers = morph.label(markers, background=0)
-        markers[0, 0] = np.max(markers) + 1
+        markers[0, markers.shape[1] - 1] = np.max(markers) + 1
 
         basin = rank.gradient(image, morph.disk(1))
         watershed = morph.watershed(basin, markers)

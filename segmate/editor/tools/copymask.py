@@ -10,13 +10,16 @@ import segmate.util as util
 
 class CopyMaskToolInspector(EditorToolWidget):
 
-    def __init__(self, copy_cb, merge_cb):
+    def __init__(self, copy_cb, clear_cb, merge_cb):
         super().__init__("Copy Mask Tool")
-        copy_button = QPushButton("Copy layer from previous frame")
+        copy_button = QPushButton("Copy Previous Mask")
         copy_button.pressed.connect(copy_cb)
-        merge_button = QPushButton("Merge all masks")
+        clear_button = QPushButton("Clear Mask")
+        clear_button.pressed.connect(clear_cb)
+        merge_button = QPushButton("Merge Masks")
         merge_button.pressed.connect(merge_cb)
         self.add_widget(copy_button)
+        self.add_widget(clear_button)
         self.add_widget(merge_button)
 
 
@@ -36,6 +39,12 @@ class CopyMaskTool(EditorTool):
         self.push_undo_snapshot(self.canvas, mask, undo_text="Copy Mask")
         self.canvas = QImage(mask)
 
+    def _clear_mask(self):
+        mask = np.zeros((self.canvas.height(), self.canvas.width()), dtype=np.uint8)
+        mask = util.color_binary_mask(mask, self.pen_color)
+        self.push_undo_snapshot(self.canvas, mask, undo_text="Clear Mask")
+        self.canvas = mask
+
     def _merge_masks(self):
         self.is_dirty = True
 
@@ -54,4 +63,5 @@ class CopyMaskTool(EditorTool):
     def inspector_widget(self):
         if not self.is_editable:
             return None
-        return CopyMaskToolInspector(self._copy_previous_mask, self._merge_masks)
+        return CopyMaskToolInspector(
+            self._copy_previous_mask, self._clear_mask, self._merge_masks)

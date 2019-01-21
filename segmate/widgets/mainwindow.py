@@ -282,7 +282,7 @@ class MainWindowWidget(QMainWindow):
         cursor_tool.setCheckable(True)
         cursor_tool.setChecked(True)
         cursor_tool.triggered.connect(partial(self._set_tool, "cursor_tool"))
-        cursor_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_1))
+        cursor_tool.setShortcut(QKeySequence(Qt.Key_1))
         toolbox.addAction(cursor_tool)
         tools_menu.addAction(cursor_tool)
 
@@ -290,7 +290,7 @@ class MainWindowWidget(QMainWindow):
         draw_tool.setIcon(QIcon("icons/draw.png"))
         draw_tool.setCheckable(True)
         draw_tool.triggered.connect(partial(self._set_tool, "draw_tool"))
-        draw_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_2))
+        draw_tool.setShortcut(QKeySequence(Qt.Key_2))
         toolbox.addAction(draw_tool)
         tools_menu.addAction(draw_tool)
 
@@ -298,7 +298,7 @@ class MainWindowWidget(QMainWindow):
         bucket_tool.setIcon(QIcon("icons/paint-bucket.png"))
         bucket_tool.setCheckable(True)
         bucket_tool.triggered.connect(partial(self._set_tool, "bucket_tool"))
-        bucket_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_3))
+        bucket_tool.setShortcut(QKeySequence(Qt.Key_3))
         toolbox.addAction(bucket_tool)
         tools_menu.addAction(bucket_tool)
 
@@ -306,24 +306,26 @@ class MainWindowWidget(QMainWindow):
         move_tool.setIcon(QIcon("icons/contour-tool.png"))
         move_tool.setCheckable(True)
         move_tool.triggered.connect(partial(self._set_tool, "contour_tool"))
-        move_tool.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_4))
+        move_tool.setShortcut(QKeySequence(Qt.Key_4))
         toolbox.addAction(move_tool)
         tools_menu.addAction(move_tool)
         toolbar.addSeparator()
+
+        morph_tool = toolbar.addAction("Morphology Tool")
+        morph_tool.setIcon(QIcon("icons/fill-holes.png"))
+        morph_tool.setCheckable(True)
+        morph_tool.triggered.connect(partial(self._set_tool, "morphology_tool"))
+        morph_tool.setShortcut(QKeySequence(Qt.Key_5))
+        toolbox.addAction(morph_tool)
+        tools_menu.addAction(morph_tool)
 
         copy_mask = toolbar.addAction("Copy Tool")
         copy_mask.setIcon(QIcon("icons/copy-content.png"))
         copy_mask.setCheckable(True)
         copy_mask.triggered.connect(partial(self._set_tool, "copy_mask_tool"))
+        copy_mask.setShortcut(QKeySequence(Qt.Key_6))
         toolbox.addAction(copy_mask)
         tools_menu.addAction(copy_mask)
-
-        fill_holes = toolbar.addAction("Morphology Tool")
-        fill_holes.setIcon(QIcon("icons/fill-holes.png"))
-        fill_holes.setCheckable(True)
-        fill_holes.triggered.connect(partial(self._set_tool, "morphology_tool"))
-        toolbox.addAction(fill_holes)
-        tools_menu.addAction(fill_holes)
 
         toolbar.addSeparator()
 
@@ -382,19 +384,16 @@ class MainWindowWidget(QMainWindow):
             if not self.inspector:
                 event.ignore()
                 return
-            if event.modifiers() & Qt.ControlModifier:
-                self.inspector.activate_layer(0)
+            self.inspector.activate_layer(0)
         elif event.key() == Qt.Key_W:
             if not self.inspector:
                 event.ignore()
                 return
-            if event.modifiers() & Qt.ControlModifier:
-                self.inspector.activate_layer(1)
+            self.inspector.activate_layer(1)
         elif event.key() == Qt.Key_E:
             if not self.inspector:
                 event.ignore()
                 return
-            if event.modifiers() & Qt.ControlModifier:
-                self.inspector.activate_layer(2)
+            self.inspector.activate_layer(2)
 
         event.ignore()
