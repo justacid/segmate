@@ -9,6 +9,7 @@ import skimage.morphology as morph
 
 from segmate.editor.tools.editortool import EditorTool
 from segmate.editor.toolwidget import EditorToolWidget
+from segmate.editor.selection import RectSelection
 import segmate.util as util
 
 
@@ -38,8 +39,14 @@ class MorphologyToolInspector(EditorToolWidget):
 
 class MorphologyTool(EditorTool):
 
+    def __init__(self, image, item):
+        super().__init__(image, item)
+        self._selection = RectSelection(self)
+
     def paint_canvas(self):
-        return self.canvas
+        image = QImage(self.canvas)
+        self._selection.paint(image)
+        return image
 
     def paint_result(self):
         return self.canvas
@@ -48,31 +55,56 @@ class MorphologyTool(EditorTool):
         self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
         filled = ndi.binary_fill_holes(mask)
+
+        if self._selection.is_active:
+            sel_mask = np.zeros(mask.shape, dtype=np.bool)
+            sel_mask[self._selection.indices] = True
+            filled[~sel_mask] = mask[~sel_mask]
+
         output = util.color_binary_mask(filled, self.pen_color)
+
         self.push_undo_snapshot(self.canvas, output, undo_text="Fill Holes")
         self.canvas = output
 
     def _dilate(self):
         self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
-        mask = morph.binary_dilation(mask)
-        output = util.color_binary_mask(mask, self.pen_color)
+        dilated = morph.binary_dilation(mask)
+
+        if self._selection.is_active:
+            sel_mask = np.zeros(mask.shape, dtype=np.bool)
+            sel_mask[self._selection.indices] = True
+            dilated[~sel_mask] = mask[~sel_mask]
+
+        output = util.color_binary_mask(dilated, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Dilate")
         self.canvas = output
 
     def _erode(self):
         self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
-        mask = morph.binary_erosion(mask)
-        output = util.color_binary_mask(mask, self.pen_color)
+        eroded = morph.binary_erosion(mask)
+
+        if self._selection.is_active:
+            sel_mask = np.zeros(mask.shape, dtype=np.bool)
+            sel_mask[self._selection.indices] = True
+            eroded[~sel_mask] = mask[~sel_mask]
+
+        output = util.color_binary_mask(eroded, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Erode")
         self.canvas = output
 
     def _skeletonize(self):
         self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
-        mask = morph.skeletonize(mask)
-        output = util.color_binary_mask(mask, self.pen_color)
+        skeletonized = morph.skeletonize(mask)
+
+        if self._selection.is_active:
+            sel_mask = np.zeros(mask.shape, dtype=np.bool)
+            sel_mask[self._selection.indices] = True
+            skeletonized[~sel_mask] = mask[~sel_mask]
+
+        output = util.color_binary_mask(skeletonized, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Skeletonize")
         self.canvas = output
 
@@ -91,6 +123,11 @@ class MorphologyTool(EditorTool):
 
         result_mask = np.zeros(watershed.shape, dtype=np.uint8)
         result_mask[watershed != watershed[0][0]] = 1
+
+        if self._selection.is_active:
+            sel_mask = np.zeros(markers.shape, dtype=np.bool)
+            sel_mask[self._selection.indices] = True
+            result_mask[~sel_mask] = util.extract_binary_mask(self.canvas)[~sel_mask]
 
         output = util.color_binary_mask(result_mask, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Watershed")
