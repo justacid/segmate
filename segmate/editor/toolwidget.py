@@ -18,3 +18,9 @@ class EditorToolWidget(QWidget):
 
     def add_widget(self, widget):
         self._box_layout.addWidget(widget)
+
+    def add_separator(self):
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        self.add_widget(line)

@@ -22,26 +22,16 @@ class MorphologyToolInspector(EditorToolWidget):
         btn_dilate.pressed.connect(cb_dilate)
         btn_erode = QPushButton("Erode")
         btn_erode.pressed.connect(cb_erode)
-
-        self.add_widget(btn_fill)
-
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
-        self.add_widget(line)
-
-        self.add_widget(btn_dilate)
-        self.add_widget(btn_erode)
-
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
-        self.add_widget(line)
-
         btn_skel = QPushButton("Skeletonize")
         btn_skel.pressed.connect(cb_skel)
         btn_wshed = QPushButton("Watershed")
         btn_wshed.pressed.connect(cb_wshed)
+
+        self.add_widget(btn_fill)
+        self.add_separator()
+        self.add_widget(btn_dilate)
+        self.add_widget(btn_erode)
+        self.add_separator()
         self.add_widget(btn_skel)
         self.add_widget(btn_wshed)
 

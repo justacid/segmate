@@ -22,6 +22,7 @@ class MasksToolInspector(EditorToolWidget):
         clr_merge_btn = QPushButton("Clear && Merge Masks")
         clr_merge_btn.pressed.connect(clr_merge_cb)
         self.add_widget(copy_button)
+        self.add_separator()
         self.add_widget(clear_button)
         self.add_widget(merge_button)
         self.add_widget(clr_merge_btn)
