@@ -61,6 +61,13 @@ class RectSelection:
     def release(self, pos):
         if self._selecting:
             self._selecting = False
+            self._corner2 = pos
+
+            if self._corner1 is None or self._corner2 is None:
+                self.reset()
+                return
+            if not self._has_gap_size(4):
+                self.reset()
 
     def reset(self):
         self._selecting = False
@@ -73,27 +80,37 @@ class RectSelection:
         if not self.indices:
             return
 
-        try:
-            image = util.from_qimage(canvas)
-            mask = np.zeros(image.shape[:2], dtype=np.bool)
-            mask[self.indices] = True
+        image = util.from_qimage(canvas)
+        if self._has_gap_size(4) and not self._selecting:
+            try:
+                mask = np.zeros(image.shape[:2], dtype=np.bool)
+                mask[self.indices] = True
 
-            is_neg = self.indices[0] < 0
-            js_neg = self.indices[1] < 0
-            if is_neg.any() or js_neg.any():
+                is_neg = self.indices[0] < 0
+                js_neg = self.indices[1] < 0
+                if is_neg.any() or js_neg.any():
+                    self.reset()
+                    return
+
+                image[~mask] = (0, 0, 0, 96)
+            except:
                 self.reset()
                 return
-
-            image[~mask] = (0, 0, 0, 96)
-            image = util.to_qimage(image)
-        except:
-            self.reset()
-            return
+        image = util.to_qimage(image)
 
         painter = QPainter(canvas)
         painter.drawImage(0, 0, image)
         painter.setPen(QPen(QColor(47, 79, 79)))
         painter.drawRect(QRectF(self._corner1, self._corner2))
+
+    def _has_gap_size(self, gap_size):
+        if self._corner1 is None or self._corner2 is None:
+            return False
+        x1, x2 = self._corner1.x(), self._corner2.x()
+        y1, y2 = self._corner1.y(), self._corner2.y()
+        if x2 - x1 <= gap_size or y2 - y1 <= gap_size:
+            return False
+        return True
 
     def __mouse_pressed(self, event):
         if event.button() == Qt.LeftButton:
