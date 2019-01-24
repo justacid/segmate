@@ -16,7 +16,6 @@ class InspectorWidget(QWidget):
         super().__init__()
         self.scene = None
         self.current_image = 0
-        self._slider_active = False
         self._setup_ui()
         self.slider_box.hide()
         self.layer_box.hide()
@@ -24,6 +23,7 @@ class InspectorWidget(QWidget):
     def set_scene(self, scene):
         self.scene = scene
         self.current_image = 0
+        self._add_layer_widgets()
 
         if not scene:
             self.slider_box.hide()
@@ -32,7 +32,6 @@ class InspectorWidget(QWidget):
 
         self.slider.setValue(0)
         self.slider.setMaximum(self.scene.image_count-1)
-        self.scene.image_loaded.connect(self._add_layers)
         self.scene_changed.emit(scene)
 
         self.slider_box.show()
@@ -82,31 +81,13 @@ class InspectorWidget(QWidget):
         if widget:
             widget.deleteLater()
 
-    def _clear_layers(self):
-        while self.layers.count():
-            child = self.layers.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-
-    def _add_layers(self):
-        if self._slider_active:
-            return
-        self._clear_layers()
-        for i, (layer, name) in enumerate(zip(self.scene.layers, self.scene.data_loader.folders)):
-            item = self._add_layer_widget(i, layer, name)
+    def _add_layer_widgets(self):
+        for index, name in enumerate(self.scene.data_loader.folders):
+            item = LayerItemWidget(index, f"Opacity: {name}".title())
+            item.opacity_changed.connect(self.scene.change_layer_opacity)
+            item.layer_clicked.connect(self.activate_layer)
+            self.layers.addWidget(item)
         self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
-
-    def _add_layer_widget(self, idx, layer, name=""):
-        opacity = self.scene.opacities[idx]
-        text = f"Opacity: {name}".title()
-        item = LayerItemWidget(text, opacity)
-        item.opacity_changed.connect(lambda x: self.scene.change_layer_opacity(idx, x))
-        item.layer_clicked.connect(lambda: self.activate_layer(idx))
-        self.layers.addWidget(item)
-        return item
-
-    def _enable_repaint(self, enabled):
-        self._slider_active = not enabled
 
     def _setup_ui(self):
         self.dock_layout = QVBoxLayout(self)
@@ -128,8 +109,6 @@ class InspectorWidget(QWidget):
         self.slider.setTickInterval(10)
         self.slider.setValue(0)
         self.slider.valueChanged.connect(self.change_image)
-        self.slider.sliderPressed.connect(partial(self._enable_repaint, False))
-        self.slider.sliderReleased.connect(partial(self._enable_repaint, True))
         hlayout.addWidget(self.slider)
 
         arrow_right = QToolButton()
@@ -149,5 +128,4 @@ class InspectorWidget(QWidget):
         self.layers = QVBoxLayout(self.layer_box)
         self.layers.setSpacing(2)
         self.layers.setContentsMargins(2, 6, 2, 2)
-        self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.dock_layout.addWidget(self.layer_box)

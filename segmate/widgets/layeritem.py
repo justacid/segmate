@@ -5,13 +5,14 @@ from PySide2.QtGui import *
 
 class LayerItemWidget(QFrame):
 
-    opacity_changed = Signal(float)
-    layer_clicked = Signal()
+    opacity_changed = Signal(int, float)
+    layer_clicked = Signal(int)
 
-    def __init__(self, text, opacity=1.0):
+    def __init__(self, index, text):
         super().__init__()
+        self._index = index
         self._text = text
-        self._opacity = opacity
+        self._opacity = 1.0
         self._is_visible = True
         self._is_active = False
         self._setup_ui()
@@ -58,7 +59,7 @@ class LayerItemWidget(QFrame):
             self._is_visible = False
 
         self._set_icon(self._is_visible)
-        self.opacity_changed.emit(self.opacity)
+        self.opacity_changed.emit(self._index, self.opacity)
 
     def _toggle_visibility(self):
         self._is_visible = not self._is_visible
@@ -70,7 +71,7 @@ class LayerItemWidget(QFrame):
         self._set_icon(self._is_visible)
 
         self.slider.setValue(value)
-        self.opacity_changed.emit(value / 100)
+        self.opacity_changed.emit(self._index, value / 100)
         self.slider.blockSignals(False)
 
     def _setup_ui(self):
@@ -109,5 +110,5 @@ class LayerItemWidget(QFrame):
 
     def mousePressEvent(self, event):
         self.is_active = not self.is_active
-        self.layer_clicked.emit()
+        self.layer_clicked.emit(self._index)
         event.ignore()
