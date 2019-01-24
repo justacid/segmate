@@ -9,7 +9,7 @@ from skimage.color import rgb2gray
 from segmate.util import to_qimage, from_qimage
 
 
-class DataLoader:
+class DataStore:
 
     def __init__(self, folder):
         self.root = Path(folder)

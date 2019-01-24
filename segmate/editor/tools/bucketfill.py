@@ -4,7 +4,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from segmate.editor.tools.editortool import EditorTool
+from segmate.editor.editortool import EditorTool
 from segmate.util import to_qimage, from_qimage
 
 
@@ -14,9 +14,6 @@ class BucketFillTool(EditorTool):
         super().__init__(image, parent)
 
     def paint_canvas(self):
-        return self.canvas
-
-    def paint_result(self):
         return self.canvas
 
     def mouse_pressed(self, event):

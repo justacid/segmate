@@ -7,8 +7,8 @@ from skimage.color import rgb2gray
 from skimage.filters import rank
 import skimage.morphology as morph
 
-from segmate.editor.tools.editortool import EditorTool
-from segmate.editor.toolwidget import EditorToolWidget
+from segmate.editor.editortool import EditorTool
+from segmate.editor.widgets import EditorToolWidget
 from segmate.editor.selection import RectSelection
 import segmate.util as util
 
@@ -47,9 +47,6 @@ class MorphologyTool(EditorTool):
         image = QImage(self.canvas)
         self._selection.paint(image)
         return image
-
-    def paint_result(self):
-        return self.canvas
 
     def _fill_holes(self):
         mask = util.extract_binary_mask(self.canvas)
@@ -109,7 +106,7 @@ class MorphologyTool(EditorTool):
         self.notify_dirty()
 
     def _watershed(self):
-        image = self.item.scene.data_loader[self.item.image_idx][0]
+        image = self.item.scene.data_store[self.item.image_idx][0]
         image = util.to_grayscale(image)
 
         markers = util.extract_binary_mask(self.canvas)

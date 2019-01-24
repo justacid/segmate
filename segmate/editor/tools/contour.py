@@ -6,7 +6,7 @@ from skimage.measure import find_contours
 from skimage.color import rgb2gray
 from scipy.interpolate import CubicSpline
 
-from segmate.editor.tools.editortool import EditorTool
+from segmate.editor.editortool import EditorTool
 import segmate.util as util
 
 

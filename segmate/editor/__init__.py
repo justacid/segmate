@@ -1,2 +1,2 @@
-from .editoritem import EditorItem
-from .editorscene import EditorScene
+from .item import EditorItem
+from .scene import EditorScene

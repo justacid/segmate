@@ -82,7 +82,7 @@ class InspectorWidget(QWidget):
             widget.deleteLater()
 
     def _add_layer_widgets(self):
-        for index, name in enumerate(self.scene.data_loader.folders):
+        for index, name in enumerate(self.scene.data_store.folders):
             item = LayerItemWidget(index, f"Opacity: {name}".title())
             item.opacity_changed.connect(self.scene.change_layer_opacity)
             item.layer_clicked.connect(self.activate_layer)

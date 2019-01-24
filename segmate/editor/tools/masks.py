@@ -3,8 +3,8 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from segmate.editor.tools.editortool import EditorTool
-from segmate.editor.toolwidget import EditorToolWidget
+from segmate.editor.editortool import EditorTool
+from segmate.editor.widgets import EditorToolWidget
 from segmate.editor.selection import RectSelection
 import segmate.util as util
 
@@ -39,13 +39,10 @@ class MasksTool(EditorTool):
         self._selection.paint(image)
         return image
 
-    def paint_result(self):
-        return self.canvas
-
     def _copy_previous_mask(self):
         idx = max(self.item.image_idx - 1, 0)
         layer = self.item.layer_idx
-        mask = util.extract_binary_mask(self.item.scene.data_loader[idx][layer])
+        mask = util.extract_binary_mask(self.item.scene.data_store[idx][layer])
         current_mask = util.extract_binary_mask(self.canvas)
 
         output = np.zeros(mask.shape, dtype=np.uint8)
@@ -81,7 +78,7 @@ class MasksTool(EditorTool):
         current_mask = util.extract_binary_mask(self.canvas)
         output = np.zeros((self.canvas.height(), self.canvas.width()), dtype=np.uint8)
         for i in range(1, len(self.item.scene.layers)):
-            mask = util.extract_binary_mask(self.item.scene.data_loader[idx][i])
+            mask = util.extract_binary_mask(self.item.scene.data_store[idx][i])
             if self._selection.is_active:
                 sel_mask = np.zeros(mask.shape, dtype=np.bool)
                 sel_mask[self._selection.indices] = True

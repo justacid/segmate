@@ -2,7 +2,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from .editoritem import EditorItem
+from .item import EditorItem
 
 
 class EditorScene(QGraphicsScene):
@@ -12,18 +12,18 @@ class EditorScene(QGraphicsScene):
     scene_cleared = Signal()
     image_modified = Signal()
 
-    def __init__(self, data_loader):
+    def __init__(self, data_store):
         super().__init__()
         self.layers = []
-        self.data_loader = data_loader
-        self.opacities = [1.0] * len(data_loader.folders)
+        self.data_store = data_store
+        self.opacities = [1.0] * len(data_store.folders)
         self._undo_stack = QUndoStack()
-        self._active_layer = len(data_loader.folders) - 1
+        self._active_layer = len(data_store.folders) - 1
         self._loaded_idx = -1
 
     @property
     def image_count(self):
-        return 0 if not self.data_loader else len(self.data_loader)
+        return 0 if not self.data_store else len(self.data_store)
 
     @property
     def active_layer(self):
@@ -39,7 +39,7 @@ class EditorScene(QGraphicsScene):
         if self._loaded_idx >= 0:
             for layer in self.layers:
                 layer.is_dirty = False
-        self.data_loader.save_to_disk()
+        self.data_store.save_to_disk()
 
     def clear(self):
         for layer in self.layers:
@@ -51,7 +51,7 @@ class EditorScene(QGraphicsScene):
         dirty = any(layer.is_dirty for layer in self.layers)
         if not dirty:
             return
-        self.data_loader[self._loaded_idx] = [layer.data for layer in self.layers]
+        self.data_store[self._loaded_idx] = [layer.data for layer in self.layers]
         self.image_modified.emit()
 
     def load(self, image_idx):
@@ -60,7 +60,7 @@ class EditorScene(QGraphicsScene):
         self.clear()
         self._undo_stack.clear()
 
-        for layer_idx in range(self.data_loader.num_layers):
+        for layer_idx in range(self.data_store.num_layers):
             item = EditorItem(image_idx, layer_idx, self)
             item.image_modified.connect(self._store_dirty)
             self.addItem(item)

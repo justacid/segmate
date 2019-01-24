@@ -26,9 +26,9 @@ class EditorItem(QGraphicsObject):
         self.image_idx = image_idx
         self.layer_idx = layer_idx
 
-        self._image = scene.data_loader[image_idx][layer_idx]
-        self._pen_color = scene.data_loader.pen_colors[layer_idx]
-        self._editable = scene.data_loader.editable[layer_idx]
+        self._image = scene.data_store[image_idx][layer_idx]
+        self._pen_color = scene.data_store.pen_colors[layer_idx]
+        self._editable = scene.data_store.editable[layer_idx]
         self._undo_stack = scene._undo_stack
         self._undo_stack.indexChanged.connect(lambda _: self.update())
         self._tool = self.tool_box["cursor_tool"](self._image, self)

@@ -3,9 +3,8 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 from segmate.util import from_qimage
-from segmate.editor.tools.editortool import EditorTool
-from segmate.editor.toolwidget import EditorToolWidget
-from segmate.widgets.labeledslider import LabeledSlider
+from segmate.editor.editortool import EditorTool
+from segmate.editor.widgets import EditorToolWidget, LabeledSlider
 
 
 class DrawToolInspector(EditorToolWidget):
@@ -41,9 +40,6 @@ class DrawTool(EditorTool):
         self._eraser_size = 4
 
     def paint_canvas(self):
-        return self.canvas
-
-    def paint_result(self):
         return self.canvas
 
     @property

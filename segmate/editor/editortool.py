@@ -42,9 +42,8 @@ class EditorTool(ABC):
     def paint_canvas(self):
         pass
 
-    @abstractmethod
     def paint_result(self):
-        pass
+        return self.canvas
 
     @property
     def inspector_widget(self):

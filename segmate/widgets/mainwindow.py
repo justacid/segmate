@@ -8,7 +8,7 @@ from PySide2.QtGui import *
 import segmate
 from segmate.widgets.inspector import InspectorWidget
 from segmate.widgets.sceneview import SceneViewWidget
-from segmate.dataloader import DataLoader
+from segmate.store import DataStore
 from segmate.editor import EditorScene
 
 
@@ -107,7 +107,7 @@ class MainWindowWidget(QMainWindow):
 
     def _open_folder(self, folder):
         if isdir(folder):
-            self.inspector.set_scene(EditorScene(DataLoader(folder)))
+            self.inspector.set_scene(EditorScene(DataStore(folder)))
             self.inspector.scene.image_modified.connect(self._mark_dirty)
             self.inspector.change_image(0)
 
