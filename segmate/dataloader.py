@@ -15,40 +15,40 @@ class DataLoader:
         self.root = Path(folder)
         self.folders = ["images", "masks", "spores"]
         self.editable = [False, True, True]
-        self.cache = {}
-        self.modified = set()
         self.files = [f for f in listdir(self.root / self.folders[0])]
         self.files = sorted(self.files, key=lambda f: int(f.split("-")[1].split(".")[0]))
+
+        self._modified = set()
+        self._cache = {}
 
     def __len__(self):
         return len(self.files)
 
     def __getitem__(self, idx):
         assert idx >= 0 and idx < len(self.files)
-
-        if idx in self.cache:
-            return self.cache[idx]
+        if idx in self._cache:
+            return self._cache[idx]
 
         data = [
             self._load_image(idx),
             self._load_mask(idx, self.folders[1], color=self.pen_colors[1]),
             self._load_mask(idx, self.folders[2], color=self.pen_colors[2]),
         ]
-
-        self.cache[idx] = data
+        self._cache[idx] = data
         return data
 
     def __setitem__(self, idx, value):
-        self.cache[idx] = value
-        self.modified.add(idx)
+        self._cache[idx] = value
+        self._modified.add(idx)
 
     def save_to_disk(self):
-        for idx in self.modified:
-            _, mask1, mask2 = self.cache[idx]
+        for idx in self._modified:
+            _, mask1, mask2 = self._cache[idx]
             mask1 = self._binarize(mask1)
             mask2 = self._binarize(mask2)
             io.imsave(self.root / self.folders[1] / self.files[idx], mask1)
             io.imsave(self.root / self.folders[2] / self.files[idx], mask2)
+        self._modified.clear()
 
     @property
     def pen_colors(self):

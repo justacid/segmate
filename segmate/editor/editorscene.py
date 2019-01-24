@@ -37,7 +37,6 @@ class EditorScene(QGraphicsScene):
 
     def save_to_disk(self):
         if self._loaded_idx >= 0:
-            self._cache_if_dirty()
             for layer in self.layers:
                 layer.is_dirty = False
         self.data_loader.save_to_disk()
@@ -48,28 +47,22 @@ class EditorScene(QGraphicsScene):
         self.layers.clear()
         self.scene_cleared.emit()
 
-    def _cache_if_dirty(self):
-        data = [l.data for l in self.layers]
-        dirty = any(l.is_dirty for l in self.layers)
-
+    def _store_dirty(self):
+        dirty = any(layer.is_dirty for layer in self.layers)
         if not dirty:
             return
-
-        self.data_loader[self._loaded_idx] = data
+        self.data_loader[self._loaded_idx] = [layer.data for layer in self.layers]
         self.image_modified.emit()
 
     def load(self, image_idx):
-        if self._loaded_idx >= 0:
-            self._cache_if_dirty()
         self._loaded_idx = image_idx
 
         self.clear()
         self._undo_stack.clear()
 
-        self.layers = []
         for layer_idx in range(self.data_loader.num_layers):
             item = EditorItem(image_idx, layer_idx, self)
-            item.image_modified.connect(self._cache_if_dirty)
+            item.image_modified.connect(self._store_dirty)
             self.addItem(item)
             self.layers.append(item)
 

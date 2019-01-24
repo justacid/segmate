@@ -31,12 +31,12 @@ class BucketFillTool(EditorTool):
         if not self.is_editable:
             self.send_status_message("This layer is not editable...")
             return
-        self.is_dirty = True
         data = from_qimage(self.canvas)
         seed = [pos.y(), pos.x()]
         filled = to_qimage(self.flood_fill(data, seed))
         self.push_undo_snapshot(self.canvas, filled, undo_text="Bucket Fill")
         self.canvas = filled
+        self.notify_dirty()
 
     def flood_fill(self, image, seed):
         h, w = image.shape[:2]

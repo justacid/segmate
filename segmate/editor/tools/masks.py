@@ -43,7 +43,6 @@ class MasksTool(EditorTool):
         return self.canvas
 
     def _copy_previous_mask(self):
-        self.is_dirty = True
         idx = max(self.item.image_idx - 1, 0)
         layer = self.item.layer_idx
         mask = util.extract_binary_mask(self.item.scene.data_loader[idx][layer])
@@ -61,9 +60,9 @@ class MasksTool(EditorTool):
 
         self.push_undo_snapshot(self.canvas, output, undo_text="Copy Mask")
         self.canvas = output
+        self.notify_dirty()
 
     def _clear_mask(self):
-        self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
         if self._selection.is_active:
             mask[self._selection.indices] = 0
@@ -73,9 +72,9 @@ class MasksTool(EditorTool):
         image = util.color_binary_mask(mask, self.pen_color)
         self.push_undo_snapshot(self.canvas, image, undo_text="Clear Mask")
         self.canvas = image
+        self.notify_dirty()
 
     def _merge_masks(self):
-        self.is_dirty = True
         idx = self.item.image_idx
         layer = self.item.layer_idx
 
@@ -93,6 +92,7 @@ class MasksTool(EditorTool):
         output = util.color_binary_mask(output, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Merge Mask")
         self.canvas = output
+        self.notify_dirty()
 
     def _clr_merge(self):
         self._clear_mask()

@@ -52,7 +52,6 @@ class MorphologyTool(EditorTool):
         return self.canvas
 
     def _fill_holes(self):
-        self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
         filled = ndi.binary_fill_holes(mask)
 
@@ -65,9 +64,9 @@ class MorphologyTool(EditorTool):
 
         self.push_undo_snapshot(self.canvas, output, undo_text="Fill Holes")
         self.canvas = output
+        self.notify_dirty()
 
     def _dilate(self):
-        self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
         dilated = morph.binary_dilation(mask)
 
@@ -79,9 +78,9 @@ class MorphologyTool(EditorTool):
         output = util.color_binary_mask(dilated, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Dilate")
         self.canvas = output
+        self.notify_dirty()
 
     def _erode(self):
-        self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
         eroded = morph.binary_erosion(mask)
 
@@ -93,9 +92,9 @@ class MorphologyTool(EditorTool):
         output = util.color_binary_mask(eroded, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Erode")
         self.canvas = output
+        self.notify_dirty()
 
     def _skeletonize(self):
-        self.is_dirty = True
         mask = util.extract_binary_mask(self.canvas)
         skeletonized = morph.skeletonize(mask)
 
@@ -107,10 +106,9 @@ class MorphologyTool(EditorTool):
         output = util.color_binary_mask(skeletonized, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Skeletonize")
         self.canvas = output
+        self.notify_dirty()
 
     def _watershed(self):
-        self.is_dirty = True
-
         image = self.item.scene.data_loader[self.item.image_idx][0]
         image = util.to_grayscale(image)
 
@@ -132,6 +130,7 @@ class MorphologyTool(EditorTool):
         output = util.color_binary_mask(result_mask, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Watershed")
         self.canvas = output
+        self.notify_dirty()
 
     @property
     def inspector_widget(self):

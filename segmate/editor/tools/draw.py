@@ -112,7 +112,6 @@ class DrawTool(EditorTool):
         self.draw_line(pos, erase)
 
     def draw_line(self, end_point, erase):
-        self.is_dirty = True
         painter = QPainter(self.canvas)
 
         pen = QPen()
@@ -128,3 +127,4 @@ class DrawTool(EditorTool):
 
         painter.drawLine(self._last_point, end_point)
         self._last_point = end_point
+        self.notify_dirty()

@@ -29,12 +29,13 @@ class EditorUndoCommand(QUndoCommand):
 class EditorTool(ABC):
 
     def __init__(self, image, item):
+        self.is_dirty = False
+
         self._canvas = QImage(image)
         self._item = item
         self._pen_color = None
         self._undo_stack = None
         self._status_callback = None
-        self._is_dirty = False
         self._is_editable = True
 
     @abstractmethod
@@ -75,9 +76,9 @@ class EditorTool(ABC):
     def tablet_event(self, event, pos):
         pass
 
-    @property
-    def is_dirty(self):
-        return self._is_dirty
+    def notify_dirty(self):
+        self.is_dirty = True
+        self.item.image_modified.emit()
 
     @property
     def is_editable(self):
@@ -86,12 +87,6 @@ class EditorTool(ABC):
     @is_editable.setter
     def is_editable(self, value):
         self._editable = value
-
-    @is_dirty.setter
-    def is_dirty(self, value):
-        self._is_dirty = value
-        if value:
-            self.item.image_modified.emit()
 
     @property
     def item(self):
