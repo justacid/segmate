@@ -24,6 +24,9 @@ class LayerItemWidget(QFrame):
     @opacity.setter
     def opacity(self, value):
         self._opacity = value
+        self.slider.blockSignals(True)
+        self.slider.setValue(int(value * 100))
+        self.slider.blockSignals(False)
 
     @property
     def text(self):

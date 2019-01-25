@@ -82,12 +82,19 @@ class InspectorWidget(QWidget):
             widget.deleteLater()
 
     def _add_layer_widgets(self):
+        if self.layers.count():
+            for i in range(self.scene.data_store.num_layers):
+                self.layers.itemAt(i).widget().opacity = 1.0
+            return
         for index, name in enumerate(self.scene.data_store.folders):
             item = LayerItemWidget(index, f"Opacity: {name}".title())
-            item.opacity_changed.connect(self.scene.change_layer_opacity)
+            item.opacity_changed.connect(self._change_layer_opacity)
             item.layer_clicked.connect(self.activate_layer)
             self.layers.addWidget(item)
         self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+    def _change_layer_opacity(self, idx, value):
+        self.scene.change_layer_opacity(idx, value)
 
     def _setup_ui(self):
         self.dock_layout = QVBoxLayout(self)
