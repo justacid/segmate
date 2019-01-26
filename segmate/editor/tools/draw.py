@@ -75,13 +75,13 @@ class DrawTool(EditorTool):
             return True
         return False
 
-    def tablet_event(self, event, pos):
+    def tablet_event(self, event):
         if event.type() == QEvent.TabletPress and event.button() == Qt.LeftButton:
-            self._pressed(pos)
+            self._pressed(event.pos())
         elif event.type() == QEvent.TabletMove and event.buttons() & Qt.LeftButton:
-            self._moved(pos, event.buttons() & Qt.MidButton)
+            self._moved(event.pos(), event.buttons() & Qt.MidButton)
         elif event.type() == QEvent.TabletRelease and event.button() == Qt.LeftButton:
-            self._released(pos, event.buttons() & Qt.MidButton)
+            self._released(event.pos(), event.buttons() & Qt.MidButton)
 
     def _pressed(self, pos):
         if not self.is_editable:

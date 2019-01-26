@@ -141,19 +141,22 @@ class SceneViewWidget(QGraphicsView):
                 self._release_tablet_zoom(event)
                 return
 
-        # propagate through scene -> items -> tools
-        # @todo: this is a massive hack, search for better solution
+        # propagate tablet event through the scene
         if self.scene():
-            active = self.scene().active_layer
-            layer = self.scene().layers[active]
+            active_layer = self.scene().layers[self.scene().active_layer]
 
             pos = event.pos()
-            cimg = layer._tool.cursor.pixmap()
+            cimg = active_layer.cursor().pixmap()
             w, h = cimg.width(), cimg.height()
             pos = QPoint(pos.x() - w/2, pos.y() - h/2)
-
             scene_pos = self.mapToScene(pos)
-            layer.tabletEvent(event, scene_pos)
+
+            event = QTabletEvent(event.type(), scene_pos, event.globalPos(),
+                event.device(), event.pointerType(), event.pressure(), event.xTilt(),
+                event.yTilt(), event.tangentialPressure(), event.rotation(), event.z(),
+                event.modifiers(), event.uniqueId(), event.button(), event.buttons())
+            active_layer.tabletEvent(event)
+            return
 
         super().tabletEvent(event)
 

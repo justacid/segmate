@@ -120,7 +120,7 @@ class EditorItem(QGraphicsObject):
             super().mouseMoveEvent(event)
         self.update()
 
-    def tabletEvent(self, event, pos):
+    def tabletEvent(self, event):
         if self._tool:
-            self._tool.tablet_event(event, pos)
+            self._tool.tablet_event(event)
         self.update()

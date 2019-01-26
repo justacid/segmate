@@ -20,9 +20,9 @@ class BucketFillTool(EditorTool):
         if event.button() == Qt.LeftButton:
             self.fill_image(event.pos())
 
-    def tablet_event(self, event, pos):
+    def tablet_event(self, event):
         if event.type() == QEvent.TabletPress and event.button() == Qt.LeftButton:
-            self.fill_image(pos)
+            self.fill_image(event.pos())
 
     def fill_image(self, pos):
         if not self.is_editable:

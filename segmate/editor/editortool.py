@@ -72,7 +72,7 @@ class EditorTool(ABC):
     def mouse_moved(self, event):
         return False
 
-    def tablet_event(self, event, pos):
+    def tablet_event(self, event):
         pass
 
     def notify_dirty(self):
