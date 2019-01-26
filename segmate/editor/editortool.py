@@ -8,11 +8,12 @@ from segmate.util import to_qimage
 
 class EditorUndoCommand(QUndoCommand):
 
-    def __init__(self, snapshot, modified):
+    def __init__(self, snapshot, modified, tool):
         super().__init__()
 
         self._snapshot = QImage(snapshot)
         self._modified = QImage(modified)
+        self._tool = tool
 
         self.undo_triggered = None
         self.redo_triggered = None
@@ -20,48 +21,57 @@ class EditorUndoCommand(QUndoCommand):
     def undo(self):
         if self.undo_triggered:
             self.undo_triggered(QImage(self._snapshot))
+            self._tool.notify_dirty()
 
     def redo(self):
         if self.redo_triggered:
             self.redo_triggered(QImage(self._modified))
+            self._tool.notify_dirty()
 
 
 class EditorTool(ABC):
 
-    def __init__(self, image, item):
+    def __init__(self):
         self.is_dirty = False
-
-        self._canvas = QImage(image)
-        self._item = item
-        self._pen_color = None
-        self._undo_stack = None
-        self._status_callback = None
-        self._is_editable = True
-
-    @abstractmethod
-    def paint_canvas(self):
-        pass
-
-    def paint_result(self):
-        return self.canvas
+        self.canvas = None
+        self.item = None
+        self.pen_color = None
+        self.undo_stack = None
+        self.status_callback = None
+        self.is_editable = True
 
     @property
     def inspector_widget(self):
         return None
 
+    @property
+    def cursor(self):
+        return QCursor(Qt.ArrowCursor)
+
+    @abstractmethod
+    def paint_canvas(self):
+        return self.canvas
+
+    def paint_result(self):
+        return self.canvas
+
     def push_undo_snapshot(self, snapshot, modified, *, undo_text=""):
-        if self._undo_stack:
-            command = EditorUndoCommand(snapshot, modified)
+        if self.undo_stack:
+            command = EditorUndoCommand(snapshot, modified, self)
             command.setText(undo_text)
             # a undo-command push triggers a redo - so push first, then
             # register callbacks; this suppresses the signal on initial redo
-            self._undo_stack.push(command)
-            command.undo_triggered = self._item.undo_tool_command
-            command.redo_triggered = self._item.redo_tool_command
+            self.undo_stack.push(command)
+            command.undo_triggered = self.item.undo_tool_command
+            command.redo_triggered = self.item.redo_tool_command
 
     def send_status_message(self, message):
-        if self._status_callback:
-            self._status_callback(message)
+        if self.status_callback:
+            self.status_callback(message)
+
+    def notify_dirty(self):
+        self.is_dirty = True
+        self.item.image_modified.emit()
 
     def mouse_pressed(self, event):
         return False
@@ -74,61 +84,3 @@ class EditorTool(ABC):
 
     def tablet_event(self, event):
         pass
-
-    def notify_dirty(self):
-        self.is_dirty = True
-        self.item.image_modified.emit()
-
-    @property
-    def is_editable(self):
-        return self._editable
-
-    @is_editable.setter
-    def is_editable(self, value):
-        self._editable = value
-
-    @property
-    def item(self):
-        return self._item
-
-    @item.setter
-    def item(self, item_):
-        self._item = item_
-
-    @property
-    def canvas(self):
-        return self._canvas
-
-    @canvas.setter
-    def canvas(self, canvas_):
-        self._canvas = canvas_
-
-    @property
-    def cursor(self):
-        return QCursor(Qt.ArrowCursor)
-
-    @property
-    def pen_color(self):
-        return self._pen_color
-
-    @pen_color.setter
-    def pen_color(self, color):
-        self._pen_color = color
-
-    @property
-    def undo_stack(self):
-        return self._undo_stack
-
-    @undo_stack.setter
-    def undo_stack(self, stack):
-        if not isinstance(stack, QUndoStack):
-            raise TypeError("Stack argument must be 'QUndoStack'.")
-        self._undo_stack = stack
-
-    @property
-    def status_callback(self):
-        return self._status_callback
-
-    @status_callback.setter
-    def status_callback(self, func):
-        self._status_callback = func

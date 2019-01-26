@@ -12,16 +12,19 @@ import segmate.util as util
 
 class ContourTool(EditorTool):
 
-    def __init__(self, image, parent):
-        super().__init__(image, parent)
-        self._snapshot = QImage(image)
+    def __init__(self):
+        super().__init__()
+        self._snapshot = None
 
     def paint_canvas(self):
         if not self.is_editable:
             return self.canvas
+        self._snapshot = QImage(self.canvas)
         return self.draw_contours(self.canvas)
 
     def paint_result(self):
+        if not self._snapshot:
+            return self.canvas
         return self._snapshot
 
     def draw_contours(self, image):

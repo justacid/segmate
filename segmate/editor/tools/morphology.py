@@ -39,8 +39,8 @@ class MorphologyToolInspector(EditorToolWidget):
 
 class MorphologyTool(EditorTool):
 
-    def __init__(self, image, item):
-        super().__init__(image, item)
+    def __init__(self):
+        super().__init__()
         self._selection = RectSelection(self)
 
     def paint_canvas(self):

@@ -10,29 +10,35 @@ class EditorItem(QGraphicsObject):
 
     image_modified = Signal()
 
-    def __init__(self, image_idx, layer_idx, scene):
+    def __init__(self, scene):
         super().__init__()
 
-        self.tool_box = {
-            "bucket_tool": tools.BucketFillTool,
-            "cursor_tool": tools.CursorTool,
-            "contour_tool": tools.ContourTool,
-            "draw_tool": tools.DrawTool,
-            "masks_tool": tools.MasksTool,
-            "morphology_tool": tools.MorphologyTool
+        self._tool_box = {
+            "bucket_tool": tools.BucketFillTool(),
+            "cursor_tool": tools.CursorTool(),
+            "contour_tool": tools.ContourTool(),
+            "draw_tool": tools.DrawTool(),
+            "masks_tool": tools.MasksTool(),
+            "morphology_tool": tools.MorphologyTool()
         }
 
         self.scene = scene
+        self.is_active = False
+        self.image_idx = -1
+        self.layer_idx = -1
+
+        self._undo_stack = scene.undo_stack
+        self._undo_stack.indexChanged.connect(lambda _: self.update())
+        self._tool = self._tool_box["cursor_tool"]
+
+    def load(self, image_idx, layer_idx):
         self.image_idx = image_idx
         self.layer_idx = layer_idx
-
-        self._image = scene.data_store[image_idx][layer_idx]
-        self._pen_color = scene.data_store.pen_colors[layer_idx]
-        self._editable = scene.data_store.editable[layer_idx]
-        self._undo_stack = scene._undo_stack
-        self._undo_stack.indexChanged.connect(lambda _: self.update())
-        self._tool = self.tool_box["cursor_tool"](self._image, self)
-        self.is_active = False
+        self._image = self.scene.data_store[image_idx][layer_idx]
+        self._pen_color = self.scene.data_store.pen_colors[layer_idx]
+        self._editable = self.scene.data_store.editable[layer_idx]
+        self._tool.canvas = QImage(self._image)
+        self._tool.item = self
 
     @property
     def data(self):
@@ -57,10 +63,14 @@ class EditorItem(QGraphicsObject):
         self._is_active = active
 
     def change_tool(self, tool, status_callback=None):
-        if tool not in self.tool_box:
+        if tool not in self._tool_box:
             raise IndexError(f"'{tool}'' is not a valid tool.")
 
-        self._tool = self.tool_box[tool](QImage(self._tool.paint_result()), self)
+        result = QImage(self._tool.paint_result())
+
+        self._tool = self._tool_box[tool]
+        self._tool.canvas = result
+        self._tool.item = self
         self._tool.pen_color = self._pen_color
         self._tool.undo_stack = self._undo_stack
         self._tool.status_callback = status_callback

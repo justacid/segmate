@@ -39,11 +39,17 @@ class InspectorWidget(QWidget):
 
     def show_next(self):
         if self.current_image < self.scene.image_count-1:
-            self.slider.setValue(self.current_image + 1)
+            command = ChangeImageCommand(
+                self.slider, self.current_image, self.current_image + 1)
+            command.setText("Next Image")
+            self.scene.undo_stack.push(command)
 
     def show_previous(self):
         if self.current_image > 0:
-            self.slider.setValue(self.current_image - 1)
+            command = ChangeImageCommand(
+                self.slider, self.current_image, self.current_image - 1)
+            command.setText("Previous Image")
+            self.scene.undo_stack.push(command)
 
     def change_image(self, idx):
         self.current_image = idx
@@ -136,3 +142,20 @@ class InspectorWidget(QWidget):
         self.layers.setSpacing(2)
         self.layers.setContentsMargins(2, 6, 2, 2)
         self.dock_layout.addWidget(self.layer_box)
+
+
+class ChangeImageCommand(QUndoCommand):
+
+    def __init__(self, slider, old_value, new_value):
+        super().__init__()
+        self.slider = slider
+        self.old_value = old_value
+        self.new_value = new_value
+
+    def undo(self):
+        if self.slider:
+            self.slider.setValue(self.old_value)
+
+    def redo(self):
+        if self.slider:
+            self.slider.setValue(self.new_value)

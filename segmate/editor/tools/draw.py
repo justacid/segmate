@@ -30,8 +30,8 @@ class DrawToolInspector(EditorToolWidget):
 
 class DrawTool(EditorTool):
 
-    def __init__(self, canvas, parent):
-        super().__init__(canvas, parent)
+    def __init__(self):
+        super().__init__()
         self._last_point = None
         self._draw = False
         self._have_undo_copy = False
@@ -44,6 +44,8 @@ class DrawTool(EditorTool):
 
     @property
     def inspector_widget(self):
+        if not self.is_editable:
+            return None
         def brush_size(value):
             self._brush_size = value
         def eraser_size(value):

@@ -17,7 +17,7 @@ class EditorScene(QGraphicsScene):
         self.layers = []
         self.data_store = data_store
         self.opacities = [1.0] * len(data_store.folders)
-        self._undo_stack = QUndoStack()
+        self.undo_stack = QUndoStack()
         self._active_layer = len(data_store.folders) - 1
         self._loaded_idx = -1
 
@@ -41,33 +41,21 @@ class EditorScene(QGraphicsScene):
                 layer.is_dirty = False
         self.data_store.save_to_disk()
 
-    def clear(self):
-        for layer in self.layers:
-            self.removeItem(layer)
-        self.layers.clear()
-        self.scene_cleared.emit()
-
-    def _store_dirty(self):
-        dirty = any(layer.is_dirty for layer in self.layers)
-        if not dirty:
-            return
-        self.data_store[self._loaded_idx] = [layer.data for layer in self.layers]
-        self.image_modified.emit()
-
     def load(self, image_idx):
+        # self.undo_stack.clear()
         self._loaded_idx = image_idx
 
-        self.clear()
-        self._undo_stack.clear()
+        if not self.layers:
+            for layer_idx in range(self.data_store.num_layers):
+                item = EditorItem(self)
+                item.image_modified.connect(self._store_dirty)
+                self.addItem(item)
+                self.layers.append(item)
 
-        for layer_idx in range(self.data_store.num_layers):
-            item = EditorItem(image_idx, layer_idx, self)
-            item.image_modified.connect(self._store_dirty)
-            self.addItem(item)
-            self.layers.append(item)
-
-        for layer, opacity in zip(self.layers, self.opacities):
+        for layer_idx, (layer, opacity) in enumerate(zip(self.layers, self.opacities)):
+            layer.load(image_idx, layer_idx)
             layer.setOpacity(opacity)
+
         self.image_loaded.emit(image_idx)
 
     def change_layer_opacity(self, layer_idx, value):
@@ -76,7 +64,14 @@ class EditorScene(QGraphicsScene):
         self.opacity_changed.emit(layer_idx, value)
 
     def create_undo_action(self):
-        return self._undo_stack.createUndoAction(self)
+        return self.undo_stack.createUndoAction(self)
 
     def create_redo_action(self):
-        return self._undo_stack.createRedoAction(self)
+        return self.undo_stack.createRedoAction(self)
+
+    def _store_dirty(self):
+        dirty = any(layer.is_dirty for layer in self.layers)
+        if not dirty:
+            return
+        self.data_store[self._loaded_idx] = [layer.data for layer in self.layers]
+        self.image_modified.emit()

@@ -21,25 +21,13 @@ class DataStore:
         self._modified = set()
         self._cache = {}
 
-    def __len__(self):
-        return len(self.files)
+    @property
+    def pen_colors(self):
+        return [(255, 255, 255), (38, 190, 33), (239, 56, 176)]
 
-    def __getitem__(self, idx):
-        assert idx >= 0 and idx < len(self.files)
-        if idx in self._cache:
-            return self._cache[idx]
-
-        data = [
-            self._load_image(idx),
-            self._load_mask(idx, self.folders[1], color=self.pen_colors[1]),
-            self._load_mask(idx, self.folders[2], color=self.pen_colors[2]),
-        ]
-        self._cache[idx] = data
-        return data
-
-    def __setitem__(self, idx, value):
-        self._cache[idx] = value
-        self._modified.add(idx)
+    @property
+    def num_layers(self):
+        return len(self.folders)
 
     def save_to_disk(self):
         for idx in self._modified:
@@ -49,14 +37,6 @@ class DataStore:
             io.imsave(self.root / self.folders[1] / self.files[idx], mask1)
             io.imsave(self.root / self.folders[2] / self.files[idx], mask2)
         self._modified.clear()
-
-    @property
-    def pen_colors(self):
-        return [(255, 255, 255), (38, 190, 33), (239, 56, 176)]
-
-    @property
-    def num_layers(self):
-        return len(self.folders)
 
     def _binarize(self, image):
         image = rgb2gray(from_qimage(image)[:, :, :3])
@@ -78,3 +58,23 @@ class DataStore:
         alpha[image == 0, :] = (0, 0, 0, 0)
         alpha[image == 255, :] = (*color, 255)
         return alpha
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, idx):
+        assert idx >= 0 and idx < len(self.files)
+        if idx in self._cache:
+            return self._cache[idx]
+
+        data = [
+            self._load_image(idx),
+            self._load_mask(idx, self.folders[1], color=self.pen_colors[1]),
+            self._load_mask(idx, self.folders[2], color=self.pen_colors[2]),
+        ]
+        self._cache[idx] = data
+        return data
+
+    def __setitem__(self, idx, value):
+        self._cache[idx] = value
+        self._modified.add(idx)

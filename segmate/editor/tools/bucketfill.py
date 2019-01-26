@@ -10,8 +10,8 @@ from segmate.util import to_qimage, from_qimage
 
 class BucketFillTool(EditorTool):
 
-    def __init__(self, image, parent):
-        super().__init__(image, parent)
+    def __init__(self):
+        super().__init__()
 
     def paint_canvas(self):
         return self.canvas
