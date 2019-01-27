@@ -16,6 +16,8 @@ class InspectorWidget(QWidget):
         super().__init__()
         self.scene = None
         self.current_image = 0
+        self._slider_down_value = 0
+
         self._setup_ui()
         self.slider_box.hide()
         self.layer_box.hide()
@@ -74,6 +76,15 @@ class InspectorWidget(QWidget):
         self._remove_tool_inspector()
         self._add_tool_inspector()
 
+    def _slider_pressed(self):
+        self._slider_down_value = self.slider.value()
+
+    def _slider_released(self):
+        command = ChangeImageCommand(
+            self.slider, self._slider_down_value, self.slider.value())
+        command.setText("Change Image")
+        self.scene.undo_stack.push(command)
+
     def _add_tool_inspector(self):
         idx = self.scene.active_layer
         widget = self.scene.layers[idx]._tool.inspector_widget
@@ -122,6 +133,8 @@ class InspectorWidget(QWidget):
         self.slider.setTickInterval(10)
         self.slider.setValue(0)
         self.slider.valueChanged.connect(self.change_image)
+        self.slider.sliderPressed.connect(self._slider_pressed)
+        self.slider.sliderReleased.connect(self._slider_released)
         hlayout.addWidget(self.slider)
 
         arrow_right = QToolButton()
