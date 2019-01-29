@@ -17,10 +17,12 @@ class RectSelection:
             self.item_mouse_pressed = self.item.mouse_pressed
             self.item_mouse_released = self.item.mouse_released
             self.item_mouse_moved = self.item.mouse_moved
+            self.item_tablet_event = self.item.tablet_event
 
             self.item.mouse_pressed = self.__mouse_pressed
             self.item.mouse_released = self.__mouse_released
             self.item.mouse_moved = self.__mouse_moved
+            self.item.tablet_event = self.__tablet_event
 
     @property
     def is_active(self):
@@ -132,3 +134,11 @@ class RectSelection:
             self.move(event.pos())
             return True
         return self.item_mouse_moved(event)
+
+    def __tablet_event(self, event):
+        if event.type() == QEvent.TabletPress and event.button() == Qt.LeftButton:
+            self.start(event.pos())
+        elif event.type() == QEvent.TabletMove and event.buttons() & Qt.LeftButton:
+            self.move(event.pos())
+        elif event.type() == QEvent.TabletRelease and event.button() == Qt.LeftButton:
+            self.release(event.pos())
