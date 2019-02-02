@@ -42,7 +42,6 @@ class EditorScene(QGraphicsScene):
         self.data_store.save_to_disk()
 
     def load(self, image_idx):
-        # self.undo_stack.clear()
         self._loaded_idx = image_idx
 
         if not self.layers:

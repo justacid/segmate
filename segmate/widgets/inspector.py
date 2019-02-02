@@ -25,13 +25,14 @@ class InspectorWidget(QWidget):
     def set_scene(self, scene):
         self.scene = scene
         self.current_image = 0
-        self._add_layer_widgets()
 
         if not scene:
             self.slider_box.hide()
             self.layer_box.hide()
+            self._remove_tool_inspector()
             return
 
+        self._add_layer_widgets()
         self.slider.setValue(0)
         self.slider.setMaximum(self.scene.image_count-1)
         self.scene_changed.emit(scene)

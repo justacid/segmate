@@ -18,7 +18,7 @@ class MainWindowWidget(QMainWindow):
         super().__init__()
         self._active_tool = "cursor_tool"
         self._active_project = ""
-        self._ask_before_quitting = False
+        self._ask_before_closing = False
 
         self._setup_ui()
         self._add_menu()
@@ -68,7 +68,7 @@ class MainWindowWidget(QMainWindow):
             msgbox.setWindowTitle("Information")
             msgbox.setText("Editing is destructive!")
             p1 = "Editing images is a destructive operation."
-            p2 = "Please make sure to have a safety copy ready before using Segmate!"
+            p2 = "Please make sure to make a backup of your data before using Segmate!"
             msgbox.setInformativeText(f"{p1} {p2}")
             msgbox.setIcon(QMessageBox.Information)
             msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
@@ -123,6 +123,13 @@ class MainWindowWidget(QMainWindow):
         settings.endGroup()
 
     def _close_folder(self):
+        if self._ask_before_closing:
+            value = self._confirm_close()
+            if value == QMessageBox.Cancel:
+                return
+            elif value == QMessageBox.Save:
+                self._save_to_disk()
+
         self.view.setScene(None)
         self.inspector.set_scene(None)
         self.close_action.setEnabled(False)
@@ -135,6 +142,13 @@ class MainWindowWidget(QMainWindow):
         self._set_window_title()
 
     def _open_folder_dialog(self):
+        if self._ask_before_closing:
+            value = self._confirm_close()
+            if value == QMessageBox.Cancel:
+                return
+            elif value == QMessageBox.Save:
+                self._save_to_disk()
+
         folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
         if folder:
             self._open_folder(folder)
@@ -145,12 +159,22 @@ class MainWindowWidget(QMainWindow):
             self.inspector.scene.save_to_disk()
             self._set_window_title()
             self.save_action.setEnabled(False)
-            self._ask_before_quitting = False
+            self._ask_before_closing = False
 
     def _mark_dirty(self):
         self._set_window_title(modified=True)
-        self._ask_before_quitting = True
+        self._ask_before_closing = True
         self.save_action.setEnabled(True)
+
+    def _confirm_close(self):
+        msgbox = QMessageBox()
+        msgbox.setWindowTitle("Warning!")
+        msgbox.setText("You have unsaved changes.")
+        msgbox.setInformativeText("Do you want to save or discard your changes?")
+        msgbox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+        msgbox.setDefaultButton(QMessageBox.Cancel)
+        msgbox.setIcon(QMessageBox.Warning)
+        return msgbox.exec()
 
     def _zoom_changed(self, zoom):
         try:
@@ -329,7 +353,6 @@ class MainWindowWidget(QMainWindow):
 
         toolbar.addSeparator()
 
-
     def _add_edit_menu(self, scene):
         self.edit_menu.clear()
         self.undo_action = scene.create_undo_action()
@@ -340,16 +363,8 @@ class MainWindowWidget(QMainWindow):
         self.edit_menu.addAction(self.redo_action)
 
     def closeEvent(self, event):
-        if self._ask_before_quitting:
-            msgbox = QMessageBox()
-            msgbox.setWindowTitle("Warning!")
-            msgbox.setText("You have unsaved changes.")
-            msgbox.setInformativeText("Do you want to save or discard your changes?")
-            msgbox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-            msgbox.setDefaultButton(QMessageBox.Cancel)
-            msgbox.setIcon(QMessageBox.Warning)
-            value = msgbox.exec()
-
+        if self._ask_before_closing:
+            value = self._confirm_close()
             if value == QMessageBox.Cancel:
                 event.ignore()
                 return
