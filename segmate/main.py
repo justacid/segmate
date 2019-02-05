@@ -3,14 +3,14 @@ import sys
 import warnings
 
 from qdarkstyle import load_stylesheet
-from segmate.tabletapplication import TabletApplication
+from segmate.app import Application
 from segmate.widgets import MainWindowWidget
 
 def main():
     real_path = os.path.dirname(os.path.realpath(__file__))
     os.chdir(real_path)
 
-    app = TabletApplication(sys.argv)
+    app = Application(sys.argv)
     window = MainWindowWidget()
     app.tablet_active.connect(window.view.tabletActive)
 

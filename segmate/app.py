@@ -2,7 +2,7 @@ from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import QEvent, Signal
 
 
-class TabletApplication(QApplication):
+class Application(QApplication):
     """
     This whole class is just an awful hack, needed since Qt for some
     reason starting at version 5.12 (5.11 works correctly) sends mouse
