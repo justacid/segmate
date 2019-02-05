@@ -130,6 +130,7 @@ class MainWindowWidget(QMainWindow):
             elif value == QMessageBox.Save:
                 self._save_to_disk()
 
+        self._ask_before_closing = False
         self.view.setScene(None)
         self.inspector.set_scene(None)
         self.close_action.setEnabled(False)
@@ -149,6 +150,7 @@ class MainWindowWidget(QMainWindow):
             elif value == QMessageBox.Save:
                 self._save_to_disk()
 
+        self._ask_before_closing = False
         folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
         if folder:
             self._open_folder(folder)
