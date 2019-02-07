@@ -101,9 +101,13 @@ class InspectorWidget(QWidget):
 
     def _add_layer_widgets(self):
         if self.layers.count():
-            for i in range(self.scene.data_store.num_layers):
-                self.layers.itemAt(i).widget().opacity = 1.0
-            return
+            item = self.layers.takeAt(0)
+            while item:
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+                item = self.layers.takeAt(0)
+
         for index, name in enumerate(self.scene.data_store.folders):
             item = LayerItemWidget(index, f"Opacity: {name}".title())
             item.opacity_changed.connect(self._change_layer_opacity)

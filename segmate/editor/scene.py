@@ -43,7 +43,6 @@ class EditorScene(QGraphicsScene):
 
     def load(self, image_idx):
         self._loaded_idx = image_idx
-
         if not self.layers:
             for layer_idx in range(self.data_store.num_layers):
                 item = EditorItem(self)

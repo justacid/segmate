@@ -35,8 +35,9 @@ class EditorItem(QGraphicsObject):
         self.image_idx = image_idx
         self.layer_idx = layer_idx
         self._image = self.scene.data_store[image_idx][layer_idx]
-        self._pen_color = self.scene.data_store.pen_colors[layer_idx]
-        self._editable = self.scene.data_store.editable[layer_idx]
+        self._is_mask = self.scene.data_store.masks[layer_idx]
+        self._is_editable = self.scene.data_store.editable[layer_idx]
+        self._pen_color = self.scene.data_store.colors[layer_idx]
         self._tool.canvas = QImage(self._image)
         self._tool.item = self
 
@@ -74,7 +75,8 @@ class EditorItem(QGraphicsObject):
         self._tool.pen_color = self._pen_color
         self._tool.undo_stack = self._undo_stack
         self._tool.status_callback = status_callback
-        self._tool.is_editable = self._editable
+        self._tool.is_mask = self._is_mask
+        self._tool.is_editable = self._is_editable
         self.setCursor(self._tool.cursor)
 
     def undo_tool_command(self, image):

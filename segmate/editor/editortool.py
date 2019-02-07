@@ -38,7 +38,8 @@ class EditorTool(ABC):
         self.pen_color = None
         self.undo_stack = None
         self.status_callback = None
-        self.is_editable = True
+        self.is_editable = False
+        self.is_mask = False
 
     @property
     def inspector_widget(self):

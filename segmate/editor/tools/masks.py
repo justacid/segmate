@@ -77,7 +77,10 @@ class MasksTool(EditorTool):
 
         current_mask = util.extract_binary_mask(self.canvas)
         output = np.zeros((self.canvas.height(), self.canvas.width()), dtype=np.uint8)
-        for i in range(1, len(self.item.scene.layers)):
+
+        for i in range(self.item.scene.data_store.num_layers):
+            if not self.item.scene.data_store.masks[i]:
+                continue
             mask = util.extract_binary_mask(self.item.scene.data_store[idx][i])
             if self._selection.is_active:
                 sel_mask = np.zeros(mask.shape, dtype=np.bool)
@@ -86,6 +89,7 @@ class MasksTool(EditorTool):
                 output[current_mask == 1] = 1
             else:
                 output[mask == 1] = 1
+
         output = util.color_binary_mask(output, self.pen_color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Merge Mask")
         self.canvas = output

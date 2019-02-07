@@ -11,19 +11,36 @@ from segmate.util import to_qimage, from_qimage
 
 class DataStore:
 
-    def __init__(self, folder):
-        self.root = Path(folder)
-        self.folders = ["images", "masks", "spores"]
-        self.editable = [False, True, True]
-        self.files = [f for f in listdir(self.root / self.folders[0])]
-        self.files = sorted(self.files, key=lambda f: int(f.split("-")[1].split(".")[0]))
-
+    def __init__(self, **kwargs):
         self._modified = set()
         self._cache = {}
 
-    @property
-    def pen_colors(self):
-        return [(255, 255, 255), (38, 190, 33), (239, 56, 176)]
+        self.root = kwargs.get("data_root", None)
+        self.folders = kwargs.get("folders", None)
+        self.masks = kwargs.get("masks", None)
+        self.editable = kwargs.get("editable", None)
+        self.colors = kwargs.get("colors", None)
+        self.files = None
+
+        if self.root and self.folders:
+            self.root = Path(self.root)
+            self.files = self._get_filenames(Path(self.root), self.folders[0])
+
+    def _get_filenames(self, data_root, folder):
+        files = [f for f in listdir(data_root / folder)]
+        files = sorted(files, key=lambda f: int(f.split("-")[1].split(".")[0]))
+        return files
+
+    @classmethod
+    def from_project(cls, project):
+        store = DataStore(
+            data_root=project.data_root,
+            folders=project.folders,
+            masks=project.masks,
+            editable=project.editable,
+            colors=project.colors
+        )
+        return store
 
     @property
     def num_layers(self):
@@ -31,11 +48,12 @@ class DataStore:
 
     def save_to_disk(self):
         for idx in self._modified:
-            _, mask1, mask2 = self._cache[idx]
-            mask1 = self._binarize(mask1)
-            mask2 = self._binarize(mask2)
-            io.imsave(self.root / self.folders[1] / self.files[idx], mask1)
-            io.imsave(self.root / self.folders[2] / self.files[idx], mask2)
+            for i, layer in enumerate(self._cache[idx]):
+                if not self.editable[i]:
+                    continue
+                if self.masks[i]:
+                    layer = self._binarize(layer)
+                io.imsave(self.root / self.folders[i] / self.files[idx], layer)
         self._modified.clear()
 
     def _binarize(self, image):
@@ -44,8 +62,8 @@ class DataStore:
         buffer[image != 0.0] = 255
         return buffer
 
-    def _load_image(self, idx):
-        path = self.root / self.folders[0] / self.files[idx]
+    def _load_image(self, idx, folder):
+        path = self.root / folder / self.files[idx]
         return to_qimage(io.imread(path))
 
     def _load_mask(self, idx, folder, color):
@@ -67,11 +85,13 @@ class DataStore:
         if idx in self._cache:
             return self._cache[idx]
 
-        data = [
-            self._load_image(idx),
-            self._load_mask(idx, self.folders[1], color=self.pen_colors[1]),
-            self._load_mask(idx, self.folders[2], color=self.pen_colors[2]),
-        ]
+        data = []
+        for i, folder in enumerate(self.folders):
+            if not self.masks[i]:
+                data.append(self._load_image(idx, self.folders[i]))
+            else:
+                data.append(self._load_mask(idx, folder, color=self.colors[i]))
+
         self._cache[idx] = data
         return data
 

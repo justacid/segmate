@@ -17,7 +17,7 @@ class ContourTool(EditorTool):
         self._snapshot = None
 
     def paint_canvas(self):
-        if not self.is_editable:
+        if not self.is_mask:
             return self.canvas
         self._snapshot = QImage(self.canvas)
         return self.draw_contours(self.canvas)

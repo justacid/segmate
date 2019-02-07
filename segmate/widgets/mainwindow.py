@@ -1,5 +1,5 @@
 from functools import partial
-from os.path import isdir
+from os.path import isdir, isfile
 
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
@@ -10,6 +10,7 @@ from segmate.widgets.inspector import InspectorWidget
 from segmate.widgets.sceneview import SceneViewWidget
 from segmate.store import DataStore
 from segmate.editor import EditorScene
+from segmate.project import ProjectDialog, ProjectFile
 
 
 class MainWindowWidget(QMainWindow):
@@ -26,11 +27,6 @@ class MainWindowWidget(QMainWindow):
         self._restore_window_position()
         self._load_last_opened()
         self._first_load()
-
-        args = QApplication.arguments()
-        if len(args) > 1:
-            self._open_folder(args[1])
-
         self._set_window_title()
 
     def _set_window_title(self, modified=False):
@@ -83,36 +79,24 @@ class MainWindowWidget(QMainWindow):
         settings = QSettings("justacid", "Segmate")
         settings.beginGroup("Project")
         self._active_project = settings.value("last_opened", "")
+        if not isfile(self._active_project):
+            return
         last_image_shown = settings.value("last_image", 0)
         if self._active_project:
-            self._open_folder(self._active_project)
+            project = ProjectFile.parse(self._active_project)
+            self._open_project(self._active_project, project)
             self.inspector.slider.setValue(int(last_image_shown))
         settings.endGroup()
         self._set_window_title()
 
-    def _scene_changed(self, scene):
-        self.view.setScene(scene)
-        self._add_edit_menu(scene)
-
-    def _retain_active_tool(self):
-        self._set_tool(self._active_tool)
-
-    def _set_tool(self, tool):
-        self._active_tool = tool
-        for layer in self.view.scene().layers:
-            callback = lambda msg: self.statusBar().showMessage(msg, 2000)
-            layer.change_tool(tool, status_callback=callback)
-        self.inspector.show_tool_inspector()
-        self.view.scene().update()
-
-    def _open_folder(self, folder):
-        if isdir(folder):
-            self.inspector.set_scene(EditorScene(DataStore(folder)))
+    def _open_project(self, spf_path, project):
+        if isdir(project.data_root):
+            store = DataStore.from_project(project)
+            self.inspector.set_scene(EditorScene(store))
             self.inspector.scene.image_modified.connect(self._mark_dirty)
             self.inspector.change_image(0)
-
             self.close_action.setEnabled(True)
-            self._active_project = folder
+            self._active_project = spf_path
         else:
             self._active_project = ""
         self._set_window_title()
@@ -122,7 +106,7 @@ class MainWindowWidget(QMainWindow):
         settings.setValue("last_image", 0)
         settings.endGroup()
 
-    def _close_folder(self):
+    def _close_project(self):
         if self._ask_before_closing:
             value = self._confirm_close()
             if value == QMessageBox.Cancel:
@@ -131,6 +115,7 @@ class MainWindowWidget(QMainWindow):
                 self._save_to_disk()
 
         self._ask_before_closing = False
+        del self.view.scene().data_store
         self.view.setScene(None)
         self.inspector.set_scene(None)
         self.close_action.setEnabled(False)
@@ -142,7 +127,7 @@ class MainWindowWidget(QMainWindow):
         self._active_project = ""
         self._set_window_title()
 
-    def _open_folder_dialog(self):
+    def _open_project_dialog(self):
         if self._ask_before_closing:
             value = self._confirm_close()
             if value == QMessageBox.Cancel:
@@ -151,22 +136,36 @@ class MainWindowWidget(QMainWindow):
                 self._save_to_disk()
 
         self._ask_before_closing = False
-        folder = QFileDialog.getExistingDirectory(self, "Open Directory...", "/home")
-        if folder:
-            self._open_folder(folder)
+        home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
+        filename = QFileDialog.getOpenFileName(
+            self, "Open Project", home, "Segmate Project File (*.spf)")
+        if filename[0]:
+            project = ProjectFile.parse(filename[0])
+            self._open_project(filename[0], project)
             self.close_action.setEnabled(True)
 
-    def _save_to_disk(self):
-        if self.inspector.scene:
-            self.inspector.scene.save_to_disk()
-            self._set_window_title()
-            self.save_action.setEnabled(False)
-            self._ask_before_closing = False
+    def _new_project_dialog(self):
+        if self._ask_before_closing:
+            value = self._confirm_close()
+            if value == QMessageBox.Cancel:
+                return
+            elif value == QMessageBox.Save:
+                self._save_to_disk()
 
-    def _mark_dirty(self):
-        self._set_window_title(modified=True)
-        self._ask_before_closing = True
-        self.save_action.setEnabled(True)
+        dialog = ProjectDialog(self)
+        if dialog.exec() == QDialog.Rejected:
+            return
+
+        project = ProjectFile()
+        project.data_root = dialog.data_root
+        project.folders = dialog.folders
+        project.masks = dialog.masks
+        project.editable = dialog.editable
+        project.colors = dialog.colors
+
+        self._ask_before_closing = False
+        ProjectFile.save(dialog.project_path, project)
+        self._open_project(dialog.project_path, project)
 
     def _confirm_close(self):
         msgbox = QMessageBox()
@@ -177,6 +176,35 @@ class MainWindowWidget(QMainWindow):
         msgbox.setDefaultButton(QMessageBox.Cancel)
         msgbox.setIcon(QMessageBox.Warning)
         return msgbox.exec()
+
+    def _save_to_disk(self):
+        if self.inspector.scene:
+            self.inspector.scene.save_to_disk()
+            self._set_window_title()
+            self.save_action.setEnabled(False)
+            self._ask_before_closing = False
+
+    def _scene_changed(self, scene):
+        self.view.setScene(scene)
+        self._add_edit_menu(scene)
+
+    def _retain_active_tool(self):
+        self._set_tool(self._active_tool)
+
+    def _set_tool(self, tool):
+        self._active_tool = tool
+        if not self.view.scene().layers:
+            return
+        for layer in self.view.scene().layers:
+            callback = lambda msg: self.statusBar().showMessage(msg, 2000)
+            layer.change_tool(tool, status_callback=callback)
+        self.inspector.show_tool_inspector()
+        self.view.scene().update()
+
+    def _mark_dirty(self):
+        self._set_window_title(modified=True)
+        self._ask_before_closing = True
+        self.save_action.setEnabled(True)
 
     def _zoom_changed(self, zoom):
         try:
@@ -219,12 +247,15 @@ class MainWindowWidget(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
     def _add_menu(self):
+        self.new_project = QAction("&New Project")
+        self.new_project.triggered.connect(self._new_project_dialog)
+        self.new_project.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_N))
         self.open_action = QAction("&Open Project")
         self.open_action.setIcon(QIcon("icons/open-folder.png"))
         self.open_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_O))
-        self.open_action.triggered.connect(self._open_folder_dialog)
+        self.open_action.triggered.connect(self._open_project_dialog)
         self.close_action = QAction("&Close Project")
-        self.close_action.triggered.connect(self._close_folder)
+        self.close_action.triggered.connect(self._close_project)
         self.close_action.setEnabled(False)
         self.save_action = QAction("&Save Project")
         self.save_action.setIcon(QIcon("icons/save-current.png"))
@@ -236,8 +267,10 @@ class MainWindowWidget(QMainWindow):
 
         self.menuBar().setStyleSheet("QMenu::icon { padding: 5px; }")
         file_menu = self.menuBar().addMenu("&File")
-        file_menu.addAction(self.open_action)
+        file_menu.addAction(self.new_project)
         file_menu.addAction(self.close_action)
+        file_menu.addSeparator()
+        file_menu.addAction(self.open_action)
         file_menu.addAction(self.save_action)
         file_menu.addSeparator()
         file_menu.addAction(self.quit_action)

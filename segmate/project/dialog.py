@@ -42,16 +42,17 @@ class ProjectDialog(QDialog):
         fs_model.setRootPath(self._home)
         completer.setModel(fs_model)
 
-        edit_folder = QLineEdit()
-        edit_folder.setText(self._home)
-        edit_folder.returnPressed.connect(partial(self._folder_edited, edit_folder))
-        edit_folder.setCompleter(completer)
+        self.edit_folder = QLineEdit()
+        self.edit_folder.setText(self._home)
+        self.edit_folder.returnPressed.connect(
+            partial(self._folder_edited, self.edit_folder))
+        self.edit_folder.setCompleter(completer)
 
         folder_button = QToolButton()
-        folder_button.clicked.connect(partial(self._show_folder_dialog, edit_folder))
+        folder_button.clicked.connect(partial(self._show_folder_dialog, self.edit_folder))
         folder_button.setIcon(QIcon("icons/open-folder.png"))
         folder_layout = QHBoxLayout()
-        folder_layout.addWidget(edit_folder)
+        folder_layout.addWidget(self.edit_folder)
         folder_layout.addWidget(folder_button)
 
         self.edit_project = QLineEdit()
@@ -110,6 +111,14 @@ class ProjectDialog(QDialog):
         button_box.rejected.connect(self.reject)
         layout.addWidget(new_row_btn)
         layout.addWidget(button_box)
+
+    @property
+    def project_path(self):
+        return self.edit_project.text()
+
+    @property
+    def data_root(self):
+        return self.edit_folder.text()
 
     @property
     def folders(self):
