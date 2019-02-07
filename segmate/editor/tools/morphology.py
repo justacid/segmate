@@ -57,7 +57,7 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             filled[~sel_mask] = mask[~sel_mask]
 
-        output = util.color_binary_mask(filled, self.pen_color)
+        output = util.color_binary_mask(filled, self.color)
 
         self.push_undo_snapshot(self.canvas, output, undo_text="Fill Holes")
         self.canvas = output
@@ -72,7 +72,7 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             dilated[~sel_mask] = mask[~sel_mask]
 
-        output = util.color_binary_mask(dilated, self.pen_color)
+        output = util.color_binary_mask(dilated, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Dilate")
         self.canvas = output
         self.notify_dirty()
@@ -86,7 +86,7 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             eroded[~sel_mask] = mask[~sel_mask]
 
-        output = util.color_binary_mask(eroded, self.pen_color)
+        output = util.color_binary_mask(eroded, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Erode")
         self.canvas = output
         self.notify_dirty()
@@ -100,7 +100,7 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             skeletonized[~sel_mask] = mask[~sel_mask]
 
-        output = util.color_binary_mask(skeletonized, self.pen_color)
+        output = util.color_binary_mask(skeletonized, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Skeletonize")
         self.canvas = output
         self.notify_dirty()
@@ -124,7 +124,7 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             result_mask[~sel_mask] = util.extract_binary_mask(self.canvas)[~sel_mask]
 
-        output = util.color_binary_mask(result_mask, self.pen_color)
+        output = util.color_binary_mask(result_mask, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Watershed")
         self.canvas = output
         self.notify_dirty()

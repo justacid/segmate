@@ -35,7 +35,7 @@ class EditorTool(ABC):
         self.is_dirty = False
         self.canvas = None
         self.item = None
-        self.pen_color = None
+        self.color = None
         self.undo_stack = None
         self.status_callback = None
         self.is_editable = False

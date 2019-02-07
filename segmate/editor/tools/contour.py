@@ -40,4 +40,4 @@ class ContourTool(EditorTool):
             contour = np.round(contour).astype(np.int32)
             output[contour[:, 0], contour[:, 1]] = 1
 
-        return util.color_binary_mask(output, self.pen_color)
+        return util.color_binary_mask(output, self.color)

@@ -41,7 +41,7 @@ class BucketFillTool(EditorTool):
 
         while coords:
             y, x = coords.pop()
-            image[y, x] = (*self.pen_color, 255)
+            image[y, x] = (*self.color, 255)
 
             if y + 1 < h and not any(image[y + 1, x]):
                 coords.append([y + 1, x])

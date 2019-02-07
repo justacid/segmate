@@ -53,7 +53,7 @@ class MasksTool(EditorTool):
             output[(mask == 1) & (sel_mask == 1)] = 1
         else:
             output[mask == 1] = 1
-        output = util.color_binary_mask(output, self.pen_color)
+        output = util.color_binary_mask(output, self.color)
 
         self.push_undo_snapshot(self.canvas, output, undo_text="Copy Mask")
         self.canvas = output
@@ -66,7 +66,7 @@ class MasksTool(EditorTool):
         else:
             mask = np.zeros(mask.shape, dtype=np.uint8)
 
-        image = util.color_binary_mask(mask, self.pen_color)
+        image = util.color_binary_mask(mask, self.color)
         self.push_undo_snapshot(self.canvas, image, undo_text="Clear Mask")
         self.canvas = image
         self.notify_dirty()
@@ -90,7 +90,7 @@ class MasksTool(EditorTool):
             else:
                 output[mask == 1] = 1
 
-        output = util.color_binary_mask(output, self.pen_color)
+        output = util.color_binary_mask(output, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Merge Mask")
         self.canvas = output
         self.notify_dirty()

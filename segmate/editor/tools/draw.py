@@ -120,7 +120,7 @@ class DrawTool(EditorTool):
         else:
             painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
             pen.setWidth(self._brush_size)
-        pen.setColor(QColor(*self.pen_color))
+        pen.setColor(QColor(*self.color))
         painter.setPen(pen)
 
         painter.drawLine(self._last_point, end_point)

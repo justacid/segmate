@@ -37,7 +37,7 @@ class EditorItem(QGraphicsObject):
         self._image = self.scene.data_store[image_idx][layer_idx]
         self._is_mask = self.scene.data_store.masks[layer_idx]
         self._is_editable = self.scene.data_store.editable[layer_idx]
-        self._pen_color = self.scene.data_store.colors[layer_idx]
+        self._color = self.scene.data_store.colors[layer_idx]
         self._tool.canvas = QImage(self._image)
         self._tool.item = self
 
@@ -72,7 +72,7 @@ class EditorItem(QGraphicsObject):
         self._tool = self._tool_box[tool]
         self._tool.canvas = result
         self._tool.item = self
-        self._tool.pen_color = self._pen_color
+        self._tool.color = self._color
         self._tool.undo_stack = self._undo_stack
         self._tool.status_callback = status_callback
         self._tool.is_mask = self._is_mask
