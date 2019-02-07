@@ -100,8 +100,6 @@ class MasksTool(EditorTool):
         self._merge_masks()
 
     @property
-    def inspector_widget(self):
-        if not self.is_editable:
-            return None
+    def widget(self):
         return MasksToolInspector(
             self._copy_previous_mask, self._clear_mask, self._merge_masks, self._clr_merge)

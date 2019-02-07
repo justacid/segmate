@@ -43,9 +43,7 @@ class DrawTool(EditorTool):
         return self.canvas
 
     @property
-    def inspector_widget(self):
-        if not self.is_editable:
-            return None
+    def widget(self):
         def brush_size(value):
             self._brush_size = value
         def eraser_size(value):

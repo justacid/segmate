@@ -88,8 +88,10 @@ class InspectorWidget(QWidget):
 
     def _add_tool_inspector(self):
         idx = self.scene.active_layer
-        widget = self.scene.layers[idx]._tool.inspector_widget
+        widget = self.scene.layers[idx]._tool.widget
         if widget:
+            if not self.scene.layers[idx]._tool.is_editable:
+                widget.setDisabled(True)
             self.dock_layout.insertWidget(1, widget)
 
     def _remove_tool_inspector(self):

@@ -130,9 +130,7 @@ class MorphologyTool(EditorTool):
         self.notify_dirty()
 
     @property
-    def inspector_widget(self):
-        if not self.is_editable:
-            return None
+    def widget(self):
         return MorphologyToolInspector(
             self._fill_holes, self._dilate, self._erode,
             self._skeletonize, self._watershed)

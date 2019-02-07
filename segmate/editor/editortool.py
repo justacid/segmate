@@ -42,7 +42,7 @@ class EditorTool(ABC):
         self.is_mask = False
 
     @property
-    def inspector_widget(self):
+    def widget(self):
         return None
 
     @property
