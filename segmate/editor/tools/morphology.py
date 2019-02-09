@@ -1,7 +1,5 @@
 import numpy as np
-from PySide2.QtCore import *
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
+from PySide2.QtWidgets import QPushButton
 from scipy import ndimage as ndi
 from skimage.color import rgb2gray
 from skimage.filters import rank
@@ -39,17 +37,19 @@ class MorphologyToolInspector(EditorToolWidget):
 
 class MorphologyTool(EditorTool):
 
-    def __init__(self):
-        super().__init__()
+    def on_show(self):
         self._selection = RectSelection(self)
 
+    def on_hide(self):
+        self._selection.reset()
+
     def paint_canvas(self):
-        image = QImage(self.canvas)
+        image = self.canvas.copy()
         self._selection.paint(image)
         return image
 
     def _fill_holes(self):
-        mask = util.extract_binary_mask(self.canvas)
+        mask = util.mask.binary(self.canvas)
         filled = ndi.binary_fill_holes(mask)
 
         if self._selection.is_active:
@@ -57,14 +57,13 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             filled[~sel_mask] = mask[~sel_mask]
 
-        output = util.color_binary_mask(filled, self.color)
-
+        output = util.mask.color(filled, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Fill Holes")
         self.canvas = output
         self.notify_dirty()
 
     def _dilate(self):
-        mask = util.extract_binary_mask(self.canvas)
+        mask = util.mask.binary(self.canvas)
         dilated = morph.binary_dilation(mask)
 
         if self._selection.is_active:
@@ -72,13 +71,13 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             dilated[~sel_mask] = mask[~sel_mask]
 
-        output = util.color_binary_mask(dilated, self.color)
+        output = util.mask.color(dilated, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Dilate")
         self.canvas = output
         self.notify_dirty()
 
     def _erode(self):
-        mask = util.extract_binary_mask(self.canvas)
+        mask = util.mask.binary(self.canvas)
         eroded = morph.binary_erosion(mask)
 
         if self._selection.is_active:
@@ -86,13 +85,13 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             eroded[~sel_mask] = mask[~sel_mask]
 
-        output = util.color_binary_mask(eroded, self.color)
+        output = util.mask.color(eroded, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Erode")
         self.canvas = output
         self.notify_dirty()
 
     def _skeletonize(self):
-        mask = util.extract_binary_mask(self.canvas)
+        mask = util.mask.binary(self.canvas)
         skeletonized = morph.skeletonize(mask)
 
         if self._selection.is_active:
@@ -100,19 +99,18 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             skeletonized[~sel_mask] = mask[~sel_mask]
 
-        output = util.color_binary_mask(skeletonized, self.color)
+        output = util.mask.color(skeletonized, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Skeletonize")
         self.canvas = output
         self.notify_dirty()
 
     def _watershed(self):
-        image = self.item.scene.data_store[self.item.image_idx][0]
-        image = util.to_grayscale(image)
-
-        markers = util.extract_binary_mask(self.canvas)
+        markers = util.mask.binary(self.canvas)
         markers = morph.label(markers, background=0)
         markers[0, markers.shape[1] - 1] = np.max(markers) + 1
 
+        image = self.item.scene.data_store[self.item.image_idx][0]
+        image = util.mask.grayscale(image)
         basin = rank.gradient(image, morph.disk(1))
         watershed = morph.watershed(basin, markers)
 
@@ -124,7 +122,7 @@ class MorphologyTool(EditorTool):
             sel_mask[self._selection.indices] = True
             result_mask[~sel_mask] = util.extract_binary_mask(self.canvas)[~sel_mask]
 
-        output = util.color_binary_mask(result_mask, self.color)
+        output = util.mask.color(result_mask, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Watershed")
         self.canvas = output
         self.notify_dirty()

@@ -1,7 +1,6 @@
 import numpy as np
-from PySide2.QtCore import *
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
+from PySide2.QtCore import Qt
+
 import segmate.util as util
 
 
@@ -82,7 +81,7 @@ class RectSelection:
         if not self.indices:
             return
 
-        image = util.from_qimage(canvas)
+        image = canvas.copy()
         if self._has_gap_size(4) and not self._selecting:
             try:
                 mask = np.zeros(image.shape[:2], dtype=np.bool)
@@ -94,23 +93,26 @@ class RectSelection:
                     self.reset()
                     return
 
-                image[~mask] = (0, 0, 0, 96)
+                alpha = np.ones(image.shape[:2]) * 255
+                alpha[image[:,:,1] == 0] = 96
+                colors = np.dstack((image[:,:,:3] * 0.25, alpha))
+                image[~mask] = colors[~mask]
             except:
                 self.reset()
                 return
-        image = util.to_qimage(image)
 
-        painter = QPainter(canvas)
-        painter.drawImage(0, 0, image)
-        painter.setPen(QPen(QColor(47, 79, 79)))
-        painter.drawRect(QRectF(self._corner1, self._corner2))
+        canvas[:] = image
+        p0 = (self._corner1.y(), self._corner1.x())
+        p1 = (self._corner2.y(), self._corner2.x())
+        util.draw.rectangle(canvas, p0, p1, color=(47, 79, 79, 255))
 
     def _has_gap_size(self, gap_size):
         if self._corner1 is None or self._corner2 is None:
             return False
-        x1, x2 = self._corner1.x(), self._corner2.x()
-        y1, y2 = self._corner1.y(), self._corner2.y()
-        if x2 - x1 <= gap_size or y2 - y1 <= gap_size:
+        if self.rect is None:
+            return False
+        p0, p1 = self.rect
+        if p1[0] - p0[0] <= gap_size or p1[1] - p0[1] <= gap_size:
             return False
         return True
 

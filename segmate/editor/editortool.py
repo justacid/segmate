@@ -11,8 +11,8 @@ class EditorUndoCommand(QUndoCommand):
     def __init__(self, snapshot, modified, tool):
         super().__init__()
 
-        self._snapshot = QImage(snapshot)
-        self._modified = QImage(modified)
+        self._snapshot = snapshot.copy()
+        self._modified = modified.copy()
         self._tool = tool
 
         self.undo_triggered = None
@@ -20,12 +20,12 @@ class EditorUndoCommand(QUndoCommand):
 
     def undo(self):
         if self.undo_triggered:
-            self.undo_triggered(QImage(self._snapshot))
+            self.undo_triggered(self._snapshot.copy())
             self._tool.notify_dirty()
 
     def redo(self):
         if self.redo_triggered:
-            self.redo_triggered(QImage(self._modified))
+            self.redo_triggered(self._modified.copy())
             self._tool.notify_dirty()
 
 
@@ -40,6 +40,16 @@ class EditorTool(ABC):
         self.status_callback = None
         self.is_editable = False
         self.is_mask = False
+        self.on_create()
+
+    def on_create(self):
+        pass
+
+    def on_show(self):
+        pass
+
+    def on_hide(self):
+        pass
 
     @property
     def widget(self):
@@ -49,7 +59,6 @@ class EditorTool(ABC):
     def cursor(self):
         return QCursor(Qt.ArrowCursor)
 
-    @abstractmethod
     def paint_canvas(self):
         return self.canvas
 

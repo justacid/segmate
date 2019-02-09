@@ -3,10 +3,7 @@ from pathlib import Path
 
 import imageio as io
 import numpy as np
-from skimage import img_as_ubyte
-from skimage.color import rgb2gray
-
-from segmate.util import to_qimage, from_qimage
+import skimage.color as skcolor
 
 
 class DataStore:
@@ -57,19 +54,22 @@ class DataStore:
         self._modified.clear()
 
     def _binarize(self, image):
-        image = rgb2gray(from_qimage(image)[:, :, :3])
-        buffer = np.zeros(image.shape, dtype=np.uint8)
-        buffer[image != 0.0] = 255
-        return buffer
+        image = skcolor.rgb2gray(image[:, :, :3])
+        output = np.zeros(image.shape, dtype=np.uint8)
+        output[image != 0.0] = 255
+        return output
 
     def _load_image(self, idx, folder):
         path = self.root / folder / self.files[idx]
-        return to_qimage(io.imread(path))
+        image = io.imread(path)
+        if len(image.shape) == 2:
+            image = skcolor.gray2rgb(image, alpha=True)
+        return image
 
     def _load_mask(self, idx, folder, color):
         path = self.root / folder / self.files[idx]
         mask = io.imread(path, as_gray=True)
-        return to_qimage(self._make_alpha(mask, color=color))
+        return self._make_alpha(mask, color=color)
 
     def _make_alpha(self, image, color):
         alpha = np.zeros([*image.shape, 4], dtype=np.uint8)

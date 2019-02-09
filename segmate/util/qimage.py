@@ -6,25 +6,24 @@ from skimage.color import rgb2gray
 from skimage import img_as_ubyte
 
 
-def to_qimage(arr, copy=True):
+def to_qimage(array):
     """Convert NumPy array to QImage object
 
     Args:
         arr: A numpy array
-        copy: If True, returns a copy of the array
 
     Returns:
         An QImage object.
     """
-    if arr is None:
+    if array is None:
         raise ValueError("The argument 'arr' can not be 'None'.")
 
-    if len(arr.shape) not in (2, 3):
+    if len(array.shape) not in (2, 3):
         raise TypeError(f"Unsupported image format.")
 
-    shape = arr.shape[:2][::-1]
-    stride = arr.strides[0]
-    cdim = 0 if len(arr.shape) != 3 else arr.shape[2]
+    shape = array.shape[:2][::-1]
+    stride = array.strides[0]
+    cdim = 0 if len(array.shape) != 3 else array.shape[2]
 
     formats = {
         0: QImage.Format_Grayscale8,
@@ -35,15 +34,8 @@ def to_qimage(arr, copy=True):
     if cdim not in formats:
         raise TypeError("Unsupported image format.")
 
-    qimage = QImage(arr.data, *shape, stride, formats[cdim])
-    # This is a massive hack - for some reason copying a grayscale image
-    # changes the "bytesPerLine", but if we then convert it to RGBA
-    # it's correct again... this is probably a bug somewhere in Qt...
-    # todo: Remove conversion, if/when fixed
-    if qimage.format() == QImage.Format_Grayscale8:
-        return qimage.copy().convertToFormat(QImage.Format_RGBA8888)
-
-    return qimage.copy() if copy else qimage
+    qimage = QImage(array.data, *shape, stride, formats[cdim])
+    return qimage.convertToFormat(QImage.Format_RGBA8888)
 
 
 def from_qimage(image):
@@ -70,72 +62,3 @@ def from_qimage(image):
         raise TypeError("Unsupported image format.")
 
     return np.array(image.constBits(), dtype=np.uint8).reshape(dims[image.format()])
-
-
-def to_grayscale(image):
-    """ Convert a QImage to numpy array in grayscale.
-
-    Args:
-        image: A QImage in the RGBA888 or RGBA8888format
-
-    Returns:
-        Grayscale numpy array of QImage.
-    """
-    if image is None:
-        raise ValueError("The argument 'image' can not be 'None'.")
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        image = from_qimage(image)
-        return img_as_ubyte(rgb2gray(image[:,:,:3]))
-
-
-def extract_binary_mask(image):
-    """Retrieve the binary mask from a QImage object with alpha channel.
-
-    Args:
-        image: A QImage in the RGBA888 or RGBA8888format
-
-    Returns:
-        Binary mask, where everything not equal to zero is set to 1
-    """
-    if image is None:
-        raise ValueError("The argument 'image' can not be 'None'.")
-
-    image = from_qimage(image)
-    noalpha = rgb2gray(image[:,:,:3])
-    mask = np.zeros(noalpha.shape, dtype=np.uint8)
-    mask[noalpha != 0.0] = 1
-    return mask
-
-
-def color_binary_mask(arr, color=(255, 255, 255)):
-    """Returns a colored QImage from a binary mask with given color.
-
-    Args:
-        image: A binary numpy array
-
-    Returns:
-        A QImage from the corresponding binary image.
-    """
-    if arr is None:
-        raise ValueError("The argument 'arr' can not be 'None'.")
-    if len(arr.shape) != 2:
-        raise TypeError(f"Only binary masks are supported.")
-
-    output = np.zeros((*arr.shape, 4), dtype=np.uint8)
-    output[arr == 1] = (*color, 255)
-    return to_qimage(output, copy=True)
-
-def invert_binary_mask(arr):
-    """Inverts a binary numpy array.
-
-    Args:
-        image: A binary numpy array
-
-    Returns:
-        A numpy array where 1 and 0 are switched.
-    """
-    output = np.ones(arr.shape, dtype=np.uint8)
-    output[arr == 1] = 0
-    return output

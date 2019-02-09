@@ -2,7 +2,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from segmate.util import from_qimage, to_qimage
+import segmate.util as util
 import segmate.editor.tools as tools
 
 
@@ -23,10 +23,10 @@ class EditorItem(QGraphicsObject):
         }
 
         self.scene = scene
-        self.is_active = False
         self.image_idx = -1
         self.layer_idx = -1
 
+        self._is_active = False
         self._undo_stack = scene.undo_stack
         self._undo_stack.indexChanged.connect(lambda _: self.update())
         self._tool = self._tool_box["cursor_tool"]
@@ -38,12 +38,15 @@ class EditorItem(QGraphicsObject):
         self._is_mask = self.scene.data_store.masks[layer_idx]
         self._is_editable = self.scene.data_store.editable[layer_idx]
         self._color = self.scene.data_store.colors[layer_idx]
-        self._tool.canvas = QImage(self._image)
+        self._tool.canvas = self._image.copy()
         self._tool.item = self
 
     @property
     def data(self):
-        return self._tool.paint_result()
+        result = self._tool.paint_result()
+        if result is None:
+            return self._image.copy()
+        return result
 
     @property
     def is_dirty(self):
@@ -62,12 +65,20 @@ class EditorItem(QGraphicsObject):
         buttons = Qt.LeftButton | Qt.RightButton | Qt.MidButton
         self.setAcceptedMouseButtons(buttons if active else 0)
         self._is_active = active
+        if not active:
+            self._tool.on_hide()
+            self.update()
 
     def change_tool(self, tool, status_callback=None):
         if tool not in self._tool_box:
             raise IndexError(f"'{tool}'' is not a valid tool.")
 
-        result = QImage(self._tool.paint_result())
+        self._tool.on_hide()
+        result = self._tool.paint_result()
+        if result is not None:
+            result = result.copy()
+        else:
+            result = self._image.copy()
 
         self._tool = self._tool_box[tool]
         self._tool.canvas = result
@@ -77,7 +88,12 @@ class EditorItem(QGraphicsObject):
         self._tool.status_callback = status_callback
         self._tool.is_mask = self._is_mask
         self._tool.is_editable = self._is_editable
-        self.setCursor(self._tool.cursor)
+        cursor = self._tool.cursor
+        if isinstance(cursor, str):
+            self.setCursor(QCursor(QPixmap(cursor)))
+        else:
+            self.setCursor(self._tool.cursor)
+        self._tool.on_show()
 
     def undo_tool_command(self, image):
         if self._tool:
@@ -100,10 +116,16 @@ class EditorItem(QGraphicsObject):
                 self._tool.send_status_message(f"Redo {redo_text}")
 
     def paint(self, painter, option, widget):
-        painter.drawImage(0, 0, self._tool.paint_canvas())
+        canvas = self._tool.paint_canvas()
+        if canvas is None:
+            qimage = util.to_qimage(self._image)
+        else:
+            qimage = util.to_qimage(canvas)
+        painter.drawImage(0, 0, qimage)
 
     def boundingRect(self):
-        return self._image.rect()
+        y, x = self._image.shape[:2]
+        return QRect(0, 0, x, y)
 
     def mousePressEvent(self, event):
         if self._tool:
