@@ -11,8 +11,7 @@ setuptools.setup(
     install_requires=[
         "PySide2==5.12.0",
         "scikit-image==0.14.2",
-        "imageio==2.4.1",
-        "QDarkStyle==2.6.5"
+        "imageio==2.4.1"
     ],
     include_package_data=True,
     entry_points = {

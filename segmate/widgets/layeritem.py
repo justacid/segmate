@@ -44,9 +44,13 @@ class LayerItemWidget(QFrame):
     def is_active(self, active):
         self._is_active = active
         if self._is_active:
-            self.setStyleSheet("QFrame { background-color: rgba(128, 0, 0, 255) }")
+            self.setProperty("active", True)
+            self.style().unpolish(self)
+            self.style().polish(self)
             return
-        self.setStyleSheet("")
+        self.setProperty("active", False)
+        self.style().unpolish(self)
+        self.style().polish(self)
 
     def _set_icon(self, visible):
         if visible:

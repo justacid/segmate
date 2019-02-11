@@ -11,10 +11,8 @@ class LabeledSlider(QFrame):
         super().__init__()
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
 
         label = QLabel(label)
-        label.setStyleSheet("border: 0px;")
         slider_layout = QHBoxLayout()
         slider = QSlider(Qt.Horizontal)
         slider.setValue(value)

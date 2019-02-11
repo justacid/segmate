@@ -1,5 +1,5 @@
 from PySide2.QtWidgets import QApplication
-from PySide2.QtCore import QEvent, Signal
+from PySide2.QtCore import Qt, QEvent, Signal
 
 
 class Application(QApplication):
@@ -15,6 +15,7 @@ class Application(QApplication):
 
     def __init__(self, args):
         super().__init__(args)
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 
     def event(self, event):
         if event.type() == QEvent.TabletEnterProximity:

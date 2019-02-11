@@ -76,11 +76,7 @@ class ProjectDialog(QDialog):
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustIgnored)
         self.table.setTabKeyNavigation(False)
-        self.table.setProperty("showDropIndicator", True)
-        self.table.setDragEnabled(True)
-        self.table.setDragDropOverwriteMode(False)
-        self.table.setDragDropMode(QAbstractItemView.InternalMove)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.NoSelection)
         self.table.setShowGrid(False)
         self.table.setWordWrap(False)
 
@@ -104,6 +100,7 @@ class ProjectDialog(QDialog):
         layout.addLayout(top_box)
         layout.addWidget(self.table)
         new_row_btn = QToolButton()
+        new_row_btn.setObjectName("dialogAddRow")
         new_row_btn.clicked.connect(self._add_row)
         new_row_btn.setIcon(QIcon("icons/add.png"))
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -229,6 +226,7 @@ class ProjectDialog(QDialog):
 
     def _mask_widget(self, row, default_value):
         widget = QWidget()
+        widget.setObjectName("projectDialogRow")
         layout = QHBoxLayout(widget)
         layout.setMargin(0)
         checkbox = QCheckBox()
@@ -241,6 +239,7 @@ class ProjectDialog(QDialog):
 
     def _editable_widget(self, row, default_value):
         widget = QWidget()
+        widget.setObjectName("projectDialogRow")
         layout = QHBoxLayout(widget)
         layout.setMargin(0)
         checkbox = QCheckBox()
@@ -253,12 +252,12 @@ class ProjectDialog(QDialog):
 
     def _color_widget(self, row, color):
         widget = QWidget()
+        widget.setObjectName("projectDialogRow")
         layout = QHBoxLayout(widget)
         layout.setMargin(0)
         button = QPushButton()
-        button.setFixedWidth(35)
-        button.setFixedHeight(20)
         color_txt = ','.join([str(c) for c in color])
+        button.setObjectName("colorSelector")
         button.setStyleSheet(f"background-color: rgb({color_txt});")
         layout.addWidget(button)
         layout.setAlignment(Qt.AlignCenter)
@@ -269,6 +268,7 @@ class ProjectDialog(QDialog):
 
     def _move_row_widget(self):
         widget = QWidget()
+        widget.setObjectName("projectDialogRow")
         move_layout = QHBoxLayout(widget)
         move_layout.setSpacing(0)
         move_layout.setMargin(0)
@@ -282,18 +282,20 @@ class ProjectDialog(QDialog):
         down_button.setArrowType(Qt.DownArrow)
         down_button.clicked.connect(partial(self._move_row_down, widget))
         delete_button = QToolButton()
-        delete_button.setMaximumSize(18, 18)
+        delete_button.setMaximumSize(10, 10)
+        delete_button.setObjectName("projectDialogDeleteRow")
         delete_button.clicked.connect(partial(self._delete_row, widget))
         delete_button.setIcon(QIcon("icons/remove.png"))
         move_layout.addWidget(up_button)
         move_layout.addWidget(down_button)
+        move_layout.addSpacerItem(QSpacerItem(5, 5, QSizePolicy.Fixed, QSizePolicy.Fixed))
         move_layout.addWidget(delete_button)
         return widget
 
     def _show_color_picker(self, widget, button):
         row = self._find_row(widget)
         color = QColorDialog.getColor(QColor(*self.colors[row]))
-        if color:
+        if color.isValid():
             self.colors[row] = (color.red(), color.green(), color.blue())
             color_txt = f"{color.red()}, {color.green()}, {color.blue()}"
             button.setStyleSheet(f"background-color: rgb({color_txt});")
@@ -315,8 +317,6 @@ class ProjectDialog(QDialog):
         if folder:
             line_widget.setText(folder)
             self._populate_table(folder)
-        else:
-            self.table.setRowCount(0)
 
     def _show_file_dialog(self, line_widget):
         filename = QFileDialog.getSaveFileName(

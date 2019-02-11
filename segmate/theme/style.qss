@@ -1,0 +1,215 @@
+QGroupBox {
+  background-color: palette(alternate-base);
+  border: 1px solid palette(midlight);
+  margin-top: 25px;
+}
+
+QGroupBox::title {
+    background-color: transparent;
+}
+
+QGroupBox#imageSlider QToolButton {
+  margin: 0px;
+  border-style: none;
+}
+
+QGroupBox#imageSlider QToolButton:hover {
+  border-top: 1px solid palette(midlight);
+  border-bottom: 1px solid palette(midlight);
+}
+
+QGroupBox#imageSlider QToolButton:pressed {
+  background-color: palette(midlight);
+}
+
+QLineEdit {
+  border-style: none;
+  height: 23px;
+}
+
+QMenu::item:disabled {
+  background: transparent;
+}
+
+QWidget#projectDialogRow {
+  background-color: palette(base);
+}
+
+QToolButton#projectDialogDeleteRow {
+  border-style: none;
+}
+
+QToolButton#projectDialogDeleteRow:hover {
+  background-color: rgb(128, 0, 0);
+}
+
+QToolButton#projectDialogDeleteRow:pressed {
+  background-color: rgb(255, 0, 0);
+}
+
+QPushButton#colorSelector {
+  border-style: none;
+  width: 25px;
+  height: 18px;
+}
+
+LabeledSlider:hover {
+  border-top: 1px solid palette(midlight);
+  border-bottom: 1px solid palette(midlight);
+}
+
+EditorToolWidget QPushButton {
+  border-style: none;
+  background-color: palette(button);
+  height: 22px;
+}
+
+EditorToolWidget QPushButton:hover {
+  border-top: 1px solid palette(midlight);
+  border-bottom: 1px solid palette(midlight);
+}
+
+EditorToolWidget QPushButton:pressed {
+  background-color: palette(midlight);
+}
+
+EditorToolWidget EditorSeparator {
+  background-color: palette(base);
+}
+
+LayerItemWidget {
+  border-style: none;
+}
+
+LayerItemWidget[active=true] {
+  background-color: rgb(128, 0, 0);
+}
+
+LayerItemWidget QToolButton {
+  border-style: none;
+  height: 20px;
+  width: 20px;
+}
+
+LayerItemWidget QToolButton:hover {
+  border-top: 1px solid palette(midlight);
+  border-bottom: 1px solid palette(midlight);
+}
+
+LayerItemWidget QToolButton:pressed {
+  background-color: palette(midlight);
+}
+
+LayerItemWidget:hover {
+  border-top: 1px solid palette(midlight);
+  border-bottom: 1px solid palette(midlight);
+}
+
+LayerItemWidget:checked {
+  background-color: red;
+}
+
+QToolButton#dialogAddRow {
+  border-style: none;
+  width: 22px;
+  height: 22px;
+}
+
+QToolButton#dialogAddRow:hover {
+  border-top: 1px solid palette(midlight);
+  border-bottom: 1px solid palette(midlight);
+}
+
+QToolButton#dialogAddRow:pressed {
+  background-color: palette(midlight);
+}
+
+QToolBar {
+  border: none;
+}
+
+QTableView QCheckBox {
+  background-color: palette(alternate-base);
+}
+
+QScrollBar:vertical {
+  background: palette(base);
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  width: 16px;
+  margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+  background-color: palette(alternate-base);
+  border-radius: 2px;
+  min-height: 20px;
+  margin: 2px 4px 2px 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+  background-color:palette(highlight);
+}
+
+QScrollBar::add-line:vertical {
+  background: none;
+  height: 0px;
+  subcontrol-position: right;
+  subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:vertical {
+  background: none;
+  height: 0px;
+  subcontrol-position: left;
+  subcontrol-origin: margin;
+}
+
+QScrollBar:horizontal{
+  background: palette(base);
+  height: 16px;
+  margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+  background-color: palette(alternate-base);
+  border-radius: 2px;
+  min-width: 20px;
+  margin: 4px 2px 4px 2px;
+}
+
+QScrollBar::handle:horizontal:hover {
+  background-color: palette(highlight);
+}
+
+QScrollBar::add-line:horizontal {
+  background: none;
+  width: 0px;
+  subcontrol-position: bottom;
+  subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:horizontal {
+  background: none;
+  width: 0px;
+  subcontrol-position: top;
+  subcontrol-origin: margin;
+}
+
+QSlider::handle:horizontal {
+  border-radius: 0px;
+  background-color: palette(light);
+  max-height: 20px;
+}
+
+QSlider::add-page:horizontal {
+  background: palette(base);
+}
+
+QSlider::sub-page:horizontal {
+  background: palette(highlight);
+}
+
+QSlider::sub-page:horizontal:disabled {
+  background-color: palette(light);
+}

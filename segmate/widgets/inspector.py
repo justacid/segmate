@@ -111,7 +111,7 @@ class InspectorWidget(QWidget):
                 item = self.layers.takeAt(0)
 
         for index, name in enumerate(self.scene.data_store.folders):
-            item = LayerItemWidget(index, f"Opacity: {name}".title())
+            item = LayerItemWidget(index, f"{name}".title())
             item.opacity_changed.connect(self._change_layer_opacity)
             item.layer_clicked.connect(self.activate_layer)
             self.layers.addWidget(item)
@@ -122,9 +122,10 @@ class InspectorWidget(QWidget):
 
     def _setup_ui(self):
         self.dock_layout = QVBoxLayout(self)
+        self.dock_layout.setContentsMargins(4, 4, 4, 0)
 
         self.slider_box = QGroupBox("Images")
-        self.slider_box.setStyleSheet("border-radius: 0px;")
+        self.slider_box.setObjectName("imageSlider")
         hlayout = QHBoxLayout(self.slider_box)
 
         arrow_left = QToolButton(self)
@@ -136,8 +137,6 @@ class InspectorWidget(QWidget):
         hlayout.addWidget(arrow_left)
 
         self.slider = QSlider(Qt.Horizontal)
-        self.slider.setTickPosition(QSlider.TicksBelow)
-        self.slider.setTickInterval(10)
         self.slider.setValue(0)
         self.slider.valueChanged.connect(self.change_image)
         self.slider.sliderPressed.connect(self._slider_pressed)
@@ -156,7 +155,6 @@ class InspectorWidget(QWidget):
 
         self.layer_box = QGroupBox(self)
         self.layer_box.setTitle("Layer")
-        self.layer_box.setStyleSheet("border-radius: 0px;")
 
         self.layers = QVBoxLayout(self.layer_box)
         self.layers.setSpacing(2)
