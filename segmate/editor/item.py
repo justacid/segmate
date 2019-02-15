@@ -30,6 +30,7 @@ class EditorItem(QGraphicsObject):
         self._undo_stack = scene.undo_stack
         self._undo_stack.indexChanged.connect(lambda _: self.update())
         self._tool = self._tool_box["cursor_tool"]
+        self.setAcceptedMouseButtons(0)
 
     def load(self, image_idx, layer_idx):
         self.image_idx = image_idx
