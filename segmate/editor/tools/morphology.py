@@ -120,7 +120,7 @@ class MorphologyTool(EditorTool):
         if self._selection.is_active:
             sel_mask = np.zeros(markers.shape, dtype=np.bool)
             sel_mask[self._selection.indices] = True
-            result_mask[~sel_mask] = util.extract_binary_mask(self.canvas)[~sel_mask]
+            result_mask[~sel_mask] = util.mask.binary(self.canvas)[~sel_mask]
 
         output = util.mask.color(result_mask, self.color)
         self.push_undo_snapshot(self.canvas, output, undo_text="Watershed")
