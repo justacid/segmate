@@ -225,6 +225,14 @@ class MainWindowWidget(QMainWindow):
             self.statusBar().showMessage("Zoom to fit: Off", 2000)
             self.zoom_fit.setChecked(False)
 
+    def _arrow_keys_pressed(self, left_key):
+        self.undo_action.setEnabled(False)
+        self.redo_action.setEnabled(False)
+        if left_key:
+            self.inspector.show_previous()
+        else:
+            self.inspector.show_next()
+
     def _setup_ui(self):
         self.statusBar().showMessage("Ready")
         self.setWindowIcon(QIcon("icons/app-icon.png"))
@@ -245,6 +253,11 @@ class MainWindowWidget(QMainWindow):
         self.dock.setWidget(self.inspector)
 
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+
+        shortcut_left = QShortcut(QKeySequence(Qt.Key_Left), self)
+        shortcut_left.activated.connect(partial(self._arrow_keys_pressed, True))
+        shortcut_right = QShortcut(QKeySequence(Qt.Key_Right), self)
+        shortcut_right.activated.connect(partial(self._arrow_keys_pressed, False))
 
     def _add_menu(self):
         self.new_project = QAction("&New Project")
@@ -418,16 +431,3 @@ class MainWindowWidget(QMainWindow):
         settings.setValue("last_image", self.inspector.current_image)
         settings.endGroup()
         super().closeEvent(event)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Right:
-            self.undo_action.setEnabled(False)
-            self.redo_action.setEnabled(False)
-            self.inspector.show_next()
-            return
-        elif event.key() == Qt.Key_Left:
-            self.undo_action.setEnabled(False)
-            self.redo_action.setEnabled(False)
-            self.inspector.show_previous()
-            return
-        event.ignore()

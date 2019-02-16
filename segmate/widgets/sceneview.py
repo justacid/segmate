@@ -166,6 +166,3 @@ class SceneViewWidget(QGraphicsView):
     def resizeEvent(self, event):
         self.setAlignment(Qt.AlignCenter)
         super().resizeEvent(event)
-
-    def keyPressEvent(self, event):
-        event.ignore()
