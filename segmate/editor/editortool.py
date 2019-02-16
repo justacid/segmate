@@ -80,6 +80,12 @@ class EditorTool:
     def on_tablet_released(self, event):
         pass
 
+    def on_key_pressed(self, event):
+        pass
+
+    def on_key_released(self, event):
+        pass
+
     def push_undo_snapshot(self, snapshot, modified, *, undo_text=""):
         if self.undo_stack:
             command = EditorUndoCommand(snapshot, modified, self)

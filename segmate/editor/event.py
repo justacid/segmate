@@ -71,3 +71,35 @@ class MouseEvent:
         if self._qevent.modifiers() & Qt.ControlModifier:
             return True
         return False
+
+
+class Key:
+
+    def __init__(self, qevent):
+        self._qevent = qevent
+
+    def __getattr__(self, key):
+        try:
+            key = getattr(Qt, key)
+        except:
+            raise AttributeError(f"type object 'Key' has no attribute '{key}'")
+        return self._qevent.key() == key
+
+
+class KeyEvent:
+
+    def __init__(self, qevent):
+        self._qevent = qevent
+        self.key = Key(qevent)
+
+    @property
+    def shift(self):
+        if self._qevent.modifiers() & Qt.ShiftModifier:
+            return True
+        return False
+
+    @property
+    def ctrl(self):
+        if self._qevent.modifiers() & Qt.ControlModifier:
+            return True
+        return False

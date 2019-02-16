@@ -160,6 +160,22 @@ class SceneViewWidget(QGraphicsView):
 
         super().tabletEvent(event)
 
+    def keyPressEvent(self, event):
+        if event.isAutoRepeat():
+            return
+        scene = self.scene()
+        if scene is not None:
+            active_layer = scene.layers[scene.active_layer]
+            active_layer.keyPressEvent(event)
+
+    def keyReleaseEvent(self, event):
+        if event.isAutoRepeat():
+            return
+        scene = self.scene()
+        if scene is not None:
+            active_layer = scene.layers[scene.active_layer]
+            active_layer.keyReleaseEvent(event)
+
     def tabletActive(self, active):
         self._tablet_active = active
 

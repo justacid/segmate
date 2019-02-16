@@ -160,3 +160,13 @@ class EditorItem(QGraphicsObject):
         elif event.type() == QEvent.TabletRelease:
             self._tool.on_tablet_released(tevent.MouseEvent(event, True))
         self.update()
+
+    def keyPressEvent(self, event):
+        if self._tool is None:
+            return
+        self._tool.on_key_pressed(tevent.KeyEvent(event))
+
+    def keyReleaseEvent(self, event):
+        if self._tool is None:
+            return
+        self._tool.on_key_released(tevent.KeyEvent(event))
