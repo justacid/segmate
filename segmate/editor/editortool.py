@@ -47,10 +47,10 @@ class EditorTool:
     def cursor(self):
         return QCursor(Qt.ArrowCursor)
 
-    def paint_canvas(self):
+    def on_paint(self):
         return self.canvas
 
-    def paint_result(self):
+    def on_finalize(self):
         return self.canvas
 
     def on_create(self):

@@ -6,7 +6,7 @@ from segmate.editor.editortool import EditorTool
 
 class ContourTool(EditorTool):
 
-    def paint_canvas(self):
+    def on_paint(self):
         if not self.is_mask:
             return self.canvas
 

@@ -43,7 +43,7 @@ class MorphologyTool(EditorTool):
     def on_hide(self):
         self._selection.reset()
 
-    def paint_canvas(self):
+    def on_paint(self):
         image = self.canvas.copy()
         self._selection.paint(image)
         return image

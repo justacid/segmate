@@ -45,7 +45,7 @@ class EditorItem(QGraphicsObject):
 
     @property
     def data(self):
-        result = self._tool.paint_result()
+        result = self._tool.on_finalize()
         if result is None:
             return self._image.copy()
         return result
@@ -76,7 +76,7 @@ class EditorItem(QGraphicsObject):
             raise IndexError(f"'{tool}'' is not a valid tool.")
 
         self._tool.on_hide()
-        result = self._tool.paint_result()
+        result = self._tool.on_finalize()
         if result is not None:
             result = result.copy()
         else:
@@ -118,7 +118,7 @@ class EditorItem(QGraphicsObject):
                 self._tool.send_status_message(f"Redo {redo_text}")
 
     def paint(self, painter, option, widget):
-        canvas = self._tool.paint_canvas()
+        canvas = self._tool.on_paint()
         if canvas is None:
             qimage = util.to_qimage(self._image)
         else:
