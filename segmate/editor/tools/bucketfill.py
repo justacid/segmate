@@ -4,6 +4,9 @@ from segmate.editor.editortool import EditorTool
 
 class BucketFillTool(EditorTool):
 
+    def on_show(self):
+        self.set_cursor("icons/cross-cursor.png")
+
     def on_mouse_pressed(self, event):
         if event.buttons.left:
             self.fill_image(event.pos)
@@ -21,7 +24,3 @@ class BucketFillTool(EditorTool):
         util.draw.flood_fill(self.canvas, pos, (*self.color, 255))
         self.push_undo_snapshot(snapshot, self.canvas, undo_text="Bucket Fill")
         self.notify_dirty()
-
-    @property
-    def cursor(self):
-        return "icons/cross-cursor.png"

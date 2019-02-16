@@ -37,6 +37,7 @@ class DrawTool(EditorTool):
         self._draw = False
         self._have_undo_copy = False
         self._undo_copy = None
+        self.set_cursor("icons/dot-cursor.png")
 
     @property
     def widget(self):
@@ -48,10 +49,6 @@ class DrawTool(EditorTool):
         inspector.brush_size_changed.connect(brush_size)
         inspector.eraser_size_changed.connect(eraser_size)
         return inspector
-
-    @property
-    def cursor(self):
-         return "icons/dot-cursor.png"
 
     def on_mouse_pressed(self, event):
         if event.buttons.left or event.buttons.right:

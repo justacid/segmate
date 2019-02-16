@@ -43,10 +43,6 @@ class EditorTool:
     def widget(self):
         return None
 
-    @property
-    def cursor(self):
-        return QCursor(Qt.ArrowCursor)
-
     def on_paint(self):
         return self.canvas
 
@@ -103,3 +99,13 @@ class EditorTool:
     def notify_dirty(self):
         self.is_dirty = True
         self.item.image_modified.emit()
+
+    def set_cursor(self, name):
+        if name is None:
+            self.item.setCursor(QCursor(Qt.ArrowCursor))
+            return
+        self.item.setCursor(QCursor(name))
+
+    def _on_hide(self):
+        self.set_cursor(None)
+        self.on_hide()

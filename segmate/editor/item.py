@@ -68,14 +68,14 @@ class EditorItem(QGraphicsObject):
         self.setAcceptedMouseButtons(buttons if active else 0)
         self._is_active = active
         if not active:
-            self._tool.on_hide()
+            self._tool._on_hide()
             self.update()
 
     def change_tool(self, tool, status_callback=None):
         if tool not in self._tool_box:
             raise IndexError(f"'{tool}'' is not a valid tool.")
 
-        self._tool.on_hide()
+        self._tool._on_hide()
         result = self._tool.on_finalize()
         if result is not None:
             result = result.copy()
@@ -90,11 +90,6 @@ class EditorItem(QGraphicsObject):
         self._tool.status_callback = status_callback
         self._tool.is_mask = self._is_mask
         self._tool.is_editable = self._is_editable
-        cursor = self._tool.cursor
-        if isinstance(cursor, str):
-            self.setCursor(QCursor(QPixmap(cursor)))
-        else:
-            self.setCursor(self._tool.cursor)
         self._tool.on_show()
 
     def undo_tool_command(self, image):
