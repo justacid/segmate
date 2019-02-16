@@ -4,6 +4,7 @@ from PySide2.QtGui import *
 
 import segmate.util as util
 import segmate.editor.tools as tools
+import segmate.editor.event as tevent
 
 
 class EditorItem(QGraphicsObject):
@@ -130,32 +131,32 @@ class EditorItem(QGraphicsObject):
 
     def mousePressEvent(self, event):
         if self._tool:
-            handled = self._tool.mouse_pressed(event)
-            if not handled:
-                super().mousePressEvent(event)
-        else:
-            super().mousePressEvent(event)
-        self.update()
+            self._tool.on_mouse_pressed(tevent.MouseEvent(event))
+            self.update()
+            return
+        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         if self._tool:
-            handled = self._tool.mouse_released(event)
-            if not handled:
-                super().mouseReleaseEvent(event)
-        else:
-            super().mouseReleaseEvent(event)
-        self.update()
+            self._tool.on_mouse_released(tevent.MouseEvent(event, True))
+            self.update()
+            return
+        super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
         if self._tool:
-            handled = self._tool.mouse_moved(event)
-            if not handled:
-                super().mouseMoveEvent(event)
-        else:
-            super().mouseMoveEvent(event)
-        self.update()
+            self._tool.on_mouse_moved(tevent.MouseEvent(event))
+            self.update()
+            return
+        super().mouseMoveEvent(event)
 
     def tabletEvent(self, event):
-        if self._tool:
-            self._tool.tablet_event(event)
+        if self._tool is None:
+            return
+        if event.type() == QEvent.TabletPress:
+            self._tool.on_tablet_pressed(tevent.MouseEvent(event))
+        elif event.type() == QEvent.TabletMove:
+            self._tool.on_tablet_moved(tevent.MouseEvent(event))
+        elif event.type() == QEvent.TabletRelease:
+            self._tool.on_tablet_released(tevent.MouseEvent(event, True))
         self.update()

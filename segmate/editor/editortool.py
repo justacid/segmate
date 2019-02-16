@@ -1,9 +1,6 @@
-from abc import ABC, abstractmethod
-
-from PySide2.QtCore import *
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from segmate.util import to_qimage
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QCursor
+from PySide2.QtWidgets import QUndoCommand
 
 
 class EditorUndoCommand(QUndoCommand):
@@ -29,7 +26,7 @@ class EditorUndoCommand(QUndoCommand):
             self._tool.notify_dirty()
 
 
-class EditorTool(ABC):
+class EditorTool:
 
     def __init__(self):
         self.is_dirty = False
@@ -41,15 +38,6 @@ class EditorTool(ABC):
         self.is_editable = False
         self.is_mask = False
         self.on_create()
-
-    def on_create(self):
-        pass
-
-    def on_show(self):
-        pass
-
-    def on_hide(self):
-        pass
 
     @property
     def widget(self):
@@ -64,6 +52,33 @@ class EditorTool(ABC):
 
     def paint_result(self):
         return self.canvas
+
+    def on_create(self):
+        pass
+
+    def on_show(self):
+        pass
+
+    def on_hide(self):
+        pass
+
+    def on_mouse_pressed(self, event):
+        pass
+
+    def on_mouse_moved(self, event):
+        pass
+
+    def on_mouse_released(self, event):
+        pass
+
+    def on_tablet_pressed(self, event):
+        pass
+
+    def on_tablet_moved(self, event):
+        pass
+
+    def on_tablet_released(self, event):
+        pass
 
     def push_undo_snapshot(self, snapshot, modified, *, undo_text=""):
         if self.undo_stack:
@@ -82,15 +97,3 @@ class EditorTool(ABC):
     def notify_dirty(self):
         self.is_dirty = True
         self.item.image_modified.emit()
-
-    def mouse_pressed(self, event):
-        return False
-
-    def mouse_released(self, event):
-        return False
-
-    def mouse_moved(self, event):
-        return False
-
-    def tablet_event(self, event):
-        pass

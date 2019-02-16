@@ -1,5 +1,4 @@
-import numpy as np
-from PySide2.QtCore import Qt, Signal
+from PySide2.QtCore import Signal
 
 import segmate.util as util
 from segmate.editor.editortool import EditorTool
@@ -54,31 +53,29 @@ class DrawTool(EditorTool):
     def cursor(self):
          return "icons/dot-cursor.png"
 
-    def mouse_pressed(self, event):
-        if event.buttons() & (Qt.LeftButton | Qt.RightButton):
-            self._pressed(event.pos(), event.button() == Qt.RightButton)
-            return True
-        return False
+    def on_mouse_pressed(self, event):
+        if event.buttons.left or event.buttons.right:
+            self._pressed(event.pos, event.buttons.right)
 
-    def mouse_released(self, event):
-        if (event.button() == Qt.LeftButton or event.button() == Qt.RightButton) and self._draw:
-            self._released(event.pos(), event.button() == Qt.RightButton)
-            return True
-        return False
+    def on_mouse_moved(self, event):
+        if (event.buttons.left or event.buttons.right) and self._draw:
+            self._moved(event.pos, event.buttons.right)
 
-    def mouse_moved(self, event):
-        if event.buttons() & (Qt.LeftButton | Qt.RightButton) and self._draw:
-            self._moved(event.pos(), event.buttons() & Qt.RightButton)
-            return True
-        return False
+    def on_mouse_released(self, event):
+        if (event.buttons.left or event.buttons.right) and self._draw:
+            self._released(event.pos, event.buttons.right)
 
-    def tablet_event(self, event):
-        if event.type() == QEvent.TabletPress and event.button() == Qt.LeftButton:
-            self._pressed(event.pos(), event.button() == Qt.MidButton)
-        elif event.type() == QEvent.TabletMove and event.buttons() & Qt.LeftButton:
-            self._moved(event.pos(), event.buttons() & Qt.MidButton)
-        elif event.type() == QEvent.TabletRelease and event.button() == Qt.LeftButton:
-            self._released(event.pos(), event.button() == Qt.MidButton)
+    def on_tablet_pressed(self, event):
+        if event.buttons.left:
+            self._pressed(event.pos, event.buttons.middle)
+
+    def on_tablet_moved(self, event):
+        if event.buttons.left and self._draw:
+            self._moved(event.pos, event.buttons.middle)
+
+    def on_tablet_released(self, event):
+        if event.buttons.left and self._draw:
+            self._released(event.pos, event.buttons.middle)
 
     def _pressed(self, pos, erase):
         if not self.is_editable:
@@ -106,10 +103,8 @@ class DrawTool(EditorTool):
         self._draw_line(pos, erase)
 
     def _draw_line(self, end_point, erase):
-        p0 = [self._last_point.y(), self._last_point.x()]
-        p1 = [end_point.y(), end_point.x()]
         color = (*self.color, 255) if not erase else (0, 0, 0, 0)
         width = self._brush_size if not erase else self._eraser_size
-        util.draw.line(self.canvas, p0, p1, color, width=width)
+        util.draw.line(self.canvas, self._last_point, end_point, color, width=width)
         self._last_point = end_point
         self.notify_dirty()
