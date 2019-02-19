@@ -39,10 +39,6 @@ class EditorTool:
         self.is_mask = False
         self.on_create()
 
-    @property
-    def widget(self):
-        return None
-
     def on_paint(self):
         return self.canvas
 
@@ -81,6 +77,9 @@ class EditorTool:
 
     def on_key_released(self, event):
         pass
+
+    def on_show_widget(self):
+        return None
 
     def push_undo_snapshot(self, snapshot, modified, *, undo_text=""):
         if self.undo_stack:

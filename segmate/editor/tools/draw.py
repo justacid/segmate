@@ -1,29 +1,6 @@
-from PySide2.QtCore import Signal
-
 import segmate.util as util
 from segmate.editor.editortool import EditorTool
 from segmate.editor.widgets import EditorToolWidget, LabeledSlider
-
-
-class DrawToolInspector(EditorToolWidget):
-
-    brush_size_changed = Signal(int)
-    eraser_size_changed = Signal(int)
-
-    def __init__(self, brush_size, eraser_size):
-        super().__init__("Brush Settings")
-        brush = LabeledSlider("Brush Size", value=brush_size, maximum=50)
-        brush.value_changed.connect(self._change_brush_size)
-        eraser = LabeledSlider("Eraser Size", value=eraser_size, maximum=50)
-        eraser.value_changed.connect(self._change_eraser_size)
-        self.add_widget(brush)
-        self.add_widget(eraser)
-
-    def _change_brush_size(self, value):
-        self.brush_size_changed.emit(value)
-
-    def _change_eraser_size(self, value):
-        self.eraser_size_changed.emit(value)
 
 
 class DrawTool(EditorTool):
@@ -38,17 +15,6 @@ class DrawTool(EditorTool):
         self._have_undo_copy = False
         self._undo_copy = None
         self.set_cursor("icons/dot-cursor.png")
-
-    @property
-    def widget(self):
-        def brush_size(value):
-            self._brush_size = value
-        def eraser_size(value):
-            self._eraser_size = value
-        inspector = DrawToolInspector(self._brush_size, self._eraser_size)
-        inspector.brush_size_changed.connect(brush_size)
-        inspector.eraser_size_changed.connect(eraser_size)
-        return inspector
 
     def on_mouse_pressed(self, event):
         if event.buttons.left or event.buttons.right:
@@ -73,6 +39,13 @@ class DrawTool(EditorTool):
     def on_tablet_released(self, event):
         if event.buttons.left and self._draw:
             self._released(event.pos, event.buttons.middle)
+
+    def on_show_widget(self):
+        def brush_cb(value):
+            self._brush_size = value
+        def eraser_cb(value):
+            self._eraser_size = value
+        return DrawToolInspector(self._brush_size, brush_cb, self._eraser_size, eraser_cb)
 
     def _pressed(self, pos, erase):
         if not self.is_editable:
@@ -105,3 +78,15 @@ class DrawTool(EditorTool):
         util.draw.line(self.canvas, self._last_point, end_point, color, width=width)
         self._last_point = end_point
         self.notify_dirty()
+
+
+class DrawToolInspector(EditorToolWidget):
+
+    def __init__(self, brush_size, brush_cb, eraser_size, eraser_cb):
+        super().__init__("Brush Settings")
+        brush = LabeledSlider(
+            "Brush Size", callback=brush_cb, value=brush_size, maximum=50)
+        eraser = LabeledSlider(
+            "Eraser Size", callback=eraser_cb, value=eraser_size, maximum=50)
+        self.add_widget(brush)
+        self.add_widget(eraser)

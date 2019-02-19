@@ -7,7 +7,7 @@ class LabeledSlider(QFrame):
 
     value_changed = Signal(int)
 
-    def __init__(self, label, *, value=0, minimum=1, maximum=20):
+    def __init__(self, label, *, callback=None, value=0, minimum=1, maximum=20):
         super().__init__()
 
         layout = QVBoxLayout(self)
@@ -43,3 +43,6 @@ class LabeledSlider(QFrame):
 
         layout.addWidget(label)
         layout.addLayout(slider_layout)
+
+        if callback is not None:
+            self.value_changed.connect(callback)

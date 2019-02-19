@@ -1,38 +1,12 @@
 import numpy as np
-from PySide2.QtWidgets import QPushButton
 from scipy import ndimage as ndi
-from skimage.color import rgb2gray
 from skimage.filters import rank
 import skimage.morphology as morph
 
 from segmate.editor.editortool import EditorTool
-from segmate.editor.widgets import EditorToolWidget
 from segmate.editor.selection import RectSelection
+from segmate.editor.widgets import EditorToolWidget, Button
 import segmate.util as util
-
-
-class MorphologyToolInspector(EditorToolWidget):
-
-    def __init__(self, cb_fill, cb_dilate, cb_erode, cb_skel, cb_wshed):
-        super().__init__("Morphology")
-        btn_fill = QPushButton("Fill Holes")
-        btn_fill.pressed.connect(cb_fill)
-        btn_dilate = QPushButton("Dilate")
-        btn_dilate.pressed.connect(cb_dilate)
-        btn_erode = QPushButton("Erode")
-        btn_erode.pressed.connect(cb_erode)
-        btn_skel = QPushButton("Skeletonize")
-        btn_skel.pressed.connect(cb_skel)
-        btn_wshed = QPushButton("Watershed")
-        btn_wshed.pressed.connect(cb_wshed)
-
-        self.add_widget(btn_fill)
-        self.add_separator()
-        self.add_widget(btn_dilate)
-        self.add_widget(btn_erode)
-        self.add_separator()
-        self.add_widget(btn_skel)
-        self.add_widget(btn_wshed)
 
 
 class MorphologyTool(EditorTool):
@@ -47,6 +21,11 @@ class MorphologyTool(EditorTool):
         image = self.canvas.copy()
         self._selection.paint(image)
         return image
+
+    def on_show_widget(self):
+        return MorphologyToolInspector(
+            self._fill_holes, self._dilate, self._erode,
+            self._skeletonize, self._watershed)
 
     def _fill_holes(self):
         mask = util.mask.binary(self.canvas)
@@ -127,8 +106,15 @@ class MorphologyTool(EditorTool):
         self.canvas = output
         self.notify_dirty()
 
-    @property
-    def widget(self):
-        return MorphologyToolInspector(
-            self._fill_holes, self._dilate, self._erode,
-            self._skeletonize, self._watershed)
+
+class MorphologyToolInspector(EditorToolWidget):
+
+    def __init__(self, cb_fill, cb_dilate, cb_erode, cb_skel, cb_wshed):
+        super().__init__("Morphology")
+        self.add_widget(Button("Fill Holes", callback=cb_fill))
+        self.add_separator()
+        self.add_widget(Button("Dilate", callback=cb_dilate))
+        self.add_widget(Button("Erode", callback=cb_erode))
+        self.add_separator()
+        self.add_widget(Button("Skeletonize", callback=cb_skel))
+        self.add_widget(Button("Watershed", callback=cb_wshed))

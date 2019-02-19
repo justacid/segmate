@@ -1,29 +1,9 @@
 import numpy as np
-from PySide2.QtWidgets import QPushButton
 
 from segmate.editor.editortool import EditorTool
-from segmate.editor.widgets import EditorToolWidget
 from segmate.editor.selection import RectSelection
+from segmate.editor.widgets import EditorToolWidget, Button
 import segmate.util as util
-
-
-class MasksToolInspector(EditorToolWidget):
-
-    def __init__(self, copy_cb, clear_cb, merge_cb, clr_merge_cb):
-        super().__init__("Masks")
-        copy_button = QPushButton("Copy Previous Mask")
-        copy_button.pressed.connect(copy_cb)
-        clear_button = QPushButton("Clear Mask")
-        clear_button.pressed.connect(clear_cb)
-        merge_button = QPushButton("Merge Masks")
-        merge_button.pressed.connect(merge_cb)
-        clr_merge_btn = QPushButton("Clear && Merge Masks")
-        clr_merge_btn.pressed.connect(clr_merge_cb)
-        self.add_widget(copy_button)
-        self.add_separator()
-        self.add_widget(clear_button)
-        self.add_widget(merge_button)
-        self.add_widget(clr_merge_btn)
 
 
 class MasksTool(EditorTool):
@@ -38,6 +18,10 @@ class MasksTool(EditorTool):
         image = self.canvas.copy()
         self._selection.paint(image)
         return image
+
+    def on_show_widget(self):
+        return MasksToolInspector(
+            self._copy_previous_mask, self._clear_mask, self._merge_masks, self._clr_merge)
 
     def _copy_previous_mask(self):
         idx = max(self.item.image_idx - 1, 0)
@@ -99,7 +83,13 @@ class MasksTool(EditorTool):
         self._clear_mask()
         self._merge_masks()
 
-    @property
-    def widget(self):
-        return MasksToolInspector(
-            self._copy_previous_mask, self._clear_mask, self._merge_masks, self._clr_merge)
+
+class MasksToolInspector(EditorToolWidget):
+
+    def __init__(self, copy_cb, clear_cb, merge_cb, clr_merge_cb):
+        super().__init__("Masks")
+        self.add_widget(Button("Copy Previous Mask", callback=copy_cb))
+        self.add_separator()
+        self.add_widget(Button("Clear Mask", callback=clear_cb))
+        self.add_widget(Button("Merge Masks", callback=merge_cb))
+        self.add_widget(Button("Clear && Merge Masks", callback=clr_merge_cb))

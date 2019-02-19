@@ -71,6 +71,16 @@ class EditorItem(QGraphicsObject):
             self._tool._on_hide()
             self.update()
 
+    @property
+    def tool_widget(self):
+        if self._tool is None:
+            return None
+        return self._tool.on_show_widget()
+
+    @property
+    def is_editable(self):
+        return self._is_editable
+
     def change_tool(self, tool, status_callback=None):
         if tool not in self._tool_box:
             raise IndexError(f"'{tool}'' is not a valid tool.")
