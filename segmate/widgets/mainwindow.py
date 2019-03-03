@@ -9,7 +9,7 @@ import segmate
 from segmate.widgets.inspector import InspectorWidget
 from segmate.widgets.sceneview import SceneViewWidget
 from segmate.store import DataStore
-from segmate.editor import EditorScene
+from segmate.editor import EditorScene, registry
 from segmate.project import ProjectDialog, ProjectFile
 
 
@@ -323,6 +323,15 @@ class MainWindowWidget(QMainWindow):
         custom_zoom = self.zoom_group.addAction(f"Custom")
         custom_zoom.setCheckable(True)
         zoom_submenu.addAction(custom_zoom)
+
+        if registry.tools:
+            self.plugin_menu = self.menuBar().addMenu("&Plugins")
+            for name, tool in registry.tools.items():
+                menu_entry, _ = tool
+                if menu_entry is None:
+                    menu_entry = name
+                action = self.plugin_menu.addAction(menu_entry)
+                action.triggered.connect(partial(self._set_tool, name))
 
     def _add_tool_bar(self):
         toolbar = super().addToolBar("Tools")

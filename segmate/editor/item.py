@@ -3,6 +3,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 import segmate.util as util
+import segmate.editor.registry as registry
 import segmate.editor.tools as tools
 import segmate.editor.event as tevent
 
@@ -22,6 +23,10 @@ class EditorItem(QGraphicsObject):
             "masks_tool": tools.MasksTool(),
             "morphology_tool": tools.MorphologyTool()
         }
+
+        if registry.tools:
+            for name, tool in registry.tools.items():
+                self._tool_box[name] = tool[1]()
 
         self.scene = scene
         self.image_idx = -1
@@ -83,7 +88,7 @@ class EditorItem(QGraphicsObject):
 
     def change_tool(self, tool, status_callback=None):
         if tool not in self._tool_box:
-            raise IndexError(f"'{tool}'' is not a valid tool.")
+            raise IndexError(f"'{tool}' is not a valid tool.")
 
         self._tool._on_hide()
         result = self._tool.on_finalize()
