@@ -41,6 +41,7 @@ class EditorItem(QGraphicsObject):
     def load(self, image_idx, layer_idx):
         self.image_idx = image_idx
         self.layer_idx = layer_idx
+        self.layer_name = self.scene.data_store.folders[layer_idx]
         self._image = self.scene.data_store[image_idx][layer_idx]
         self._is_mask = self.scene.data_store.masks[layer_idx]
         self._is_editable = self.scene.data_store.editable[layer_idx]
