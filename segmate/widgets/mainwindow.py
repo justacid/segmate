@@ -18,6 +18,7 @@ class MainWindowWidget(QMainWindow):
     def __init__(self):
         super().__init__()
         self._active_tool = "cursor_tool"
+        self._recent_tool = None
         self._active_project = ""
         self._ask_before_closing = False
 
@@ -192,6 +193,7 @@ class MainWindowWidget(QMainWindow):
         self._set_tool(self._active_tool)
 
     def _set_tool(self, tool):
+        self._recent_tool = self._active_tool
         self._active_tool = tool
         if not self.view.scene().layers:
             return
@@ -200,6 +202,11 @@ class MainWindowWidget(QMainWindow):
             layer.change_tool(tool, status_callback=callback)
         self.inspector.show_tool_inspector()
         self.view.scene().update()
+
+    def _toggle_recent_tool(self):
+        if self._recent_tool is None:
+            return
+        self._set_tool(self._recent_tool)
 
     def _mark_dirty(self):
         self._set_window_title(modified=True)
@@ -258,6 +265,8 @@ class MainWindowWidget(QMainWindow):
         shortcut_left.activated.connect(partial(self._arrow_keys_pressed, True))
         shortcut_right = QShortcut(QKeySequence(Qt.Key_Right), self)
         shortcut_right.activated.connect(partial(self._arrow_keys_pressed, False))
+        shortcut_quicktoggle = QShortcut(QKeySequence(Qt.Key_Q), self)
+        shortcut_quicktoggle.activated.connect(self._toggle_recent_tool)
 
     def _add_menu(self):
         self.new_project = QAction("&New Project")
