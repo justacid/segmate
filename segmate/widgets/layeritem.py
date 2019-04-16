@@ -16,6 +16,7 @@ class LayerItemWidget(QFrame):
         self._is_visible = True
         self._is_active = False
         self._setup_ui()
+        qApp.installEventFilter(self)
 
     @property
     def opacity(self):
@@ -119,3 +120,13 @@ class LayerItemWidget(QFrame):
         self.is_active = not self.is_active
         self.layer_clicked.emit(self._index)
         event.ignore()
+
+    def eventFilter(self, object, event):
+        if not hasattr(object, "type"):
+            return False
+
+        if event.type() == QEvent.KeyPress:
+            if self.is_active and event.key() == Qt.Key_V:
+                self._toggle_visibility()
+                return True
+        return False
