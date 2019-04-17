@@ -190,7 +190,9 @@ class MainWindowWidget(QMainWindow):
         self._add_edit_menu(scene)
 
     def _retain_active_tool(self):
+        last_used = self._recent_tool
         self._set_tool(self._active_tool)
+        self._recent_tool = last_used
 
     def _set_tool(self, tool):
         self._recent_tool = self._active_tool
