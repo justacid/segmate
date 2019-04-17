@@ -149,7 +149,7 @@ class EditorItem(QGraphicsObject):
 
     def mouseReleaseEvent(self, event):
         if self._tool:
-            self._tool.on_mouse_released(tevent.MouseEvent(event, True))
+            self._tool.on_mouse_released(tevent.MouseEvent(event))
             self.update()
             return
         super().mouseReleaseEvent(event)
@@ -169,7 +169,7 @@ class EditorItem(QGraphicsObject):
         elif event.type() == QEvent.TabletMove:
             self._tool.on_tablet_moved(tevent.MouseEvent(event))
         elif event.type() == QEvent.TabletRelease:
-            self._tool.on_tablet_released(tevent.MouseEvent(event, True))
+            self._tool.on_tablet_released(tevent.MouseEvent(event))
         self.update()
 
     def keyPressEvent(self, event):
