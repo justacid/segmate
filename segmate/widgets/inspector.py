@@ -4,7 +4,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
 from segmate.editor import EditorScene, EditorItem
-from segmate.widgets.layeritem import LayerItemWidget
+from segmate.widgets.layers import LayersWidget
 
 
 class InspectorWidget(QWidget):
@@ -59,23 +59,16 @@ class InspectorWidget(QWidget):
         active_layer = self.scene.active_layer
         self.scene.load(idx)
         self.slider_box.setTitle(f"Image {idx+1}/{self.scene.image_count}")
-        self.activate_layer(active_layer)
+        self._activate_layer(active_layer)
         self.image_changed.emit()
-
-    def activate_layer(self, idx):
-        self.scene.active_layer = idx
-        self.show_tool_inspector()
-
-        for i in range(self.layers.count()-1):
-            child = self.layers.itemAt(i).widget()
-            if i == idx:
-                child.is_active = True
-                continue
-            child.is_active = False
 
     def show_tool_inspector(self):
         self._remove_tool_inspector()
         self._add_tool_inspector()
+
+    def _activate_layer(self, idx):
+        self.scene.active_layer = idx
+        self.show_tool_inspector()
 
     def _slider_pressed(self):
         self._slider_down_value = self.slider.value()
@@ -95,27 +88,16 @@ class InspectorWidget(QWidget):
             self.dock_layout.insertWidget(1, widget)
 
     def _remove_tool_inspector(self):
-        if self.dock_layout.count() <= 2:
+        if self.dock_layout.count() <= 3:
             return
         widget = self.dock_layout.itemAt(1).widget()
         if widget:
             widget.deleteLater()
 
     def _add_layer_widgets(self):
-        if self.layers.count():
-            item = self.layers.takeAt(0)
-            while item:
-                widget = item.widget()
-                if widget:
-                    widget.deleteLater()
-                item = self.layers.takeAt(0)
-
+        self.layer_box.clear()
         for index, name in enumerate(self.scene.data_store.folders):
-            item = LayerItemWidget(index, f"{name}".title())
-            item.opacity_changed.connect(self._change_layer_opacity)
-            item.layer_clicked.connect(self.activate_layer)
-            self.layers.addWidget(item)
-        self.layers.addItem(QSpacerItem(1, 100, QSizePolicy.Minimum, QSizePolicy.Expanding))
+            self.layer_box.add_layer(f"{name}".title())
 
     def _change_layer_opacity(self, idx, value):
         self.scene.change_layer_opacity(idx, value)
@@ -152,14 +134,12 @@ class InspectorWidget(QWidget):
         hlayout.addWidget(arrow_right)
 
         self.dock_layout.addWidget(self.slider_box)
-
-        self.layer_box = QGroupBox(self)
-        self.layer_box.setTitle("Layer")
-
-        self.layers = QVBoxLayout(self.layer_box)
-        self.layers.setSpacing(2)
-        self.layers.setContentsMargins(2, 6, 2, 2)
+        self.layer_box = LayersWidget()
+        self.layer_box.opacity_changed.connect(self._change_layer_opacity)
+        self.layer_box.layer_activated.connect(self._activate_layer)
         self.dock_layout.addWidget(self.layer_box)
+        self.dock_layout.addItem(
+            QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
 
 class ChangeImageCommand(QUndoCommand):

@@ -18,7 +18,7 @@ class EditorScene(QGraphicsScene):
         self.data_store = data_store
         self.opacities = [1.0] * len(data_store.folders)
         self.undo_stack = QUndoStack()
-        self._active_layer = len(data_store.folders) - 1
+        self._active_layer = 0
         self._loaded_idx = -1
 
     @property
