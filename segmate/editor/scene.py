@@ -2,7 +2,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from .item import EditorItem
+from .item import LayersGraphicsView
 
 
 class EditorScene(QGraphicsScene):
@@ -14,7 +14,7 @@ class EditorScene(QGraphicsScene):
 
     def __init__(self, data_store):
         super().__init__()
-        self.layers = []
+        self.layers = None
         self.data_store = data_store
         self.opacities = [1.0] * len(data_store.folders)
         self.undo_stack = QUndoStack()
@@ -31,33 +31,23 @@ class EditorScene(QGraphicsScene):
 
     @active_layer.setter
     def active_layer(self, idx):
-        self.layers[self._active_layer].is_active = False
-        self.layers[idx].is_active = True
+        self.layers.set_active(idx)
         self._active_layer = idx
 
     def save_to_disk(self):
-        if self._loaded_idx >= 0:
-            for layer in self.layers:
-                layer.is_dirty = False
         self.data_store.save_to_disk()
 
     def load(self, image_idx):
         self._loaded_idx = image_idx
-        if not self.layers:
-            for layer_idx in range(self.data_store.num_layers):
-                item = EditorItem(self)
-                item.image_modified.connect(self._store_dirty)
-                self.addItem(item)
-                self.layers.append(item)
-
-        for layer_idx, (layer, opacity) in enumerate(zip(self.layers, self.opacities)):
-            layer.load(image_idx, layer_idx)
-            layer.setOpacity(opacity)
-
+        if self.layers is None:
+            self.layers = LayersGraphicsView(self)
+            self.layers.image_modified.connect(self._store_dirty)
+            self.addItem(self.layers)
+        self.layers.load(image_idx)
         self.image_loaded.emit(image_idx)
 
-    def change_layer_opacity(self, layer_idx, value):
-        self.layers[layer_idx].setOpacity(value)
+    def set_layer_opacity(self, layer_idx, value):
+        self.layers.set_opacity(layer_idx, value)
         self.opacities[layer_idx] = value
         self.opacity_changed.emit(layer_idx, value)
 
@@ -68,8 +58,5 @@ class EditorScene(QGraphicsScene):
         return self.undo_stack.createRedoAction(self)
 
     def _store_dirty(self):
-        dirty = any(layer.is_dirty for layer in self.layers)
-        if not dirty:
-            return
-        self.data_store[self._loaded_idx] = [layer.data for layer in self.layers]
+        self.data_store[self._loaded_idx] = self.layers.data
         self.image_modified.emit()

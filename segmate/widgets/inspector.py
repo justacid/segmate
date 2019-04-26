@@ -3,7 +3,7 @@ from functools import partial
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
-from segmate.editor import EditorScene, EditorItem
+from segmate.editor import EditorScene
 from segmate.widgets.layerlist import LayerListWidget
 
 
@@ -81,9 +81,9 @@ class InspectorWidget(QWidget):
 
     def _add_tool_inspector(self):
         idx = self.scene.active_layer
-        widget = self.scene.layers[idx].tool_widget
+        widget = self.scene.layers.tool_widget
         if widget:
-            if not self.scene.layers[idx].is_editable:
+            if not self.scene.layers.tool.is_editable:
                 widget.setDisabled(True)
             self.dock_layout.insertWidget(1, widget)
 
@@ -100,7 +100,7 @@ class InspectorWidget(QWidget):
             self.layer_box.add(f"{name}".title())
 
     def _change_layer_opacity(self, idx, value):
-        self.scene.change_layer_opacity(idx, value)
+        self.scene.set_layer_opacity(idx, value)
 
     def _setup_ui(self):
         self.dock_layout = QVBoxLayout(self)

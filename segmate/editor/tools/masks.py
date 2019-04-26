@@ -25,8 +25,7 @@ class MasksTool(EditorTool):
 
     def _copy_previous_mask(self):
         idx = max(self.item.image_idx - 1, 0)
-        layer = self.item.layer_idx
-        mask = util.mask.binary(self.item.scene.data_store[idx][layer])
+        mask = util.mask.binary(self.item.scene.data_store[idx][self.item.active])
         current_mask = util.mask.binary(self.canvas)
 
         output = np.zeros(mask.shape, dtype=np.uint8)
@@ -56,16 +55,13 @@ class MasksTool(EditorTool):
         self.notify_dirty()
 
     def _merge_masks(self):
-        idx = self.item.image_idx
-        layer = self.item.layer_idx
-
         current_mask = util.mask.binary(self.canvas)
         output = np.zeros(self.canvas.shape[:2], dtype=np.uint8)
 
-        for i in range(self.item.scene.data_store.num_layers):
-            if not self.item.scene.data_store.masks[i]:
+        for i in range(len(self.item._layer_data)):
+            if not self.item._masks[i]:
                 continue
-            mask = util.mask.binary(self.item.scene.data_store[idx][i])
+            mask = util.mask.binary(self.item._layer_data[i])
             if self._selection.is_active:
                 sel_mask = np.zeros(mask.shape, dtype=np.bool)
                 sel_mask[self._selection.indices] = True

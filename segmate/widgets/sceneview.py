@@ -143,8 +143,6 @@ class SceneViewWidget(QGraphicsView):
 
         # propagate tablet event through the scene
         if self.scene():
-            active_layer = self.scene().layers[self.scene().active_layer]
-
             pos = event.pos()
             cimg = active_layer.cursor().pixmap()
             w, h = cimg.width(), cimg.height()
@@ -155,7 +153,7 @@ class SceneViewWidget(QGraphicsView):
                 event.device(), event.pointerType(), event.pressure(), event.xTilt(),
                 event.yTilt(), event.tangentialPressure(), event.rotation(), event.z(),
                 event.modifiers(), event.uniqueId(), event.button(), event.buttons())
-            active_layer.tabletEvent(event)
+            self.scene().layers.tabletEvent(event)
             return
 
         super().tabletEvent(event)
@@ -165,16 +163,14 @@ class SceneViewWidget(QGraphicsView):
             return
         scene = self.scene()
         if scene is not None:
-            active_layer = scene.layers[scene.active_layer]
-            active_layer.keyPressEvent(event)
+            scene.layers.keyPressEvent(event)
 
     def keyReleaseEvent(self, event):
         if event.isAutoRepeat():
             return
         scene = self.scene()
         if scene is not None:
-            active_layer = scene.layers[scene.active_layer]
-            active_layer.keyReleaseEvent(event)
+            scene.layers.keyReleaseEvent(event)
 
     def tabletActive(self, active):
         self._tablet_active = active

@@ -96,7 +96,6 @@ class EditorTool:
             self.status_callback(message)
 
     def notify_dirty(self):
-        self.is_dirty = True
         self.item.image_modified.emit()
 
     def set_cursor(self, name):

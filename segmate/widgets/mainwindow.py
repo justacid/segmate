@@ -199,11 +199,10 @@ class MainWindowWidget(QMainWindow):
             return
         self._recent_tool = self._active_tool
         self._active_tool = tool
-        if self.view.scene() is None or not self.view.scene().layers:
+        if self.view.scene() is None:
             return
-        for layer in self.view.scene().layers:
-            callback = lambda msg: self.statusBar().showMessage(msg, 2000)
-            layer.change_tool(tool, status_callback=callback)
+        callback = lambda msg: self.statusBar().showMessage(msg, 2000)
+        self.view.scene().layers.change_tool(tool, status_callback=callback)
         self.inspector.show_tool_inspector()
         self.view.scene().update()
 
