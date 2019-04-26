@@ -4,7 +4,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
 from segmate.editor import EditorScene, EditorItem
-from segmate.widgets.layers import LayersWidget
+from segmate.widgets.layerlist import LayerListWidget
 
 
 class InspectorWidget(QWidget):
@@ -134,7 +134,7 @@ class InspectorWidget(QWidget):
         hlayout.addWidget(arrow_right)
 
         self.dock_layout.addWidget(self.slider_box)
-        self.layer_box = LayersWidget()
+        self.layer_box = LayerListWidget()
         self.layer_box.opacity_changed.connect(self._change_layer_opacity)
         self.layer_box.layer_activated.connect(self._activate_layer)
         self.dock_layout.addWidget(self.layer_box)

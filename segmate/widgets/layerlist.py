@@ -6,7 +6,7 @@ from PySide2.QtGui import *
 from segmate.widgets.layeritem import LayerItemWidget
 
 
-class LayersWidget(QGroupBox):
+class LayerListWidget(QGroupBox):
 
     opacity_changed = Signal(int, float)
     layer_activated = Signal(int)
