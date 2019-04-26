@@ -97,7 +97,7 @@ class InspectorWidget(QWidget):
     def _add_layer_widgets(self):
         self.layer_box.clear()
         for index, name in enumerate(self.scene.data_store.folders):
-            self.layer_box.add_layer(f"{name}".title())
+            self.layer_box.add(f"{name}".title())
 
     def _change_layer_opacity(self, idx, value):
         self.scene.change_layer_opacity(idx, value)

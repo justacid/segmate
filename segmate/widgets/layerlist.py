@@ -36,7 +36,7 @@ class LayerListWidget(QGroupBox):
             item = self._layers.takeAt(0)
         self._index = 0
 
-    def highlight_layer(self, idx):
+    def highlight(self, idx):
         if self.count == 0:
             return
         for i in range(self.count):
@@ -46,15 +46,15 @@ class LayerListWidget(QGroupBox):
                 continue
             child.is_active = False
 
-    def add_layer(self, title):
+    def add(self, title):
         item = LayerItemWidget(self._index, f"{title}".title())
         item.opacity_changed.connect(lambda l, o: self.opacity_changed.emit(l, o))
         item.layer_clicked.connect(self._layer_clicked)
         self._layers.addWidget(item)
         if self._index == 0:
-            self.highlight_layer(0)
+            self.highlight(0)
         self._index += 1
 
     def _layer_clicked(self, idx):
-        self.highlight_layer(idx)
+        self.highlight(idx)
         self.layer_activated.emit(idx)
