@@ -6,6 +6,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 import segmate
+from segmate import settings
 from segmate.widgets.inspector import InspectorWidget
 from segmate.widgets.sceneview import SceneViewWidget
 from segmate.store import DataStore
@@ -17,6 +18,8 @@ class MainWindowWidget(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self._first_load_check()
+
         self._active_tool = "cursor_tool"
         self._recent_tool = None
         self._active_project = ""
@@ -27,7 +30,6 @@ class MainWindowWidget(QMainWindow):
         self._add_tool_bar()
         self._restore_window_position()
         self._load_last_opened()
-        self._first_load()
         self._set_window_title()
 
     def _set_window_title(self, modified=False):
@@ -37,30 +39,15 @@ class MainWindowWidget(QMainWindow):
         self.setWindowTitle(f"{title}{project}{modified}")
 
     def _restore_window_position(self):
-        screen = QDesktopWidget(self).availableGeometry()
-        default_size = screen.width() * 0.75, screen.height() * 0.75
-        default_pos = (screen.width() - default_size[0]) / 2, \
-            (screen.height() - default_size[1]) / 2
-
-        settings = QSettings("justacid", "Segmate")
-        settings.beginGroup("MainWindow")
-        size = settings.value("size", QSize(*default_size))
-        pos = settings.value("position", QPoint(*default_pos))
-        is_maximized = settings.value("maximized", "false")
-        settings.endGroup()
-
-        if is_maximized == "true":
+        size, position, is_maximized = settings.window_position(self)
+        if is_maximized:
             self.setWindowState(self.windowState() | Qt.WindowMaximized)
-            return
-
         self.resize(size)
-        self.move(pos)
+        self.move(position)
 
-    def _first_load(self):
-        settings = QSettings("justacid", "Segmate")
-        settings.beginGroup("Warning")
-        show_warning = settings.value("was_shown", "false")
-        if show_warning == "false":
+    def _first_load_check(self):
+        was_shown = settings.warning_shown()
+        if not was_shown:
             msgbox = QMessageBox()
             msgbox.setWindowTitle("Information")
             msgbox.setText("Editing is destructive!")
@@ -70,24 +57,19 @@ class MainWindowWidget(QMainWindow):
             msgbox.setIcon(QMessageBox.Information)
             msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
             msgbox.setDefaultButton(QMessageBox.Cancel)
-
             value = msgbox.exec()
             if value == QMessageBox.Ok:
-                settings.setValue("was_shown", True)
-        settings.endGroup()
+                settings.set_warning_shown(True)
 
     def _load_last_opened(self):
-        settings = QSettings("justacid", "Segmate")
-        settings.beginGroup("Project")
-        self._active_project = settings.value("last_opened", "")
+        self._active_project = settings.last_opened_project()
         if not isfile(self._active_project):
             return
-        last_image_shown = settings.value("last_image", 0)
+        last_image_shown = settings.last_opened_image()
         if self._active_project:
             project = ProjectFile.parse(self._active_project)
             self._open_project(self._active_project, project)
             self.inspector.slider.setValue(int(last_image_shown))
-        settings.endGroup()
         self._set_window_title()
 
     def _open_project(self, spf_path, project):
@@ -101,11 +83,8 @@ class MainWindowWidget(QMainWindow):
         else:
             self._active_project = ""
         self._set_window_title()
-        settings = QSettings("justacid", "Segmate")
-        settings.beginGroup("Project")
-        settings.setValue("last_opened", self._active_project)
-        settings.setValue("last_image", 0)
-        settings.endGroup()
+        settings.set_last_opened_project(self._active_project)
+        settings.set_last_opened_image(0)
 
     def _close_project(self):
         if self._ask_before_closing:
@@ -120,11 +99,9 @@ class MainWindowWidget(QMainWindow):
         self.view.setScene(None)
         self.inspector.set_scene(None)
         self.close_action.setEnabled(False)
-        settings = QSettings("justacid", "Segmate")
-        settings.beginGroup("Project")
-        settings.setValue("last_opened", "")
-        settings.setValue("last_image", 0)
-        settings.endGroup()
+        settings.set_last_opened_project("")
+        settings.set_last_opened_image(0)
+
         self._active_project = ""
         self._set_window_title()
 
@@ -434,15 +411,6 @@ class MainWindowWidget(QMainWindow):
             elif value == QMessageBox.Save:
                 self._save_to_disk()
 
-        is_maximized = self.windowState() == Qt.WindowMaximized
-        settings = QSettings("justacid", "Segmate")
-        settings.beginGroup("MainWindow")
-        if not is_maximized:
-            settings.setValue("size", self.size())
-            settings.setValue("position", self.pos())
-        settings.setValue("maximized", is_maximized)
-        settings.endGroup()
-        settings.beginGroup("Project")
-        settings.setValue("last_image", self.inspector.current_image)
-        settings.endGroup()
+        settings.set_window_position(self)
+        settings.set_last_opened_image(self.inspector.current_image)
         super().closeEvent(event)
