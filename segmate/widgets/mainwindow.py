@@ -82,20 +82,28 @@ class MainWindowWidget(QMainWindow):
             self._active_project = spf_path
         else:
             self._active_project = ""
+            QMessageBox.critical(self, "Folder missing!",
+                f"The folder '{project.data_root}' could not be found. "
+                "Did you move your files? If so, you must create a new project, "
+                "or edit the existing project file.", QMessageBox.Ok)
         self._set_window_title()
         settings.set_last_opened_project(self._active_project)
         settings.set_last_opened_image(0)
 
     def _close_project(self):
         if self._ask_before_closing:
-            value = self._confirm_close()
+            value = self._confirm_close_project()
             if value == QMessageBox.Cancel:
-                return
+                return False
             elif value == QMessageBox.Save:
                 self._save_to_disk()
 
+        self._set_tool("cursor_tool")
+        self.cursor_tool.setChecked(True)
         self._ask_before_closing = False
-        del self.view.scene().data_store
+
+        if self.view.scene() is not None:
+            del self.view.scene().data_store
         self.view.setScene(None)
         self.inspector.set_scene(None)
         self.close_action.setEnabled(False)
@@ -104,16 +112,12 @@ class MainWindowWidget(QMainWindow):
 
         self._active_project = ""
         self._set_window_title()
+        return True
 
     def _open_project_dialog(self):
-        if self._ask_before_closing:
-            value = self._confirm_close()
-            if value == QMessageBox.Cancel:
-                return
-            elif value == QMessageBox.Save:
-                self._save_to_disk()
+        if not self._close_project():
+            return
 
-        self._ask_before_closing = False
         home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
         filename = QFileDialog.getOpenFileName(
             self, "Open Project", home, "Segmate Project File (*.spf)")
@@ -123,13 +127,8 @@ class MainWindowWidget(QMainWindow):
             self.close_action.setEnabled(True)
 
     def _new_project_dialog(self):
-        if self._ask_before_closing:
-            value = self._confirm_close()
-            if value == QMessageBox.Cancel:
-                return
-            elif value == QMessageBox.Save:
-                self._save_to_disk()
-
+        if not self._close_project():
+            return
         dialog = ProjectDialog(self)
         if dialog.exec() == QDialog.Rejected:
             return
@@ -145,7 +144,7 @@ class MainWindowWidget(QMainWindow):
         ProjectFile.save(dialog.project_path, project)
         self._open_project(dialog.project_path, project)
 
-    def _confirm_close(self):
+    def _confirm_close_project(self):
         msgbox = QMessageBox()
         msgbox.setWindowTitle("Warning!")
         msgbox.setText("You have unsaved changes.")
@@ -341,14 +340,14 @@ class MainWindowWidget(QMainWindow):
         tools_menu = self.menuBar().addMenu("&Tools")
         toolbox = QActionGroup(self)
 
-        cursor_tool = toolbar.addAction("Cursor Tool")
-        cursor_tool.setIcon(QIcon("icons/cursor.png"))
-        cursor_tool.setCheckable(True)
-        cursor_tool.setChecked(True)
-        cursor_tool.triggered.connect(partial(self._set_tool, "cursor_tool"))
-        cursor_tool.setShortcut(QKeySequence(Qt.Key_1))
-        toolbox.addAction(cursor_tool)
-        tools_menu.addAction(cursor_tool)
+        self.cursor_tool = toolbar.addAction("Cursor Tool")
+        self.cursor_tool.setIcon(QIcon("icons/cursor.png"))
+        self.cursor_tool.setCheckable(True)
+        self.cursor_tool.setChecked(True)
+        self.cursor_tool.triggered.connect(partial(self._set_tool, "cursor_tool"))
+        self.cursor_tool.setShortcut(QKeySequence(Qt.Key_1))
+        toolbox.addAction(self.cursor_tool)
+        tools_menu.addAction(self.cursor_tool)
 
         draw_tool = toolbar.addAction("Drawing Tool")
         draw_tool.setIcon(QIcon("icons/draw.png"))
@@ -404,7 +403,7 @@ class MainWindowWidget(QMainWindow):
 
     def closeEvent(self, event):
         if self._ask_before_closing:
-            value = self._confirm_close()
+            value = self._confirm_close_project()
             if value == QMessageBox.Cancel:
                 event.ignore()
                 return
