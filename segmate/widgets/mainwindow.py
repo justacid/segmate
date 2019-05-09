@@ -189,11 +189,6 @@ class MainWindowWidget(QMainWindow):
         self.view.setScene(scene)
         self._add_edit_menu(scene)
 
-    def _retain_active_tool(self):
-        last_used = self._recent_tool
-        self._set_tool(self._active_tool)
-        self._recent_tool = last_used
-
     def _set_tool(self, tool):
         if self._active_tool == tool:
             return
@@ -255,7 +250,6 @@ class MainWindowWidget(QMainWindow):
 
         self.inspector = InspectorWidget()
         self.inspector.scene_changed.connect(self._scene_changed)
-        self.inspector.image_changed.connect(self._retain_active_tool)
 
         self.dock = QDockWidget("Inspector")
         self.dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
