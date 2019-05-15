@@ -86,9 +86,7 @@ class SceneViewWidget(QGraphicsView):
         if self._fit:
             self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
             return
-
-        self.resetMatrix()
-        self.scale(self._scale / 100.0, self._scale / 100.0)
+        super().resizeEvent(event)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -141,7 +139,6 @@ class SceneViewWidget(QGraphicsView):
                 self._release_tablet_zoom(event)
                 return
 
-        # propagate tablet event through the scene
         if self.scene():
             pos = event.pos()
             cimg = active_layer.cursor().pixmap()
@@ -174,7 +171,3 @@ class SceneViewWidget(QGraphicsView):
 
     def tabletActive(self, active):
         self._tablet_active = active
-
-    def resizeEvent(self, event):
-        self.setAlignment(Qt.AlignCenter)
-        super().resizeEvent(event)
