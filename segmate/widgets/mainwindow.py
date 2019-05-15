@@ -229,7 +229,7 @@ class MainWindowWidget(QMainWindow):
 
         self.dock = QDockWidget("Inspector")
         self.dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.dock.setMinimumWidth(275)
+        self.dock.setMinimumWidth(225)
         self.dock.setWidget(self.inspector)
 
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
