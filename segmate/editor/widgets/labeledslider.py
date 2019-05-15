@@ -11,9 +11,11 @@ class LabeledSlider(QFrame):
         super().__init__()
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 1, 0, 3)
 
         label = QLabel(label)
         slider_layout = QHBoxLayout()
+        slider_layout.setContentsMargins(0, 0, 0, 0)
         slider = QSlider(Qt.Horizontal)
         slider.setValue(value)
         slider.setMinimum(minimum)
@@ -21,7 +23,7 @@ class LabeledSlider(QFrame):
         value_edit = QLineEdit(f"{value}")
         value_edit.setValidator(QIntValidator())
         value_edit.setAlignment(Qt.AlignCenter)
-        value_edit.setFixedWidth(40)
+        value_edit.setFixedWidth(30)
 
         def edit_finished():
             val = int(value_edit.text())
