@@ -188,9 +188,11 @@ class MainWindowWidget(QMainWindow):
         self.save_action.setEnabled(True)
 
     def _zoom_changed(self, zoom):
+        self.zoom_submenu.setTitle(f"Zoom ({zoom}%)")
         try:
             idx = self.zoom_levels.index(zoom)
             self.zoom_group.actions()[idx].setChecked(True)
+            self.zoom_group.actions()[-1].setText(f"Custom")
         except ValueError:
             self.zoom_group.actions()[-1].setChecked(True)
             self.zoom_group.actions()[-1].setText(f"Custom {zoom}%")
@@ -290,9 +292,16 @@ class MainWindowWidget(QMainWindow):
         view_menu.addAction(self.dock.toggleViewAction())
         view_menu.addSeparator()
         view_menu.addAction(self.fitview_action)
-        zoom_submenu = view_menu.addMenu("Zoom")
+        self.zoom_in = view_menu.addAction("Zoom &In")
+        self.zoom_in.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Equal))
+        self.zoom_in.triggered.connect(partial(self.view.zoom, 10))
+        self.zoom_out = view_menu.addAction("Zoom &Out")
+        self.zoom_out.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Minus))
+        self.zoom_out.triggered.connect(partial(self.view.zoom, -10))
+        view_menu.addSeparator()
 
-        self.zoom_group = QActionGroup(zoom_submenu)
+        self.zoom_submenu = view_menu.addMenu("Zoom (100%)")
+        self.zoom_group = QActionGroup(self.zoom_submenu)
         self.zoom_group.setExclusive(True)
         self.zoom_levels = list(range(20, 320, 20))
 
@@ -302,11 +311,12 @@ class MainWindowWidget(QMainWindow):
             action.setCheckable(True)
             if zoom == 100:
                 action.setChecked(True)
-            zoom_submenu.addAction(action)
+            self.zoom_submenu.addAction(action)
 
         custom_zoom = self.zoom_group.addAction(f"Custom")
         custom_zoom.setCheckable(True)
-        zoom_submenu.addAction(custom_zoom)
+        custom_zoom.setEnabled(False)
+        self.zoom_submenu.addAction(custom_zoom)
 
         if registry.tools:
             self.plugin_menu = self.menuBar().addMenu("&Plugins")
@@ -329,14 +339,10 @@ class MainWindowWidget(QMainWindow):
         self.zoom_fit.setIcon(QIcon("icons/zoom-fit.png"))
         self.zoom_fit.triggered.connect(self.view.toggle_zoom_to_fit)
         self.zoom_fit.setCheckable(True)
-        zoom_in = toolbar.addAction("Zoom In")
-        zoom_in.setIcon(QIcon("icons/zoom-in.png"))
-        zoom_in.triggered.connect(partial(self.view.zoom, 10))
-        zoom_in.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Equal))
-        zoom_out = toolbar.addAction("Zoom Out")
-        zoom_out.setIcon(QIcon("icons/zoom-out.png"))
-        zoom_out.triggered.connect(partial(self.view.zoom, -10))
-        zoom_out.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Minus))
+        self.zoom_in.setIcon(QIcon("icons/zoom-in.png"))
+        self.zoom_out.setIcon(QIcon("icons/zoom-out.png"))
+        toolbar.addAction(self.zoom_in)
+        toolbar.addAction(self.zoom_out)
 
         toolbar.addSeparator()
         tools_menu = self.menuBar().addMenu("&Tools")
