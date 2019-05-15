@@ -285,6 +285,8 @@ class MainWindowWidget(QMainWindow):
         self.fitview_action.triggered.connect(lambda: self.view.toggle_zoom_to_fit())
 
         view_menu = self.menuBar().addMenu("&View")
+        inspector_action = self.dock.toggleViewAction()
+        inspector_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_I))
         view_menu.addAction(self.dock.toggleViewAction())
         view_menu.addSeparator()
         view_menu.addAction(self.fitview_action)
