@@ -11,8 +11,9 @@ from segmate import __version__
 
 
 def new_project(archive_path, data_root, layers, masks, editable, colors):
-    # Copy all files from data_root to a temp directory, then patch up
-    # the data root and create the archive
+    # Copy all files from data_root to a temp directory, patch up
+    # data_root and create the corresponding meta file - the callee is
+    # responsible for actually creating the archive via save_project
     temp_dir = tempfile.TemporaryDirectory(prefix="segmate-")
     temp_path = Path(temp_dir.name)
 
