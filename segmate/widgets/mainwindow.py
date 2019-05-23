@@ -1,5 +1,5 @@
 from functools import partial
-from os.path import isdir, isfile
+from pathlib import Path
 
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
@@ -21,7 +21,6 @@ class MainWindowWidget(QMainWindow):
         self._project = None
         self._active_tool = "cursor_tool"
         self._recent_tool = None
-        self._active_project = ""
         self._ask_before_closing = False
 
         self._setup_ui()
@@ -31,11 +30,13 @@ class MainWindowWidget(QMainWindow):
         self._load_last_opened()
         self._set_window_title()
 
-    def _set_window_title(self, modified=False):
+    def _set_window_title(self, *, modified=False):
         title = f"Segmate {segmate.__version__} "
-        project = "" if not self._active_project else f"- {self._active_project}"
-        modified = f" {'(*)' if modified else ''}"
-        self.setWindowTitle(f"{title}{project}{modified}")
+        project_name = ""
+        if self._project is not None:
+            project_name = f"- {self._project.archive_path}"
+        modified_text = f" {'(*)' if modified else ''}"
+        self.setWindowTitle(f"{title}{project_name}{modified_text}")
 
     def _restore_window_position(self):
         size, position, is_maximized = settings.window_position(self)
@@ -45,32 +46,26 @@ class MainWindowWidget(QMainWindow):
         self.move(position)
 
     def _load_last_opened(self):
-        self._active_project = settings.last_opened_project()
-        if not isfile(self._active_project):
+        last_opened = Path(settings.last_opened_project())
+        if not last_opened.is_file() or ".spf" not in last_opened.suffix:
             return
+
         last_image_shown = settings.last_opened_image()
-        if self._active_project:
-            self._project = spf.open_project(self._active_project)
-            self._open_project(self._project)
-            self.inspector.slider.setValue(int(last_image_shown))
-        self._set_window_title()
+        self._project = spf.open_project(last_opened)
+        self._open_project(self._project)
+        self.inspector.slider.setValue(int(last_image_shown))
+        self._set_window_title(modified=False)
 
     def _open_project(self, project):
-        if isdir(project.data_root):
-            store = DataStore.from_project(project)
-            self.inspector.set_scene(EditorScene(store))
-            self.inspector.scene.image_modified.connect(self._mark_dirty)
-            self.inspector.change_image(0)
-            self.close_action.setEnabled(True)
-            self._active_project = project.archive_path
-        else:
-            self._active_project = ""
-            QMessageBox.critical(self, "Folder missing!",
-                f"The folder '{project.data_root}' could not be found. "
-                "Did you move your files? If so, you must create a new project, "
-                "or edit the existing project file.", QMessageBox.Ok)
+        if project is None:
+            return
+        store = DataStore.from_project(project)
+        self.inspector.set_scene(EditorScene(store))
+        self.inspector.scene.image_modified.connect(self._mark_dirty)
+        self.inspector.change_image(0)
+        self.close_action.setEnabled(True)
         self._set_window_title()
-        settings.set_last_opened_project(self._active_project)
+        settings.set_last_opened_project(str(project.archive_path))
         settings.set_last_opened_image(0)
 
     def _close_project(self):
@@ -93,7 +88,6 @@ class MainWindowWidget(QMainWindow):
         settings.set_last_opened_project("")
         settings.set_last_opened_image(0)
 
-        self._active_project = ""
         self._project = None
         self._set_window_title()
         return True
