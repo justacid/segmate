@@ -1,4 +1,4 @@
-from segmate.editor.editortool import EditorTool
+from ..editortool import EditorTool
 
 
 class CursorTool(EditorTool):

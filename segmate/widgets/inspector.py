@@ -3,8 +3,8 @@ from functools import partial
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 
-from segmate.editor import EditorScene
-from segmate.widgets.layerlist import LayerListWidget
+from ..editor import EditorScene
+from .layerlist import LayerListWidget
 
 
 class InspectorWidget(QWidget):

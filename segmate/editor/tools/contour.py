@@ -1,7 +1,7 @@
 import numpy as np
 
-import segmate.util as util
-from segmate.editor.editortool import EditorTool
+from ..editortool import EditorTool
+from ... import util
 
 
 class ContourTool(EditorTool):

@@ -3,7 +3,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 
-from segmate.widgets.layeritem import LayerItemWidget
+from .layeritem import LayerItemWidget
 
 
 class LayerListWidget(QGroupBox):

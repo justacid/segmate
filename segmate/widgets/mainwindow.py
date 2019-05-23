@@ -5,13 +5,13 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-import segmate
-from segmate import settings
-from segmate.widgets.inspector import InspectorWidget
-from segmate.widgets.sceneview import SceneViewWidget
-from segmate.store import DataStore
-from segmate.editor import EditorScene, registry
-from segmate.project import ProjectDialog, spf
+from segmate import __version__ as version
+from .. import project, settings
+from ..store import DataStore
+from ..editor import EditorScene, registry
+from .inspector import InspectorWidget
+from .sceneview import SceneViewWidget
+from .projectdialog import ProjectDialog
 
 
 class MainWindowWidget(QMainWindow):
@@ -31,7 +31,7 @@ class MainWindowWidget(QMainWindow):
         self._update_title()
 
     def _update_title(self, *, modified=False):
-        title = f"Segmate {segmate.__version__} "
+        title = f"Segmate {version} "
         project_name = ""
         if self._project is not None:
             project_name = f"- {self._project.archive_path}"
@@ -51,7 +51,7 @@ class MainWindowWidget(QMainWindow):
             return
 
         last_image_shown = settings.last_opened_image()
-        self._project = spf.open_project(last_opened)
+        self._project = project.open_project(last_opened)
         self._open_project(self._project)
         self.inspector.slider.setValue(int(last_image_shown))
         self._update_title(modified=False)
@@ -100,7 +100,7 @@ class MainWindowWidget(QMainWindow):
         filename = QFileDialog.getOpenFileName(
             self, "Open Project", home, "Segmate Project File (*.spf)")
         if filename[0]:
-            self._project = spf.open_project(filename[0])
+            self._project = project.open_project(filename[0])
             self._open_project(self._project)
             self.close_action.setEnabled(True)
 
@@ -111,10 +111,10 @@ class MainWindowWidget(QMainWindow):
         if dialog.exec() == QDialog.Rejected:
             return
 
-        self._project = spf.new_project(dialog.project_path, dialog.data_root,
+        self._project = project.new_project(dialog.project_path, dialog.data_root,
             dialog.folders, dialog.masks, dialog.editable, dialog.colors)
         self._ask_before_closing = False
-        spf.save_project(self._project)
+        project.save_project(self._project)
         self._open_project(self._project)
 
     def _confirm_close_project(self):
@@ -134,7 +134,7 @@ class MainWindowWidget(QMainWindow):
             self.save_action.setEnabled(False)
             self._ask_before_closing = False
             if self._project is not None:
-                spf.save_project(self._project)
+                project.save_project(self._project)
 
     def _scene_changed(self, scene):
         self.view.setScene(scene)

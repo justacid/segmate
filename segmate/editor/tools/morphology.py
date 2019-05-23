@@ -3,10 +3,10 @@ from scipy import ndimage as ndi
 from skimage.filters import rank
 import skimage.morphology as morph
 
-from segmate.editor.editortool import EditorTool
-from segmate.editor.selection import RectSelection
-from segmate.editor.widgets import EditorToolWidget, Button
-import segmate.util as util
+from ..editortool import EditorTool
+from ..selection import RectSelection
+from ..widgets import EditorToolWidget, Button
+from ... import util
 
 
 class MorphologyTool(EditorTool):

@@ -2,10 +2,10 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-import segmate.util as util
-import segmate.editor.registry as registry
-import segmate.editor.tools as tools
-import segmate.editor.event as tevent
+from .. import util
+from . import registry
+from . import tools
+from . import event as tevent
 
 
 class LayersGraphicsView(QGraphicsObject):

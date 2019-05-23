@@ -1,9 +1,9 @@
 import numpy as np
 
-from segmate.editor.editortool import EditorTool
-from segmate.editor.selection import RectSelection
-from segmate.editor.widgets import EditorToolWidget, Button
-import segmate.util as util
+from ..editortool import EditorTool
+from ..selection import RectSelection
+from ..widgets import EditorToolWidget, Button
+from ... import util
 
 
 class MasksTool(EditorTool):

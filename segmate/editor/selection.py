@@ -1,7 +1,7 @@
 import numpy as np
 from PySide2.QtCore import Qt
 
-import segmate.util as util
+from .. import util
 
 
 class RectSelection:

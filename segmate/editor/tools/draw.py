@@ -1,6 +1,6 @@
-import segmate.util as util
-from segmate.editor.editortool import EditorTool
-from segmate.editor.widgets import EditorToolWidget, LabeledSlider
+from ..editortool import EditorTool
+from ..widgets import EditorToolWidget, LabeledSlider
+from ... import util
 
 
 class DrawTool(EditorTool):

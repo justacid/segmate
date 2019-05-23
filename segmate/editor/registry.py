@@ -4,7 +4,7 @@ import pathlib
 import sys
 
 from PySide2.QtCore import QStandardPaths
-from segmate.editor.editortool import EditorTool
+from .editortool import EditorTool
 
 
 tools = {}
