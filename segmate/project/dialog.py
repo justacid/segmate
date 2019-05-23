@@ -13,7 +13,7 @@ class ProjectDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.resize(420, 450)
-        self.setWindowTitle("New Segmate Project")
+        self.setWindowTitle("New Project - Import Files")
         self._home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
 
         self.masks = []
@@ -31,9 +31,9 @@ class ProjectDialog(QDialog):
         top_box = QVBoxLayout()
         top_box.setSpacing(3)
 
-        folder_label = QLabel("Select folder containing data:")
+        folder_label = QLabel("Select data folder:")
         folder_label.setStyleSheet("border: 0px;")
-        project_label = QLabel("Save project file as:")
+        project_label = QLabel("Save as:")
         project_label.setStyleSheet("border: 0px;")
 
         completer = QCompleter(self)
