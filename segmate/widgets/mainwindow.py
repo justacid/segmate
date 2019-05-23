@@ -26,11 +26,11 @@ class MainWindowWidget(QMainWindow):
         self._setup_ui()
         self._add_menu()
         self._add_tool_bar()
-        self._restore_window_position()
+        self._restore_window()
         self._load_last_opened()
-        self._set_window_title()
+        self._update_title()
 
-    def _set_window_title(self, *, modified=False):
+    def _update_title(self, *, modified=False):
         title = f"Segmate {segmate.__version__} "
         project_name = ""
         if self._project is not None:
@@ -38,7 +38,7 @@ class MainWindowWidget(QMainWindow):
         modified_text = f" {'(*)' if modified else ''}"
         self.setWindowTitle(f"{title}{project_name}{modified_text}")
 
-    def _restore_window_position(self):
+    def _restore_window(self):
         size, position, is_maximized = settings.window_position(self)
         if is_maximized:
             self.setWindowState(self.windowState() | Qt.WindowMaximized)
@@ -54,7 +54,7 @@ class MainWindowWidget(QMainWindow):
         self._project = spf.open_project(last_opened)
         self._open_project(self._project)
         self.inspector.slider.setValue(int(last_image_shown))
-        self._set_window_title(modified=False)
+        self._update_title(modified=False)
 
     def _open_project(self, project):
         if project is None:
@@ -64,7 +64,7 @@ class MainWindowWidget(QMainWindow):
         self.inspector.scene.image_modified.connect(self._mark_dirty)
         self.inspector.change_image(0)
         self.close_action.setEnabled(True)
-        self._set_window_title()
+        self._update_title()
         settings.set_last_opened_project(str(project.archive_path))
         settings.set_last_opened_image(0)
 
@@ -89,7 +89,7 @@ class MainWindowWidget(QMainWindow):
         settings.set_last_opened_image(0)
 
         self._project = None
-        self._set_window_title()
+        self._update_title()
         return True
 
     def _open_project_dialog(self):
@@ -130,7 +130,7 @@ class MainWindowWidget(QMainWindow):
     def _save_to_disk(self):
         if self.inspector.scene:
             self.inspector.scene.save_to_disk()
-            self._set_window_title()
+            self._update_title()
             self.save_action.setEnabled(False)
             self._ask_before_closing = False
             if self._project is not None:
@@ -158,7 +158,7 @@ class MainWindowWidget(QMainWindow):
         self._set_tool(self._recent_tool)
 
     def _mark_dirty(self):
-        self._set_window_title(modified=True)
+        self._update_title(modified=True)
         self._ask_before_closing = True
         self.save_action.setEnabled(True)
 
