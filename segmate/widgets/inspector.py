@@ -68,6 +68,7 @@ class InspectorWidget(QWidget):
 
     def _activate_layer(self, idx):
         self.scene.active_layer = idx
+        self.scene.update()
         self.show_tool_inspector()
 
     def _slider_pressed(self):
