@@ -11,15 +11,14 @@ from segmate.widgets.inspector import InspectorWidget
 from segmate.widgets.sceneview import SceneViewWidget
 from segmate.store import DataStore
 from segmate.editor import EditorScene, registry
-from segmate.project import ProjectDialog, ProjectFile
+from segmate.project import ProjectDialog, spf
 
 
 class MainWindowWidget(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self._first_load_check()
-
+        self._project = None
         self._active_tool = "cursor_tool"
         self._recent_tool = None
         self._active_project = ""
@@ -45,41 +44,25 @@ class MainWindowWidget(QMainWindow):
         self.resize(size)
         self.move(position)
 
-    def _first_load_check(self):
-        was_shown = settings.warning_shown()
-        if not was_shown:
-            msgbox = QMessageBox()
-            msgbox.setWindowTitle("Information")
-            msgbox.setText("Editing is destructive!")
-            p1 = "Editing images is a destructive operation."
-            p2 = "Please make sure to make a backup of your data before using Segmate!"
-            msgbox.setInformativeText(f"{p1} {p2}")
-            msgbox.setIcon(QMessageBox.Information)
-            msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            msgbox.setDefaultButton(QMessageBox.Cancel)
-            value = msgbox.exec()
-            if value == QMessageBox.Ok:
-                settings.set_warning_shown(True)
-
     def _load_last_opened(self):
         self._active_project = settings.last_opened_project()
         if not isfile(self._active_project):
             return
         last_image_shown = settings.last_opened_image()
         if self._active_project:
-            project = ProjectFile.parse(self._active_project)
-            self._open_project(self._active_project, project)
+            self._project = spf.open_project(self._active_project)
+            self._open_project(self._project)
             self.inspector.slider.setValue(int(last_image_shown))
         self._set_window_title()
 
-    def _open_project(self, spf_path, project):
+    def _open_project(self, project):
         if isdir(project.data_root):
             store = DataStore.from_project(project)
             self.inspector.set_scene(EditorScene(store))
             self.inspector.scene.image_modified.connect(self._mark_dirty)
             self.inspector.change_image(0)
             self.close_action.setEnabled(True)
-            self._active_project = spf_path
+            self._active_project = project.archive_path
         else:
             self._active_project = ""
             QMessageBox.critical(self, "Folder missing!",
@@ -111,6 +94,7 @@ class MainWindowWidget(QMainWindow):
         settings.set_last_opened_image(0)
 
         self._active_project = ""
+        self._project = None
         self._set_window_title()
         return True
 
@@ -122,8 +106,8 @@ class MainWindowWidget(QMainWindow):
         filename = QFileDialog.getOpenFileName(
             self, "Open Project", home, "Segmate Project File (*.spf)")
         if filename[0]:
-            project = ProjectFile.parse(filename[0])
-            self._open_project(filename[0], project)
+            self._project = spf.open_project(filename[0])
+            self._open_project(self._project)
             self.close_action.setEnabled(True)
 
     def _new_project_dialog(self):
@@ -133,16 +117,11 @@ class MainWindowWidget(QMainWindow):
         if dialog.exec() == QDialog.Rejected:
             return
 
-        project = ProjectFile()
-        project.data_root = dialog.data_root
-        project.folders = dialog.folders
-        project.masks = dialog.masks
-        project.editable = dialog.editable
-        project.colors = dialog.colors
-
+        self._project = spf.new_project(dialog.project_path, dialog.data_root,
+            dialog.folders, dialog.masks, dialog.editable, dialog.colors)
         self._ask_before_closing = False
-        ProjectFile.save(dialog.project_path, project)
-        self._open_project(dialog.project_path, project)
+        spf.save_project(self._project)
+        self._open_project(self._project)
 
     def _confirm_close_project(self):
         msgbox = QMessageBox()
@@ -160,6 +139,8 @@ class MainWindowWidget(QMainWindow):
             self._set_window_title()
             self.save_action.setEnabled(False)
             self._ask_before_closing = False
+            if self._project is not None:
+                spf.save_project(self._project)
 
     def _scene_changed(self, scene):
         self.view.setScene(scene)

@@ -1,44 +1,75 @@
+from dataclasses import dataclass
 import json
 from os import makedirs
 from pathlib import Path
+import shutil
+import tempfile
+from typing import List
+import zipfile
 
 from segmate import __version__
 
 
-class ProjectFile:
+def new_project(archive_path, data_root, layers, masks, editable, colors):
+    # Copy all files from data_root to a temp directory, then patch up
+    # the data root and create the archive
+    temp_dir = tempfile.TemporaryDirectory(prefix="segmate-")
+    temp_path = Path(temp_dir.name)
 
-    def __init__(self):
-        self.version = ""
-        self.data_root = ""
-        self.folders = []
-        self.masks = []
-        self.editable = []
-        self.colors = []
+    for folder in layers:
+        makedirs(temp_path / "data" / folder)
+        for path in (Path(data_root) / folder).iterdir():
+            if not path.is_file():
+                continue
+            target = temp_path / "data" / path.relative_to(data_root)
+            shutil.copy(path, target)
 
-    @classmethod
-    def parse(cls, spf_path):
-        with open(spf_path, "r") as jf:
-            json_data = json.load(jf)
+    with open(temp_path / "meta", "w+") as jf:
+        json_data = {
+            "version": __version__,
+            "layers": layers, "masks": masks,
+            "editable": editable, "colors": colors}
+        json.dump(json_data, jf)
 
-        project = ProjectFile()
-        project.version = json_data["version"]
-        project.data_root = json_data["data_root"]
-        project.folders = json_data["folders"]
-        project.masks = json_data["masks"]
-        project.editable = json_data["editable"]
-        project.colors = [(c["r"], c["g"], c["b"]) for c in json_data["colors"]]
-        return project
+    return _Project(temp_dir, Path(archive_path), temp_path / "data", __version__,
+        layers, masks, editable, colors)
 
-    @classmethod
-    def save(cls, spf_path, project):
-        makedirs(Path(spf_path).parent, exist_ok=True)
-        with open(spf_path, "w") as jf:
-            json_data = {
-                "version": __version__,
-                "data_root": project.data_root,
-                "folders": project.folders,
-                "masks": project.masks,
-                "editable": project.editable,
-                "colors": [{"r": c[0], "g": c[1], "b": c[2]} for c in project.colors]
-            }
-            json.dump(json_data, jf)
+
+def open_project(archive_path):
+    # Extract all files to a temp dir, which is used as root directory
+    temp_dir = tempfile.TemporaryDirectory(prefix="segmate-")
+    with zipfile.ZipFile(archive_path, mode="r") as zipf:
+        zipf.extractall(path=temp_dir.name)
+    with open(Path(temp_dir.name) / "meta") as jf:
+        json_data = json.load(jf)
+    return _Project(temp_dir, Path(archive_path), Path(temp_dir.name) / "data",
+        json_data["version"], json_data["layers"], json_data["masks"],
+        json_data["editable"], json_data["colors"])
+
+
+def save_project(project):
+    # Add all files in temp dir to a new zip archive
+    temp_path = Path(project.temp_dir.name)
+    files = [f for f in temp_path.rglob("*") if f.is_file()]
+    modified_path = temp_path / project.archive_path.name
+    with zipfile.ZipFile(modified_path, mode="w", compression=zipfile.ZIP_STORED) as zipf:
+        for path in files:
+            zipf.write(path, arcname=path.relative_to(temp_path))
+
+    # Unconditionally overwrite the original archive. The replace method on a path
+    # object crashes with an 'OSError: [Errno 18] Invalid cross-device link:', when
+    # source and target filesystems are different, hence use shutil instead
+    shutil.move(modified_path, project.archive_path)
+
+
+@dataclass
+class _Project:
+    temp_dir: tempfile.TemporaryDirectory
+    archive_path: Path
+    data_root: Path
+
+    version: str
+    layers: List[str]
+    masks: List[bool]
+    editable: List[bool]
+    colors: List[List[int]]

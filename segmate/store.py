@@ -32,7 +32,7 @@ class DataStore:
     def from_project(cls, project):
         store = DataStore(
             data_root=project.data_root,
-            folders=project.folders,
+            folders=project.layers,
             masks=project.masks,
             editable=project.editable,
             colors=project.colors
