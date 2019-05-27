@@ -10,6 +10,19 @@ import zipfile
 from segmate import __version__
 
 
+@dataclass
+class Project:
+    temp_dir: tempfile.TemporaryDirectory
+    archive_path: Path
+    data_root: Path
+
+    version: str
+    layers: List[str]
+    masks: List[bool]
+    editable: List[bool]
+    colors: List[List[int]]
+
+
 def new_project(archive_path, data_root, layers, masks, editable, colors):
     # Copy all files from data_root to a temp directory, patch up
     # data_root and create the corresponding meta file - the callee is
@@ -32,7 +45,7 @@ def new_project(archive_path, data_root, layers, masks, editable, colors):
             "editable": editable, "colors": colors}
         json.dump(json_data, jf)
 
-    return _Project(temp_dir, Path(archive_path), temp_path / "data", __version__,
+    return Project(temp_dir, Path(archive_path), temp_path / "data", __version__,
         layers, masks, editable, colors)
 
 
@@ -43,7 +56,7 @@ def open_project(archive_path):
         zipf.extractall(path=temp_dir.name)
     with open(Path(temp_dir.name) / "meta") as jf:
         json_data = json.load(jf)
-    return _Project(temp_dir, Path(archive_path), Path(temp_dir.name) / "data",
+    return Project(temp_dir, Path(archive_path), Path(temp_dir.name) / "data",
         json_data["version"], json_data["layers"], json_data["masks"],
         json_data["editable"], json_data["colors"])
 
@@ -73,16 +86,3 @@ def export_project(project, path):
     except FileExistsError:
         shutil.rmtree(target)
         shutil.copytree(source, target)
-
-
-@dataclass
-class _Project:
-    temp_dir: tempfile.TemporaryDirectory
-    archive_path: Path
-    data_root: Path
-
-    version: str
-    layers: List[str]
-    masks: List[bool]
-    editable: List[bool]
-    colors: List[List[int]]
