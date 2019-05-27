@@ -64,6 +64,7 @@ class MainWindowWidget(QMainWindow):
         self.inspector.scene.image_modified.connect(self._mark_dirty)
         self.inspector.change_image(0)
         self.close_action.setEnabled(True)
+        self.export_action.setEnabled(True)
         self._update_title()
         settings.set_last_opened_project(str(project.archive_path))
         settings.set_last_opened_image(0)
@@ -74,7 +75,7 @@ class MainWindowWidget(QMainWindow):
             if value == QMessageBox.Cancel:
                 return False
             elif value == QMessageBox.Save:
-                self._save_to_disk()
+                self._save_project()
 
         self._set_tool("cursor_tool")
         self.cursor_tool.setChecked(True)
@@ -85,12 +86,23 @@ class MainWindowWidget(QMainWindow):
         self.view.setScene(None)
         self.inspector.set_scene(None)
         self.close_action.setEnabled(False)
+        self.export_action.setEnabled(False)
         settings.set_last_opened_project("")
         settings.set_last_opened_image(0)
 
         self._project = None
         self._update_title()
         return True
+
+    def _export_project(self):
+        if self._project is None:
+            return
+
+        home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
+        folder = QFileDialog.getExistingDirectory(self, "Export to...", home)
+        if folder and Path(folder).is_dir():
+            self._save_project()
+            project.export_project(self._project, folder)
 
     def _open_project_dialog(self):
         if not self._close_project():
@@ -103,6 +115,7 @@ class MainWindowWidget(QMainWindow):
             self._project = project.open_project(filename[0])
             self._open_project(self._project)
             self.close_action.setEnabled(True)
+            self.export_action.setEnabled(True)
 
     def _new_project_dialog(self):
         if not self._close_project():
@@ -114,7 +127,7 @@ class MainWindowWidget(QMainWindow):
         self._project = project.new_project(dialog.project_path, dialog.data_root,
             dialog.folders, dialog.masks, dialog.editable, dialog.colors)
         self._ask_before_closing = False
-        project.save_project(self._project)
+        project.write_project(self._project)
         self._open_project(self._project)
 
     def _confirm_close_project(self):
@@ -127,14 +140,14 @@ class MainWindowWidget(QMainWindow):
         msgbox.setIcon(QMessageBox.Warning)
         return msgbox.exec()
 
-    def _save_to_disk(self):
+    def _save_project(self):
         if self.inspector.scene:
             self.inspector.scene.save_to_disk()
-            self._update_title()
+            self._update_title(modified=False)
             self.save_action.setEnabled(False)
             self._ask_before_closing = False
             if self._project is not None:
-                project.save_project(self._project)
+                project.write_project(self._project)
 
     def _scene_changed(self, scene):
         self.view.setScene(scene)
@@ -229,10 +242,14 @@ class MainWindowWidget(QMainWindow):
         self.close_action = QAction("&Close Project")
         self.close_action.triggered.connect(self._close_project)
         self.close_action.setEnabled(False)
+        self.export_action = QAction("&Export Project")
+        self.export_action.triggered.connect(self._export_project)
+        self.export_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_E))
+        self.export_action.setEnabled(False)
         self.save_action = QAction("&Save Project")
         self.save_action.setIcon(QIcon("icons/save-current.png"))
         self.save_action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_S))
-        self.save_action.triggered.connect(self._save_to_disk)
+        self.save_action.triggered.connect(self._save_project)
         self.save_action.setEnabled(False)
         self.quit_action = QAction("&Quit")
         self.quit_action.triggered.connect(self.close)
@@ -244,6 +261,7 @@ class MainWindowWidget(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(self.open_action)
         file_menu.addAction(self.save_action)
+        file_menu.addAction(self.export_action)
         file_menu.addSeparator()
         file_menu.addAction(self.quit_action)
 
@@ -391,7 +409,7 @@ class MainWindowWidget(QMainWindow):
                 event.ignore()
                 return
             elif value == QMessageBox.Save:
-                self._save_to_disk()
+                self._save_project()
 
         settings.set_window_position(self)
         settings.set_last_opened_image(self.inspector.current_image)

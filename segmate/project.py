@@ -48,7 +48,7 @@ def open_project(archive_path):
         json_data["editable"], json_data["colors"])
 
 
-def save_project(project):
+def write_project(project):
     # Add all files in temp dir to a new zip archive
     temp_path = Path(project.temp_dir.name)
     files = [f for f in temp_path.rglob("*") if f.is_file()]
@@ -61,6 +61,18 @@ def save_project(project):
     # object crashes with an 'OSError: [Errno 18] Invalid cross-device link:', when
     # source and target filesystems are different, hence use shutil instead
     shutil.move(modified_path, project.archive_path)
+
+
+def export_project(project, path):
+    # Create new folder at path with the archive name and copy the whole temporary
+    # directory to this new folder. If the target already exists it is overwritten.
+    source = Path(project.temp_dir.name) / "data"
+    target = Path(path) / project.archive_path.stem
+    try:
+        shutil.copytree(source, target)
+    except FileExistsError:
+        shutil.rmtree(target)
+        shutil.copytree(source, target)
 
 
 @dataclass
