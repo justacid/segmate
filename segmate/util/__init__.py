@@ -1,3 +1,3 @@
-import segmate.util.draw
-import segmate.util.mask
-from .qimage import *
+from . import draw
+from . import mask
+from .qimage import to_qimage, from_qimage

@@ -4,6 +4,7 @@ from pathlib import Path
 import imageio as io
 import numpy as np
 import skimage.color as skcolor
+from natsort import natsorted, ns
 
 
 class DataStore:
@@ -21,12 +22,7 @@ class DataStore:
 
         if self.root and self.folders:
             self.root = Path(self.root)
-            self.files = self._get_filenames(Path(self.root), self.folders[0])
-
-    def _get_filenames(self, data_root, folder):
-        files = [f for f in listdir(data_root / folder)]
-        files = sorted(files, key=lambda f: int(f.split("-")[1].split(".")[0]))
-        return files
+            self.files = natsorted(listdir(Path(self.root) / self.folders[0]), alg=ns.PATH)
 
     @classmethod
     def from_project(cls, project):
