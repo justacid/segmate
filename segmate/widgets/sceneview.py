@@ -139,9 +139,9 @@ class SceneViewWidget(QGraphicsView):
                 self._release_tablet_zoom(event)
                 return
 
-        if self.scene():
+        if self.scene() is not None:
             pos = event.pos()
-            cimg = active_layer.cursor().pixmap()
+            cimg = self.scene().layers.cursor().pixmap()
             w, h = cimg.width(), cimg.height()
             pos = QPoint(pos.x() - w/2, pos.y() - h/2)
             scene_pos = self.mapToScene(pos)
