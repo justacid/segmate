@@ -9,7 +9,7 @@ setuptools.setup(
     description="A tool to annotate segmentation data sets.",
     packages=setuptools.find_packages(),
     install_requires=[
-        "PySide2==5.12.0",
+        "PySide2==5.12.3",
         "scikit-image>=0.14.2",
         "imageio>=2.4.1"
     ],
