@@ -50,7 +50,7 @@ def rectangle(image, top_left, bot_right, color):
     image[rr, cc] = color
 
 
-def flood_fill(image, seed, color):
+def flood_fill(image, seed, fill_color, *, border_color=None):
     """Flood fill with color, starting at seed. The flood fill will zerod
     pixels, and stop whenever a 4-connected neighbor is greater than zero.
 
@@ -59,20 +59,24 @@ def flood_fill(image, seed, color):
         seed: Seed point for the flood fill
         color: Color of the filled region
     """
+
+    if border_color is None:
+        border_color = fill_color
+
     h, w = image.shape[:2]
     coords = [[int(c) for c in seed]]
 
     while coords:
         y, x = coords.pop()
-        image[y, x] = color
+        image[y, x] = fill_color
 
-        if y + 1 < h and not any(image[y + 1, x]):
+        if y + 1 < h and not np.array_equal(image[y + 1, x], border_color):
             coords.append([y + 1, x])
-        if y - 1 >= 0 and not any(image[y - 1, x]):
+        if y - 1 >= 0 and not np.array_equal(image[y - 1, x], border_color):
             coords.append([y - 1, x])
-        if x + 1 < w and not any(image[y, x + 1]):
+        if x + 1 < w and not np.array_equal(image[y, x + 1], border_color):
             coords.append([y, x + 1])
-        if x - 1 >= 0 and not any(image[y, x - 1]):
+        if x - 1 >= 0 and not np.array_equal(image[y, x - 1], border_color):
             coords.append([y, x - 1])
 
 
