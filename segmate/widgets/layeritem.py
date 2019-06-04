@@ -128,5 +128,5 @@ class LayerItemWidget(QFrame):
         if event.type() == QEvent.KeyPress:
             if self.is_active and event.key() == Qt.Key_V:
                 self._toggle_visibility()
-                return True
+
         return False
