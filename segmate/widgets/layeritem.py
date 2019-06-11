@@ -122,11 +122,16 @@ class LayerItemWidget(QFrame):
         event.ignore()
 
     def eventFilter(self, object, event):
+        # Do not intercept key events when a dialog is open
+        if QApplication.activeModalWidget() is not None:
+            return False
+
         if not hasattr(object, "type"):
             return False
 
         if event.type() == QEvent.KeyPress:
             if self.is_active and event.key() == Qt.Key_V:
                 self._toggle_visibility()
+                return True
 
         return False

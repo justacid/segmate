@@ -101,8 +101,6 @@ class InspectorWidget(QWidget):
             self.layer_box.add(f"{name}".title())
 
     def _change_layer_opacity(self, idx, value):
-        if self.scene is None:
-            return
         self.scene.set_layer_opacity(idx, value)
 
     def _setup_ui(self):
