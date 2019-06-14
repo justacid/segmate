@@ -118,17 +118,19 @@ class MainWindowWidget(QMainWindow):
             self.export_action.setEnabled(True)
 
     def _new_project_dialog(self):
-        if not self._close_project():
-            return
+        def finish(result):
+            if result == QDialog.Rejected:
+                return
+            if not self._close_project():
+                return
+            self._project = project.new_project(dialog.project_path,
+                dialog.layers, dialog.masks, dialog.files, dialog.colors)
+            self._ask_before_closing = False
+            project.write_project(self._project)
+            self._open_project(self._project)
         dialog = ProjectDialog(self)
-        if dialog.exec() == QDialog.Rejected:
-            return
-
-        self._project = project.new_project(dialog.project_path, dialog.data_root,
-            dialog.folders, dialog.masks, dialog.editable, dialog.colors)
-        self._ask_before_closing = False
-        project.write_project(self._project)
-        self._open_project(self._project)
+        dialog.finished.connect(finish)
+        dialog.open()
 
     def _confirm_close_project(self):
         msgbox = QMessageBox()

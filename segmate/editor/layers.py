@@ -23,7 +23,6 @@ class LayersGraphicsView(QGraphicsObject):
         self._opacities = [1.0] * len(self.scene.data_store.folders)
         self._colors = self.scene.data_store.colors
         self._masks = self.scene.data_store.masks
-        self._editable = self.scene.data_store.editable
 
         self._undo_stack = scene.undo_stack
         self._undo_stack.indexChanged.connect(lambda _: self.update())
@@ -60,7 +59,6 @@ class LayersGraphicsView(QGraphicsObject):
         self.tool.canvas = self._layer_data[self.active]
         self.tool.color = self._colors[self.active]
         self.tool.is_mask = self._masks[self.active]
-        self.tool.is_editable = self._editable[self.active]
 
     @property
     def data(self):
@@ -93,7 +91,6 @@ class LayersGraphicsView(QGraphicsObject):
         self.tool.undo_stack = self._undo_stack
         self.tool.status_callback = status_callback
         self.tool.is_mask = self._masks[self.active]
-        self.tool.is_editable = self._editable[self.active]
         self.tool.on_show()
 
     def undo_tool_command(self, image):

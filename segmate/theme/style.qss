@@ -35,21 +35,21 @@ QWidget#projectDialogRow {
   background-color: palette(base);
 }
 
-QToolButton#projectDialogDeleteRow {
+QToolButton#projectDialogImportImages {
   border-style: none;
 }
 
-QToolButton#projectDialogDeleteRow:hover {
+QToolButton#projectDialogImportImages:hover {
   background-color: rgb(128, 0, 0);
 }
 
-QToolButton#projectDialogDeleteRow:pressed {
+QToolButton#projectDialogImportImages:pressed {
   background-color: rgb(255, 0, 0);
 }
 
 QPushButton#colorSelector {
   border-style: none;
-  width: 25px;
+  width: 30px;
   height: 18px;
 }
 
@@ -111,7 +111,7 @@ LayerItemWidget:checked {
 
 QToolButton#dialogAddRow {
   border-style: none;
-  width: 22px;
+  width: 82px;
   height: 22px;
 }
 

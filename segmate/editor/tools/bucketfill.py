@@ -20,8 +20,8 @@ class BucketFillTool(EditorTool):
             self.fill_image(event.pos, (0, 0, 0, 0))
 
     def fill_image(self, pos, color):
-        if not self.is_editable or not self.is_mask:
-            self.send_status_message("This layer is not editable...")
+        if not self.is_mask:
+            self.send_status_message("The image layer is not editable...")
             return
 
         snapshot = self.canvas.copy()

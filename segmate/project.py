@@ -7,6 +7,8 @@ import tempfile
 from typing import List
 import zipfile
 
+import imageio as io
+import numpy as np
 from segmate import __version__
 
 
@@ -19,34 +21,43 @@ class Project:
     version: str
     layers: List[str]
     masks: List[bool]
-    editable: List[bool]
     colors: List[List[int]]
 
 
-def new_project(archive_path, data_root, layers, masks, editable, colors):
+def new_project(archive_path, layers, masks, files, colors):
     # Copy all files from data_root to a temp directory, patch up
     # data_root and create the corresponding meta file - the callee is
     # responsible for actually creating the archive via save_project
     temp_dir = tempfile.TemporaryDirectory(prefix="segmate-")
     temp_path = Path(temp_dir.name)
 
-    for folder in layers:
+    for folder, fpaths in zip(layers, files):
         makedirs(temp_path / "data" / folder)
-        for path in (Path(data_root) / folder).iterdir():
+        for path in fpaths:
+            path = Path(path)
             if not path.is_file():
-                continue
-            target = temp_path / "data" / path.relative_to(data_root)
+                raise AttributeError(f"'{path}' is not a file!")
+            target = temp_path / "data" / folder / path.name
             shutil.copy(path, target)
 
+    # Create missing masks
+    for image in files[0]:
+        for i, folder in enumerate(files[1:]):
+            folder = [Path(f).name for f in folder]
+            if Path(image).name in folder:
+                continue
+            data = io.imread(path, as_gray=True)
+            mask = np.zeros(data.shape, dtype=np.uint8)
+            target = temp_path / "data" / layers[i+1] / Path(image).name
+            io.imwrite(target, mask)
+
     with open(temp_path / "meta", "w+") as jf:
-        json_data = {
-            "version": __version__,
-            "layers": layers, "masks": masks,
-            "editable": editable, "colors": colors}
+        json_data = {"version": __version__, "layers": layers,
+                     "masks": masks, "colors": colors}
         json.dump(json_data, jf)
 
     return Project(temp_dir, Path(archive_path), temp_path / "data", __version__,
-        layers, masks, editable, colors)
+        layers, masks, colors)
 
 
 def open_project(archive_path):
@@ -57,8 +68,7 @@ def open_project(archive_path):
     with open(Path(temp_dir.name) / "meta") as jf:
         json_data = json.load(jf)
     return Project(temp_dir, Path(archive_path), Path(temp_dir.name) / "data",
-        json_data["version"], json_data["layers"], json_data["masks"],
-        json_data["editable"], json_data["colors"])
+        json_data["version"], json_data["layers"], json_data["masks"], json_data["colors"])
 
 
 def write_project(project):

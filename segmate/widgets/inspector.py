@@ -84,7 +84,7 @@ class InspectorWidget(QWidget):
         idx = self.scene.active_layer
         widget = self.scene.layers.tool_widget
         if widget:
-            if not self.scene.layers.tool.is_editable:
+            if not self.scene.layers.tool.is_mask:
                 widget.setDisabled(True)
             self.dock_layout.insertWidget(1, widget)
 

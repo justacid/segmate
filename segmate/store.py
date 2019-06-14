@@ -16,7 +16,6 @@ class DataStore:
         self.root = kwargs.get("data_root", None)
         self.folders = kwargs.get("folders", None)
         self.masks = kwargs.get("masks", None)
-        self.editable = kwargs.get("editable", None)
         self.colors = kwargs.get("colors", None)
         self.files = None
 
@@ -30,7 +29,6 @@ class DataStore:
             data_root=project.data_root,
             folders=project.layers,
             masks=project.masks,
-            editable=project.editable,
             colors=project.colors
         )
         return store
@@ -42,10 +40,9 @@ class DataStore:
     def save_to_disk(self):
         for idx in self._modified:
             for i, layer in enumerate(self._cache[idx]):
-                if not self.editable[i]:
+                if not self.masks[i]:
                     continue
-                if self.masks[i]:
-                    layer = self._binarize(layer)
+                layer = self._binarize(layer)
                 io.imsave(self.root / self.folders[i] / self.files[idx], layer)
         self._modified.clear()
 

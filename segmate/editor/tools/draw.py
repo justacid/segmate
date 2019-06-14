@@ -48,8 +48,8 @@ class DrawTool(EditorTool):
         return DrawToolInspector(self._brush_size, brush_cb, self._eraser_size, eraser_cb)
 
     def _pressed(self, pos, erase):
-        if not self.is_editable:
-            self.send_status_message("This layer is not editable...")
+        if not self.is_mask:
+            self.send_status_message("The image layer is not editable...")
             return
         if not self._have_undo_copy:
             self._undo_copy = self.canvas.copy()
@@ -59,7 +59,7 @@ class DrawTool(EditorTool):
         self._draw = True
 
     def _released(self, pos, erase):
-        if not self.is_editable:
+        if not self.is_mask:
             return
         self._draw_line(pos, erase)
         self._draw = False
@@ -68,7 +68,7 @@ class DrawTool(EditorTool):
             self._have_undo_copy = False
 
     def _moved(self, pos, erase):
-        if not self.is_editable:
+        if not self.is_mask:
             return
         self._draw_line(pos, erase)
 
