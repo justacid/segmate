@@ -58,27 +58,3 @@ def set_last_opened_image(index):
     config.beginGroup("Project")
     config.setValue("last_opened_image", index)
     config.endGroup()
-
-
-def warning_shown():
-    """
-    TODO: Get rid of this by making editing non-destructive - custom project file
-    which importes all images, instead of simply referencing them.
-    """
-    config = QSettings("justacid", "Segmate")
-    config.beginGroup("Warning")
-    was_shown = config.value("was_shown", "false")
-    was_shown = True if "true" in was_shown else False
-    config.endGroup()
-    return was_shown
-
-
-def set_warning_shown(was_shown=True):
-    """
-    TODO: Get rid of this by making editing non-destructive - custom project file
-    which importes all images, instead of simply referencing them.
-    """
-    config = QSettings("justacid", "Segmate")
-    config.beginGroup("Warning")
-    config.setValue("was_shown", was_shown)
-    config.endGroup()
