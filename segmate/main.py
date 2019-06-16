@@ -7,6 +7,7 @@ from PySide2.QtCore import Qt
 from segmate.app import Application
 from segmate.theme import darktheme
 from segmate.widgets import MainWindowWidget
+from segmate import plugins
 
 
 def main():
@@ -17,9 +18,16 @@ def main():
     app = Application(sys.argv)
     darktheme.apply(app)
 
+    dependencies = plugins.missing_dependencies()
+    if dependencies:
+        updater = plugins.DependencyInstaller(dependencies)
+        updater.show()
+        sys.exit(app.exec_())
+        return
+
+    plugins.initialize_plugins()
     window = MainWindowWidget()
     app.tablet_active.connect(window.view.tabletActive)
-
     window.show()
     sys.exit(app.exec_())
 

@@ -2,8 +2,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from .. import util
-from . import registry
+from .. import util, plugins
 from . import tools
 from . import event as tevent
 
@@ -36,8 +35,8 @@ class LayersGraphicsView(QGraphicsObject):
             "morphology_tool": tools.MorphologyTool()
         }
 
-        if registry.tools:
-            for name, tool in registry.tools.items():
+        if plugins.get_plugins():
+            for name, tool in plugins.get_plugins().items():
                 self._tool_box[name] = tool[1]()
 
         self.tool = self._tool_box["cursor_tool"]

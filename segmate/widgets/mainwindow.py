@@ -6,9 +6,9 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 from segmate import __version__ as version
-from .. import project, settings
+from .. import project, settings, plugins
 from ..store import DataStore
-from ..editor import EditorScene, registry
+from ..editor import EditorScene
 from .inspector import InspectorWidget
 from .sceneview import SceneViewWidget
 from .projectdialog import ProjectDialog
@@ -313,9 +313,10 @@ class MainWindowWidget(QMainWindow):
         custom_zoom.setEnabled(False)
         self.zoom_submenu.addAction(custom_zoom)
 
-        if registry.tools:
+        self.tools_menu = self.menuBar().addMenu("&Tools")
+        if plugins.get_plugins():
             self.plugin_menu = self.menuBar().addMenu("&Plugins")
-            for name, tool in registry.tools.items():
+            for name, tool in plugins.get_plugins().items():
                 menu_entry, _ = tool
                 if menu_entry is None:
                     menu_entry = name
@@ -340,7 +341,6 @@ class MainWindowWidget(QMainWindow):
         toolbar.addAction(self.zoom_out)
 
         toolbar.addSeparator()
-        tools_menu = self.menuBar().addMenu("&Tools")
         toolbox = QActionGroup(self)
 
         self.cursor_tool = toolbar.addAction("Cursor Tool")
@@ -350,7 +350,7 @@ class MainWindowWidget(QMainWindow):
         self.cursor_tool.triggered.connect(partial(self._set_tool, "cursor_tool"))
         self.cursor_tool.setShortcut(QKeySequence(Qt.Key_1))
         toolbox.addAction(self.cursor_tool)
-        tools_menu.addAction(self.cursor_tool)
+        self.tools_menu.addAction(self.cursor_tool)
 
         draw_tool = toolbar.addAction("Drawing Tool")
         draw_tool.setIcon(QIcon("icons/draw.png"))
@@ -358,7 +358,7 @@ class MainWindowWidget(QMainWindow):
         draw_tool.triggered.connect(partial(self._set_tool, "draw_tool"))
         draw_tool.setShortcut(QKeySequence(Qt.Key_2))
         toolbox.addAction(draw_tool)
-        tools_menu.addAction(draw_tool)
+        self.tools_menu.addAction(draw_tool)
 
         bucket_tool = toolbar.addAction("Bucket Tool")
         bucket_tool.setIcon(QIcon("icons/paint-bucket.png"))
@@ -366,7 +366,7 @@ class MainWindowWidget(QMainWindow):
         bucket_tool.triggered.connect(partial(self._set_tool, "bucket_tool"))
         bucket_tool.setShortcut(QKeySequence(Qt.Key_3))
         toolbox.addAction(bucket_tool)
-        tools_menu.addAction(bucket_tool)
+        self.tools_menu.addAction(bucket_tool)
 
         move_tool = toolbar.addAction("Contour Tool")
         move_tool.setIcon(QIcon("icons/contour-tool.png"))
@@ -374,7 +374,7 @@ class MainWindowWidget(QMainWindow):
         move_tool.triggered.connect(partial(self._set_tool, "contour_tool"))
         move_tool.setShortcut(QKeySequence(Qt.Key_4))
         toolbox.addAction(move_tool)
-        tools_menu.addAction(move_tool)
+        self.tools_menu.addAction(move_tool)
         toolbar.addSeparator()
 
         morph_tool = toolbar.addAction("Morphology Tool")
@@ -383,7 +383,7 @@ class MainWindowWidget(QMainWindow):
         morph_tool.triggered.connect(partial(self._set_tool, "morphology_tool"))
         morph_tool.setShortcut(QKeySequence(Qt.Key_5))
         toolbox.addAction(morph_tool)
-        tools_menu.addAction(morph_tool)
+        self.tools_menu.addAction(morph_tool)
 
         copy_mask = toolbar.addAction("Masks Tool")
         copy_mask.setIcon(QIcon("icons/copy-content.png"))
@@ -391,7 +391,7 @@ class MainWindowWidget(QMainWindow):
         copy_mask.triggered.connect(partial(self._set_tool, "masks_tool"))
         copy_mask.setShortcut(QKeySequence(Qt.Key_6))
         toolbox.addAction(copy_mask)
-        tools_menu.addAction(copy_mask)
+        self.tools_menu.addAction(copy_mask)
 
         toolbar.addSeparator()
 
