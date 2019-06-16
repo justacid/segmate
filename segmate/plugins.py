@@ -12,7 +12,7 @@ from . import pipapi
 from .editor.editortool import EditorTool
 
 
-# When an dynamically imported plugin itself tries to import torch (> 1.0.1) it crashes
+# When a dynamically imported plugin itself tries to import torch (> 1.0.1) it crashes
 # when it is initialized after QApplication. Therefore try to import it here and swallow
 # an import error for systems were torch is not installed. This is obviously a band-aid,
 # and to be removed as as soon as possible.
