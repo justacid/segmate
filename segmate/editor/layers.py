@@ -15,7 +15,6 @@ class LayersGraphicsView(QGraphicsObject):
         super().__init__()
         self.scene = scene
         self.active = 0
-        self.image_idx = 0
         self.layer_names = self.scene.data_store.folders
 
         self._layer_data = None
@@ -40,12 +39,12 @@ class LayersGraphicsView(QGraphicsObject):
                 self._tool_box[name] = tool[1]()
 
         self.tool = self._tool_box["cursor_tool"]
-        self.tool.item = self
+        self.tool._item = self
 
     def load(self, image_idx):
         self._layer_data = [img.copy() for img in self.scene.data_store[image_idx]]
         self.tool.canvas = self._layer_data[self.active]
-        self.image_idx = image_idx
+        self.image_index = image_idx
         self.update()
 
     def set_opacity(self, layer_idx, value):
@@ -85,7 +84,7 @@ class LayersGraphicsView(QGraphicsObject):
 
         self.tool = self._tool_box[tool]
         self.tool.canvas = result
-        self.tool.item = self
+        self.tool._item = self
         self.tool.color = self._colors[self.active]
         self.tool.undo_stack = self._undo_stack
         self.tool.status_callback = status_callback

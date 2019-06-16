@@ -29,14 +29,26 @@ class EditorUndoCommand(QUndoCommand):
 class EditorTool:
 
     def __init__(self):
+        self._item = None
         self.is_dirty = False
         self.canvas = None
-        self.item = None
         self.color = None
         self.undo_stack = None
         self.status_callback = None
         self.is_mask = False
         self.on_create()
+
+    @property
+    def image_index(self):
+        return self._item.image_index
+
+    @property
+    def layer_index(self):
+        return self._item.active
+
+    @property
+    def layer_name(self):
+        return self._item.layer_names[self._item.active]
 
     def on_paint(self):
         return self.canvas
@@ -87,21 +99,48 @@ class EditorTool:
             # a undo-command push triggers a redo - so push first, then
             # register callbacks; this suppresses the signal on initial redo
             self.undo_stack.push(command)
-            command.undo_triggered = self.item.undo_tool_command
-            command.redo_triggered = self.item.redo_tool_command
+            command.undo_triggered = self._item.undo_tool_command
+            command.redo_triggered = self._item.redo_tool_command
 
     def send_status_message(self, message):
         if self.status_callback:
             self.status_callback(message)
 
     def notify_dirty(self):
-        self.item.image_modified.emit()
+        self._item.image_modified.emit()
 
     def set_cursor(self, name):
         if name is None:
-            self.item.setCursor(QCursor(Qt.ArrowCursor))
+            self._item.setCursor(QCursor(Qt.ArrowCursor))
             return
-        self.item.setCursor(QCursor(name))
+        self._item.setCursor(QCursor(name))
+
+    def set_layer(self, layer_index, image):
+        self._item._layer_data[layer_index] = image
+
+    def get_layers(self, layer_index=None, image_index=None):
+        if image_index is not None:
+            assert isinstance(image_index, int)
+        if layer_index is not None:
+            assert isinstance(layer_index, int)
+
+        if image_index is None:
+            if layer_index is None:
+                return self._item._layer_data.copy()
+            return self._item._layer_data[layer_index].copy()
+
+        if layer_index is None:
+            return self._item.scene.data_store[image_index].copy()
+        return self._item.scene.data_store[image_index][layer_index].copy()
+
+    def get_color(self, layer_index):
+        return self._item._colors[layer_index]
+
+    def get_is_mask(self, layer_index):
+        return self._item._masks[layer_index]
+
+    def update(self):
+        self._item.update()
 
     def _on_hide(self):
         self.set_cursor(None)

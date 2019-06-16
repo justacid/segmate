@@ -88,8 +88,7 @@ class MorphologyTool(EditorTool):
         markers = morph.label(markers, background=0)
         markers[0, markers.shape[1] - 1] = np.max(markers) + 1
 
-        image = self.item._layer_data[0]
-        image = util.mask.grayscale(image)
+        image = util.mask.grayscale(self.get_layers(0))
         basin = rank.gradient(image, morph.disk(1))
         watershed = morph.watershed(basin, markers)
 
