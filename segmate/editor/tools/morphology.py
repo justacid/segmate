@@ -27,6 +27,18 @@ class MorphologyTool(EditorTool):
             self._fill_holes, self._dilate, self._erode,
             self._skeletonize, self._watershed)
 
+    def on_key_pressed(self, event):
+        if event.key.Key_W:
+            self._watershed()
+        elif event.key.Key_E:
+            self._erode()
+        elif event.key.Key_S:
+            self._skeletonize()
+        elif event.key.Key_D:
+            self._dilate()
+        elif event.key.Key_F:
+            self._fill_holes()
+
     def _fill_holes(self):
         mask = util.mask.binary(self.canvas)
         filled = ndi.binary_fill_holes(mask)
