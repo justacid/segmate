@@ -145,9 +145,9 @@ class MainWindowWidget(QMainWindow):
     def _save_project(self):
         if self.inspector.scene:
             self.inspector.scene.save_to_disk()
+            self._project_modified = False
             self._update_title()
             self.save_action.setEnabled(False)
-            self._project_modified = False
             if self._project is not None:
                 project.write_project(self._project)
 
