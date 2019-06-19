@@ -18,9 +18,9 @@ class MainWindowWidget(QMainWindow):
     def __init__(self):
         super().__init__()
         self._project = None
+        self._project_modified = False
         self._active_tool = "cursor_tool"
         self._recent_tool = None
-        self._ask_before_closing = False
 
         self._setup_ui()
         self._add_menu()
@@ -29,12 +29,12 @@ class MainWindowWidget(QMainWindow):
         self._load_last_opened()
         self._update_title()
 
-    def _update_title(self, *, modified=False):
+    def _update_title(self):
         title = f"Segmate {__version__} "
         project_name = ""
         if self._project is not None:
             project_name = f"- {self._project.archive_path}"
-        modified_text = f" {'(*)' if modified else ''}"
+        modified_text = f" {'(*)' if self._project_modified else ''}"
         self.setWindowTitle(f"{title}{project_name}{modified_text}")
 
     def _restore_window(self):
@@ -53,7 +53,7 @@ class MainWindowWidget(QMainWindow):
         self._project = project.open_project(last_opened)
         self._open_project(self._project)
         self.inspector.slider.setValue(int(last_image_shown))
-        self._update_title(modified=False)
+        self._update_title()
 
     def _open_project(self, project):
         if project is None:
@@ -69,7 +69,7 @@ class MainWindowWidget(QMainWindow):
         settings.set_last_opened_image(0)
 
     def _close_project(self):
-        if self._ask_before_closing:
+        if self._project_modified:
             value = self._confirm_close_project()
             if value == QMessageBox.Cancel:
                 return False
@@ -78,7 +78,7 @@ class MainWindowWidget(QMainWindow):
 
         self._set_tool("cursor_tool")
         self.cursor_tool.setChecked(True)
-        self._ask_before_closing = False
+        self._project_modified = False
 
         if self.view.scene() is not None:
             del self.view.scene().data_store
@@ -100,7 +100,8 @@ class MainWindowWidget(QMainWindow):
         home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
         folder = QFileDialog.getExistingDirectory(self, "Export to...", home)
         if folder and Path(folder).is_dir():
-            self._save_project()
+            if self._project_modified:
+                self._save_project()
             project.export_project(self._project, folder)
 
     def _open_project_dialog(self):
@@ -124,7 +125,7 @@ class MainWindowWidget(QMainWindow):
                 return
             self._project = project.new_project(dialog.project_path,
                 dialog.layers, dialog.masks, dialog.files, dialog.colors)
-            self._ask_before_closing = False
+            self._project_modified = False
             project.write_project(self._project)
             self._open_project(self._project)
         dialog = ProjectDialog(self)
@@ -144,9 +145,9 @@ class MainWindowWidget(QMainWindow):
     def _save_project(self):
         if self.inspector.scene:
             self.inspector.scene.save_to_disk()
-            self._update_title(modified=False)
+            self._update_title()
             self.save_action.setEnabled(False)
-            self._ask_before_closing = False
+            self._project_modified = False
             if self._project is not None:
                 project.write_project(self._project)
 
@@ -172,8 +173,8 @@ class MainWindowWidget(QMainWindow):
         self._set_tool(self._recent_tool)
 
     def _mark_dirty(self):
-        self._update_title(modified=True)
-        self._ask_before_closing = True
+        self._project_modified = True
+        self._update_title()
         self.save_action.setEnabled(True)
 
     def _zoom_changed(self, zoom):
@@ -404,7 +405,7 @@ class MainWindowWidget(QMainWindow):
         self.edit_menu.addAction(self.redo_action)
 
     def closeEvent(self, event):
-        if self._ask_before_closing:
+        if self._project_modified:
             value = self._confirm_close_project()
             if value == QMessageBox.Cancel:
                 event.ignore()
