@@ -38,8 +38,11 @@ class LayersGraphicsView(QGraphicsObject):
             for name, tool in plugins.get_plugins().items():
                 self._tool_box[name] = tool[1]()
 
+        for tool in self._tool_box.values():
+            tool._item = self
+            tool.on_create()
+
         self.tool = self._tool_box["cursor_tool"]
-        self.tool._item = self
 
     def load(self, image_idx):
         self._layer_data = [img.copy() for img in self.scene.data_store[image_idx]]
@@ -84,7 +87,6 @@ class LayersGraphicsView(QGraphicsObject):
 
         self.tool = self._tool_box[tool]
         self.tool.canvas = result
-        self.tool._item = self
         self.tool.color = self._colors[self.active]
         self.tool.undo_stack = self._undo_stack
         self.tool.status_callback = status_callback

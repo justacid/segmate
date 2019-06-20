@@ -36,7 +36,6 @@ class EditorTool:
         self.undo_stack = None
         self.status_callback = None
         self.is_mask = False
-        self.on_create()
 
     @property
     def image_index(self):
