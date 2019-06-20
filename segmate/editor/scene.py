@@ -11,6 +11,7 @@ class EditorScene(QGraphicsScene):
     opacity_changed = Signal(int, float)
     scene_cleared = Signal()
     image_modified = Signal()
+    tool_changed = Signal()
 
     def __init__(self, data_store):
         super().__init__()
@@ -42,6 +43,7 @@ class EditorScene(QGraphicsScene):
         if self.layers is None:
             self.layers = LayersGraphicsView(self)
             self.layers.image_modified.connect(self._store_dirty)
+            self.layers.tool_changed.connect(self.tool_changed.emit)
             self.addItem(self.layers)
         self.layers.load(image_idx)
         self.image_loaded.emit(image_idx)

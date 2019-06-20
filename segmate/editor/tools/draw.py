@@ -2,6 +2,9 @@ from ..editortool import EditorTool
 from ..widgets import EditorToolWidget, LabeledSlider
 from ... import util
 
+from PySide2.QtCore import *
+from PySide2.QtWidgets import *
+from PySide2.QtGui import *
 
 class DrawTool(EditorTool):
 

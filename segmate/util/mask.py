@@ -63,3 +63,29 @@ def grayscale(array):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return skimage.img_as_ubyte(skcolor.rgb2gray(array[:,:,:3]))
+
+
+def selection(array, rect):
+    """ Returns a selection mask given by a rectangle.
+
+    Args:
+        array: image from which to get the dimensions
+        rect: 2-tuple containing the coordinates [(y1, x1), (y2, x2)]
+
+    Returns:
+        A mask with the selected area.
+    """
+    if array is None or rect is None:
+        raise ValueError("The arguments 'array' and rect' must not be 'None'.")
+    if len(rect) != 2:
+        raise ValueError("Rectangle must contain two coordinates.")
+    if len(rect[0]) != 2 or len(rect[1]) != 2:
+        raise ValueError("Invalid rectangle coordinates.")
+
+    h, w = array.shape[:2]
+    y1, y2 = np.clip([rect[0][0], rect[1][0]], 0, h+1)
+    x1, x2 = np.clip([rect[0][1], rect[1][1]], 0, w+1)
+
+    mask = np.zeros(array.shape, dtype=np.bool)
+    mask[int(y1):int(y2), int(x1):int(x2)] = True
+    return mask

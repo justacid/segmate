@@ -10,12 +10,15 @@ from . import event as tevent
 class LayersGraphicsView(QGraphicsObject):
 
     image_modified = Signal()
+    tool_changed = Signal()
 
     def __init__(self, scene):
         super().__init__()
         self.scene = scene
         self.active = 0
         self.layer_names = self.scene.data_store.folders
+        self.show_selection = False
+        self.selection_rect = None
 
         self._layer_data = None
         self._opacities = [1.0] * len(self.scene.data_store.folders)
@@ -43,6 +46,9 @@ class LayersGraphicsView(QGraphicsObject):
             tool.on_create()
 
         self.tool = self._tool_box["cursor_tool"]
+        # The cursor tool is special since it is the default and set from the
+        # beginning. Therefore call show explicitly to enable selections.
+        self.tool.on_show()
 
     def load(self, image_idx):
         self._layer_data = [img.copy() for img in self.scene.data_store[image_idx]]
@@ -60,6 +66,13 @@ class LayersGraphicsView(QGraphicsObject):
         self.tool.canvas = self._layer_data[self.active]
         self.tool.color = self._colors[self.active]
         self.tool.is_mask = self._masks[self.active]
+
+    def set_selection(self, rect):
+        if rect is None:
+            self.selection_rect = None
+            return
+        x1, y1, x2, y2 = rect.getCoords()
+        self.selection_rect = [(y1, x1), (y2, x2)]
 
     @property
     def data(self):
@@ -92,6 +105,7 @@ class LayersGraphicsView(QGraphicsObject):
         self.tool.status_callback = status_callback
         self.tool.is_mask = self._masks[self.active]
         self.tool.on_show()
+        self.tool_changed.emit()
 
     def undo_tool_command(self, image):
         if self.tool:

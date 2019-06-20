@@ -17,7 +17,11 @@ class SceneViewWidget(QGraphicsView):
         self._tablet_zoom = False
         self._tablet_zoom_start = QPointF(0.0, 0.0)
         self._tablet_active = False
+        self._rect_select = None
+        self._select_origin = None
         self.setMouseTracking(True)
+        self.horizontalScrollBar().valueChanged.connect(self._hide_selection)
+        self.verticalScrollBar().valueChanged.connect(self._hide_selection)
 
     def zoom(self, amount):
         if self._fit:
@@ -29,18 +33,24 @@ class SceneViewWidget(QGraphicsView):
             self.zoom_changed.emit(self._scale)
             return
 
+        if self._rect_select is not None:
+            self._rect_select.hide()
         self._scale += amount
         self.resetMatrix()
         self.scale(self._scale / 100.0, self._scale / 100.0)
         self.zoom_changed.emit(self._scale)
 
     def set_zoom(self, zoom):
+        if self._rect_select is not None:
+            self._rect_select.hide()
         self._scale = zoom
         self.resetMatrix()
         self.scale(self._scale / 100.0, self._scale / 100.0)
         self.zoom_changed.emit(self._scale)
 
     def toggle_zoom_to_fit(self):
+        if self._rect_select is not None:
+            self._rect_select.hide()
         self._fit = not self._fit
         if self._fit:
             self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
@@ -75,6 +85,19 @@ class SceneViewWidget(QGraphicsView):
         self.verticalScrollBar().setValue(vs - delta.y())
         self._pan_start = event.pos()
 
+    def _hide_selection(self):
+        if self._rect_select is not None:
+            self._rect_select.hide()
+            self._rect_select = None
+            if self.scene() is not None:
+                self.scene().layers.set_selection(None)
+
+    def setScene(self, scene):
+        super().setScene(scene)
+        if scene is None:
+            return
+        scene.tool_changed.connect(self._hide_selection)
+
     def wheelEvent(self, event):
         if event.modifiers() & Qt.ControlModifier:
             delta = event.angleDelta().y()
@@ -90,10 +113,22 @@ class SceneViewWidget(QGraphicsView):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
+            if self._rect_select is not None:
+                self._rect_select.hide()
+
             if event.modifiers() & Qt.ControlModifier:
                 self._start_pan(event)
                 QApplication.setOverrideCursor(Qt.ClosedHandCursor)
                 return
+
+        if event.button() == Qt.LeftButton and self.scene() is not None:
+            if self.scene().layers.show_selection:
+                self._select_origin = event.pos()
+                if self._rect_select is None:
+                    self._rect_select = QRubberBand(QRubberBand.Rectangle, self)
+                self._rect_select.setGeometry(QRect(self._select_origin, QSize()))
+                self._rect_select.show()
+
         if not self._tablet_active:
             super().mousePressEvent(event)
 
@@ -103,6 +138,18 @@ class SceneViewWidget(QGraphicsView):
             if event.modifiers() & Qt.ControlModifier:
                 self._release_pan()
                 return
+
+        if event.button() == Qt.LeftButton and self.scene() is not None:
+            if self.scene().layers.show_selection:
+                if self._rect_select is not None:
+                    origin = self.mapToScene(self._select_origin)
+                    target = self.mapToScene(event.pos())
+                    selection = QRectF(origin, target).normalized()
+                    if selection.width() < 2 or selection.height() < 2:
+                        selection = None
+                        self._hide_selection()
+                    self.scene().layers.set_selection(selection)
+
         if not self._tablet_active:
             super().mouseReleaseEvent(event)
 
@@ -111,6 +158,13 @@ class SceneViewWidget(QGraphicsView):
             if event.modifiers() & Qt.ControlModifier:
                 self._move_pan(event)
                 return
+
+        if event.buttons() & Qt.LeftButton and self.scene() is not None:
+            if self.scene().layers.show_selection:
+                if self._rect_select is not None:
+                    self._rect_select.setGeometry(
+                        QRect(self._select_origin, event.pos()).normalized())
+
         if not self._tablet_active:
             super().mouseMoveEvent(event)
 

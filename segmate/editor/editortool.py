@@ -49,6 +49,10 @@ class EditorTool:
     def layer_name(self):
         return self._item.layer_names[self._item.active]
 
+    @property
+    def selection_rect(self):
+        return self._item.selection_rect
+
     def on_paint(self):
         return self.canvas
 
@@ -114,6 +118,9 @@ class EditorTool:
             return
         self._item.setCursor(QCursor(name))
 
+    def enable_selection(self, enabled):
+        self._item.show_selection = enabled
+
     def set_layer(self, layer_index, image):
         self._item._layer_data[layer_index] = image
 
@@ -144,3 +151,4 @@ class EditorTool:
     def _on_hide(self):
         self.set_cursor(None)
         self.on_hide()
+        self._item.show_selection = False
