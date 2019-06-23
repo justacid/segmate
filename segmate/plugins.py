@@ -4,6 +4,7 @@ import json
 import pathlib
 import sys
 
+from requirements.requirement import Requirement
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
@@ -95,7 +96,8 @@ def missing_dependencies():
             continue
 
         plugin_dependencies = plugin_info.get("dependencies", [])
-        collected_dependencies.extend([p.lower() for p in plugin_dependencies])
+        collected_dependencies.extend(
+            [Requirement.parse(p).name.lower() for p in plugin_dependencies])
 
     installed_dependencies = pipapi.installed(user=False)
     return [d for d in collected_dependencies if d not in installed_dependencies]

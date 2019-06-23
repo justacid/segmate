@@ -3,9 +3,6 @@ import subprocess
 import sys
 
 
-pip_bin = pathlib.Path(sys.executable).parent / "pip3"
-
-
 def is_venv():
     if hasattr(sys, "real_prefix"):
         return True
@@ -15,7 +12,8 @@ def is_venv():
 
 
 def install(package, *, user=False, upgrade=False):
-    command = [pip_bin, "--disable-pip-version-check", "install", package]
+    command = [sys.executable, "-m", "pip",
+        "--disable-pip-version-check", "install", package]
     if upgrade:
         command.append("--upgrade")
     if user:
@@ -26,13 +24,14 @@ def install(package, *, user=False, upgrade=False):
 
 
 def uninstall(package):
-    command = [pip_bin, "--disable-pip-version-check", "uninstall", "-y", package]
+    command = [sys.executable, "-m", "pip",
+        "--disable-pip-version-check", "uninstall", "-y", package]
     output = subprocess.check_output(command)
     return output.decode("utf-8").rstrip()
 
 
 def installed(*, user=False):
-    command = [pip_bin, "--disable-pip-version-check", "list"]
+    command = [sys.executable, "-m", "pip", "--disable-pip-version-check", "list"]
     if user:
         command.append("--user")
     output = subprocess.check_output(command)
