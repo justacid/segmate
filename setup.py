@@ -5,7 +5,7 @@ import segmate
 setuptools.setup(
     name="segmate",
     version=segmate.__version__,
-    python_requires=">=3.6",
+    python_requires=">=3.4",
     description="A tool to annotate segmentation data sets.",
     packages=setuptools.find_packages(),
     install_requires=[
