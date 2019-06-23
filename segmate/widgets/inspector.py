@@ -58,7 +58,7 @@ class InspectorWidget(QWidget):
         self.current_image = idx
         active_layer = self.scene.active_layer
         self.scene.load(idx)
-        self.slider_box.setTitle(f"Image {idx+1}/{self.scene.image_count}")
+        self.slider_box.setTitle("Image {0}/{1}".format(idx+1, self.scene.image_count))
         self._activate_layer(active_layer)
         self.image_changed.emit()
 
@@ -96,7 +96,7 @@ class InspectorWidget(QWidget):
     def _add_layer_widgets(self):
         self.layer_box.clear()
         for index, name in enumerate(self.scene.data_store.folders):
-            self.layer_box.add(f"{name}".title())
+            self.layer_box.add(name.title())
 
     def _change_layer_opacity(self, idx, value):
         self.scene.set_layer_opacity(idx, value)

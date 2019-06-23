@@ -34,7 +34,7 @@ def new_project(archive_path, layers, masks, files, colors):
         for path in fpaths:
             path = Path(path)
             if not path.is_file():
-                raise AttributeError(f"'{path}' is not a file!")
+                raise AttributeError("'{0}' is not a file!".format(path))
             target = temp_path / "data" / folder / path.name
             shutil.copy(path, target)
 

@@ -19,7 +19,7 @@ def to_qimage(array):
         raise ValueError("The argument 'arr' can not be 'None'.")
 
     if len(array.shape) not in (2, 3):
-        raise TypeError(f"Unsupported image format.")
+        raise TypeError("Unsupported image format.")
 
     shape = array.shape[:2][::-1]
     stride = array.strides[0]

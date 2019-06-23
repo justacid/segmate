@@ -47,7 +47,7 @@ class LayerListWidget(QGroupBox):
             child.is_active = False
 
     def add(self, title):
-        item = LayerItemWidget(self._index, f"{title}".title())
+        item = LayerItemWidget(self._index, title.title())
         item.opacity_changed.connect(lambda l, o: self.opacity_changed.emit(l, o))
         item.layer_clicked.connect(self._layer_clicked)
         self._layers.addWidget(item)

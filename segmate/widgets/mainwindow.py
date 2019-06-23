@@ -30,12 +30,12 @@ class MainWindowWidget(QMainWindow):
         self._update_title()
 
     def _update_title(self):
-        title = f"Segmate {__version__} "
+        title = "Segmate {0} ".format(__version__)
         project_name = ""
         if self._project is not None:
-            project_name = f"- {self._project.archive_path}"
-        modified_text = f" {'(*)' if self._project_modified else ''}"
-        self.setWindowTitle(f"{title}{project_name}{modified_text}")
+            project_name = "- {0}".format(self._project.archive_path)
+        modified_text = " (*)" if self._project_modified else ""
+        self.setWindowTitle("{0}{1}{2}".format(title, project_name, modified_text))
 
     def _restore_window(self):
         size, position, is_maximized = settings.window_position(self)
@@ -178,16 +178,16 @@ class MainWindowWidget(QMainWindow):
         self.save_action.setEnabled(True)
 
     def _zoom_changed(self, zoom):
-        self.zoom_submenu.setTitle(f"Zoom ({zoom}%)")
+        self.zoom_submenu.setTitle("Zoom ({0}%)".format(zoom))
         try:
             idx = self.zoom_levels.index(zoom)
             self.zoom_group.actions()[idx].setChecked(True)
-            self.zoom_group.actions()[-1].setText(f"Custom")
+            self.zoom_group.actions()[-1].setText("Custom")
         except ValueError:
             self.zoom_group.actions()[-1].setChecked(True)
-            self.zoom_group.actions()[-1].setText(f"Custom {zoom}%")
+            self.zoom_group.actions()[-1].setText("Custom {0}%".format(zoom))
 
-        message = f"Zoom: {zoom}%"
+        message = "Zoom: {0}%".format(zoom)
         self.statusBar().showMessage(message, 2000)
 
     def _zoom_to_fit_changed(self, toggled_on):
@@ -301,14 +301,14 @@ class MainWindowWidget(QMainWindow):
         self.zoom_levels = list(range(20, 320, 20))
 
         for zoom in self.zoom_levels:
-            action = self.zoom_group.addAction(f"{zoom}%")
+            action = self.zoom_group.addAction("{0}%".format(zoom))
             action.triggered.connect(partial(lambda z: self.view.set_zoom(z), zoom))
             action.setCheckable(True)
             if zoom == 100:
                 action.setChecked(True)
             self.zoom_submenu.addAction(action)
 
-        custom_zoom = self.zoom_group.addAction(f"Custom")
+        custom_zoom = self.zoom_group.addAction("Custom")
         custom_zoom.setCheckable(True)
         custom_zoom.setEnabled(False)
         self.zoom_submenu.addAction(custom_zoom)

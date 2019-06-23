@@ -53,7 +53,7 @@ class FileListDialog(QDialog):
 
     def _setup_ui(self):
         self.setFixedSize(400, 500)
-        self.setWindowTitle(f"Layer '{self.layer_name.title()}' - Import")
+        self.setWindowTitle("Layer '{0}' - Import".format(self.layer_name.title()))
         self.list_widget = QListWidget(self)
 
         button_box = QDialogButtonBox(QDialogButtonBox.Ok)
@@ -192,7 +192,7 @@ class ProjectDialog(QDialog):
                 for f in mask_list:
                     if Path(f).name in image_names:
                         continue
-                    text = f"There is no corresponding image for mask '{Path(f).name}'!"
+                    text = "There is no corresponding image for mask '{0}'!".format(Path(f).name)
                     QMessageBox.warning(self, "Missing image!", text, QMessageBox.Ok)
                     return
         if len(self.files[0]) == 0:
@@ -207,7 +207,7 @@ class ProjectDialog(QDialog):
         self.masks.append(False)
         color = Palette.color(self._color_idx)
         self.colors.append(color)
-        self._edit_row(row_idx, f"mask ({self._color_idx})", True, color)
+        self._edit_row(row_idx, "mask ({0})".format(self._color_idx), True, color)
         self._color_idx += 1
         self.files.append([])
         return row_idx
@@ -257,7 +257,7 @@ class ProjectDialog(QDialog):
         button = QPushButton()
         color_txt = ','.join([str(c) for c in color])
         button.setObjectName("colorSelector")
-        button.setStyleSheet(f"background-color: rgb({color_txt});")
+        button.setStyleSheet("background-color: rgb({0});".format(color_txt))
         layout.addWidget(button)
         layout.setAlignment(Qt.AlignCenter)
         if pickable:
@@ -286,8 +286,8 @@ class ProjectDialog(QDialog):
         color = QColorDialog.getColor(QColor(*self.colors[row]))
         if color.isValid():
             self.colors[row] = (color.red(), color.green(), color.blue())
-            color_txt = f"{color.red()}, {color.green()}, {color.blue()}"
-            button.setStyleSheet(f"background-color: rgb({color_txt});")
+            color_txt = "{0}, {1}, {2}".format(color.red(), color.green(), color.blue())
+            button.setStyleSheet("background-color: rgb({0});".format(color_txt))
 
     def _set_mask(self, widget, checkbox_state):
         row = self._find_row(widget)
@@ -301,7 +301,7 @@ class ProjectDialog(QDialog):
             if filename[0].endswith(".spf"):
                 line_widget.setText(filename[0])
             else:
-                line_widget.setText(f"{filename[0]}.spf")
+                line_widget.setText("{0}.spf".format(filename[0]))
 
     def _show_file_list(self, row_idx):
         layer_name = self.table.item(row_idx, 0).text()
@@ -311,10 +311,10 @@ class ProjectDialog(QDialog):
 
     def _get_default_path(self):
         num = 1
-        date = f"{datetime.now():%Y-%m-%d}"
-        path = f"{self._docs}/project-{date}.spf"
+        date = "{0:%Y-%m-%d}".format(datetime.now())
+        path = "{0}/project-{1}.spf".format(self._docs, date)
         while Path(path).exists():
-            path = f"{self._docs}/project-{date}-{num}.spf"
+            path = "{0}/project-{1}-{2}.spf".format(self._docs, date, num)
             num += 1
         return path
 

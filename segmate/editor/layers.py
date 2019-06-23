@@ -89,7 +89,7 @@ class LayersGraphicsView(QGraphicsObject):
 
     def change_tool(self, tool, status_callback=None):
         if tool not in self._tool_box:
-            raise IndexError(f"'{tool}' is not a valid tool.")
+            raise IndexError("'{0}' is not a valid tool.".format(tool))
 
         self.tool._on_hide()
         result = self.tool.on_finalize()
@@ -112,20 +112,20 @@ class LayersGraphicsView(QGraphicsObject):
             self.tool.canvas = image
             if self.tool.status_callback:
                 if self.tool.undo_stack:
-                    undo_text = f"'{self.tool.undo_stack.undoText()}'"
+                    undo_text = "'{0}'".format(self.tool.undo_stack.undoText())
                 else:
                     undo_text = ""
-                self.tool.send_status_message(f"Undo {undo_text}")
+                self.tool.send_status_message("Undo {0}".format(undo_text))
 
     def redo_tool_command(self, image):
         if self.tool:
             self.tool.canvas = image
             if self.tool.status_callback:
                 if self.tool.undo_stack:
-                    redo_text = f"'{self.tool.undo_stack.redoText()}'"
+                    redo_text = "'{0}'".format(self.tool.undo_stack.redoText())
                 else:
                     redo_text = ""
-                self.tool.send_status_message(f"Redo {redo_text}")
+                self.tool.send_status_message("Redo {0}".format(redo_text))
 
     def paint(self, painter, option, widget):
         for i, (image, opacity) in enumerate(zip(self._layer_data, self._opacities)):

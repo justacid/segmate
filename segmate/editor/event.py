@@ -57,7 +57,7 @@ class Key:
         try:
             key = getattr(Qt, key)
         except:
-            raise AttributeError(f"type object 'Key' has no attribute '{key}'")
+            raise AttributeError("Object type 'Key' has no attribute '{0}'".format(key))
         return self._qevent.key() == key
 
 

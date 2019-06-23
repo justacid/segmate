@@ -40,7 +40,7 @@ def _plugin_info(plugin_dir):
         try:
             plugin_info = json.load(f)
         except json.decoder.JSONDecodeError as e:
-            print(f"'{plugin_dir.stem}/plugin.json': {e}.")
+            print("'{0}/plugin.json': {1}.".format(plugin_dir.stem, e))
             return None
     return plugin_info
 
@@ -67,16 +67,17 @@ def initialize_plugins():
             module_name = plugin_info["module"]
             class_name = plugin_info["class"]
 
-            module = importlib.import_module(f"{plugin_dir.name}.{module_name}")
+            module = importlib.import_module("{0}.{1}".format(plugin_dir.name, module_name))
             class_ = getattr(module, class_name)
 
             if not (inspect.isclass(class_) and issubclass(class_, EditorTool)):
-                print(f"'{class_}' is not a subclass of 'EditorTool', skipping...")
+                print("'{0}' is not a subclass of 'EditorTool', skipping...".format(class_))
                 continue
 
             _plugins[plugin_dir.name] = [plugin_name, class_]
         except:
-            print(f"There was an error loading the plugin '{plugin_dir.name}', skipping...")
+            print("There was an error loading the plugin '{0}', skipping..." \
+                .format(plugin_dir.name))
             continue
 
 
@@ -109,7 +110,7 @@ class DependencyInstaller(QDialog):
         self._setup_ui()
         self.add_line("Missing dependencies:")
         for dependency in self.dependencies:
-            self.add_line(f"    - {dependency}")
+            self.add_line("    - {0}".format(dependency))
         self.add_line("\nInstall dependencies?\n\n")
 
     def _setup_ui(self):

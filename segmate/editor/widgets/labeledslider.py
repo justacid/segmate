@@ -20,7 +20,7 @@ class LabeledSlider(QFrame):
         slider.setValue(value)
         slider.setMinimum(minimum)
         slider.setMaximum(maximum)
-        value_edit = QLineEdit(f"{value}")
+        value_edit = QLineEdit("{0}".format(value))
         value_edit.setValidator(QIntValidator())
         value_edit.setAlignment(Qt.AlignCenter)
         value_edit.setFixedWidth(30)
@@ -32,11 +32,11 @@ class LabeledSlider(QFrame):
             if val > maximum:
                 val = maximum
             slider.setValue(val)
-            value_edit.setText(f"{val}")
+            value_edit.setText("{0}".format(val))
         value_edit.editingFinished.connect(edit_finished)
 
         def value_changed(value):
-            value_edit.setText(f"{value}")
+            value_edit.setText("{0}".format(value))
             self.value_changed.emit(value)
         slider.valueChanged.connect(value_changed)
 

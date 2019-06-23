@@ -36,7 +36,7 @@ def color(array, color=(255, 255, 255)):
     if array is None:
         raise ValueError("The argument 'arr' can not be 'None'.")
     if len(array.shape) != 2:
-        raise TypeError(f"Only binary masks are supported.")
+        raise TypeError("Only binary masks are supported.")
 
     output = np.zeros((*array.shape, 4), dtype=np.uint8)
     output[array == True] = (*color, 255)
