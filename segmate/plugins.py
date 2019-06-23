@@ -4,7 +4,7 @@ import json
 import pathlib
 import sys
 
-from requirements.requirement import Requirement
+from pkg_resources import Requirement
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *

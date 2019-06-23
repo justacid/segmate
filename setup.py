@@ -12,8 +12,7 @@ setuptools.setup(
         "PySide2 == 5.12.3",
         "scikit-image == 0.14.2",
         "imageio == 2.4.1",
-        "natsort == 6.0.0",
-        "requirements-parser == 0.2.0"
+        "natsort == 6.0.0"
     ],
     include_package_data=True,
     entry_points = {
