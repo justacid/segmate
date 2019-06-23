@@ -1,10 +1,8 @@
-from dataclasses import dataclass
 import json
 from os import makedirs
 from pathlib import Path
 import shutil
 import tempfile
-from typing import List
 import zipfile
 
 import imageio as io
@@ -12,16 +10,16 @@ import numpy as np
 from segmate import __version__
 
 
-@dataclass
 class Project:
-    temp_dir: tempfile.TemporaryDirectory
-    archive_path: Path
-    data_root: Path
 
-    version: str
-    layers: List[str]
-    masks: List[bool]
-    colors: List[List[int]]
+    def __init__(self, temp_dir, archive_path, data_root, version, layers, masks, colors):
+        self.temp_dir = temp_dir
+        self.archive_path = archive_path
+        self.data_root = data_root
+        self.version = version
+        self.layers = layers
+        self.masks = masks
+        self.colors = colors
 
 
 def new_project(archive_path, layers, masks, files, colors):
