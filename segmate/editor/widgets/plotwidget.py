@@ -1,3 +1,5 @@
+import warnings
+
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
@@ -8,6 +10,17 @@ from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT as NavBar,
     FigureCanvas,
 )
+
+
+class WrappedCanvas(FigureCanvas):
+
+    def draw(self):
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                super().draw()
+        except:
+            pass
 
 
 class MatplotWidget(QWidget):
@@ -27,7 +40,7 @@ class MatplotWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         self.figure = Figure(facecolor="none")
-        self.canvas = FigureCanvas(self.figure)
+        self.canvas = WrappedCanvas(self.figure)
         self.setStyleSheet("background-color:palette(alternate-base);")
 
         layout.addWidget(self.canvas)
