@@ -5,7 +5,7 @@ from PySide2.QtCore import *
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from .. import project, settings, plugins, __version__
+from .. import project, settings, plugins, get_version
 from ..store import DataStore
 from ..editor import EditorScene
 from .inspector import InspectorWidget
@@ -31,7 +31,7 @@ class MainWindowWidget(QMainWindow):
         self._update_title()
 
     def _update_title(self):
-        title = "Segmate {0} ".format(__version__)
+        title = "Segmate {0} ".format(get_version())
         project_name = ""
         if self._project is not None:
             project_name = "- {0}".format(self._project.archive_path)
