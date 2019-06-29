@@ -19,6 +19,7 @@ class LayersGraphicsView(QGraphicsObject):
         self.layer_names = self.scene.data_store.folders
         self.show_selection = False
         self.selection_rect = None
+        self.panes = None
 
         self._layer_data = None
         self._opacities = [1.0] * len(self.scene.data_store.folders)

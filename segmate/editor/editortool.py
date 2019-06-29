@@ -53,6 +53,10 @@ class EditorTool:
     def selection_rect(self):
         return self._item.selection_rect
 
+    @property
+    def panes(self):
+        return self._item.panes
+
     def on_paint(self):
         return self.canvas
 

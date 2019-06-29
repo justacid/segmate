@@ -10,6 +10,7 @@ from ..store import DataStore
 from ..editor import EditorScene
 from .inspector import InspectorWidget
 from .sceneview import SceneViewWidget
+from .splitcontainer import SplitContainer
 from .projectdialog import ProjectDialog
 
 
@@ -162,8 +163,11 @@ class MainWindowWidget(QMainWindow):
         self._active_tool = tool
         if self.view.scene() is None:
             return
+
+        layers = self.view.scene().layers
         callback = lambda msg: self.statusBar().showMessage(msg, 2000)
-        self.view.scene().layers.change_tool(tool, status_callback=callback)
+        layers.panes = self.panes
+        layers.change_tool(tool, status_callback=callback)
         self.inspector.show_tool_inspector()
         self.view.scene().update()
 
@@ -214,7 +218,10 @@ class MainWindowWidget(QMainWindow):
         self.view.setAlignment(Qt.AlignCenter)
         self.view.zoom_changed.connect(self._zoom_changed)
         self.view.fitview_changed.connect(self._zoom_to_fit_changed)
-        self.setCentralWidget(self.view)
+
+        self.panes = SplitContainer(self)
+        self.panes.add_pane(self.view, width=0.7)
+        self.setCentralWidget(self.panes)
 
         self.inspector = InspectorWidget()
         self.inspector.scene_changed.connect(self._scene_changed)
