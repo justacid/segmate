@@ -30,7 +30,7 @@ No install script support, yet. Help wanted.
 I would like to provide pre-built Flatpaks, Snaps or AppImages on Linux and a stand-alone
 application for Windows, but could not get any of these to work yet. Help wanted.
 
-## Manuall install
+## Manual install
 ```
 git clone https://github.com/justacid/segmate.git
 cd segmate
