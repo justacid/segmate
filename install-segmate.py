@@ -23,7 +23,6 @@ Exec={1}
 Icon={2}
 Terminal=false
 Categories=Development;Education;Science;
-MimeType=text/x-matlab;
 """
 
 
